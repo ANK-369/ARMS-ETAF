@@ -1,0 +1,65 @@
+#!/data/data/com.termux/files/usr/bin/bash
+
+# ------------------------------
+# Colors
+# ------------------------------
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+CYAN='\033[0;36m'
+MAGENTA='\033[0;35m'
+YELLOW='\033[1;33m'
+RESET='\033[0m'
+
+# ------------------------------
+# Get terminal width
+# ------------------------------
+TERM_WIDTH=$(tput cols)
+
+# ------------------------------
+# Responsive Banner Lines
+# ------------------------------
+BANNER_LINES=(
+"░█████╗░██████╗░███╗░░░███╗░██████╗"
+"██╔══██╗██╔══██╗████╗░████║██╔════╝"
+"███████║██████╔╝██╔████╔██║╚█████╗░"
+"██╔══██║██╔══██╗██║╚██╔╝██║░╚═══██╗"
+"██║░░██║██║░░██║██║░╚═╝░██║██████╔╝"
+"╚═╝░░╚╝╚═╝░░╚═╝╚═╝░░░░░╚═╝╚═════╝░"
+)
+
+# Function to center text
+center_text() {
+    local text="$1"
+    local width="$2"
+    local len=${#text}
+    local padding=$(( (width - len) / 2 ))
+    printf "%*s%s\n" $padding "" "$text"
+}
+
+# ------------------------------
+# Display Banner
+# ------------------------------
+echo -e "${CYAN}"
+for line in "${BANNER_LINES[@]}"; do
+    center_text "$line" $TERM_WIDTH
+done
+echo -e "${RESET}"
+
+echo -e "\033[1;33mARMS - Auditing and Ration Management System\033[0m"
+echo -e "\033[1;36mEthiopian Air Force\033[0m"
+echo -e "\033[0;35mDeveloped by Andualem Koriya\033[0m"
+
+# Separator or system ready message
+echo ""
+echo -e "\033[1;32m[ System Launcher Ready ]\033[0m"
+
+# ------------------------------
+# Move to ARMS directory
+# ------------------------------
+cd ~/ARMS || { echo -e "${RED}Error: ARMS directory not found!${RESET}"; exit 1; }
+
+# ------------------------------
+# Start server using npm
+# ------------------------------
+echo -e "${GREEN}Starting ARMS server with npm run dev...${RESET}"
+npm run dev

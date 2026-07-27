@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ARMS - Auditing and Ration Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              military: {
+                900: '#1a2e1a', // Dark Military Green
+                800: '#264026',
+                700: '#355535',
+              },
+              gold: {
+                400: '#d4af37', // Standard Gold
+                500: '#c5a028',
+                600: '#b08d20',
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      /* Custom scrollbar for military look */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #1a2e1a; 
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #d4af37; 
+        border-radius: 4px;
+      }
+      body {
+        background-color: #0f172a;
+        color: #e2e8f0;
+      }
+
+      .print-footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        display: none;
+      }
+
+      /* --- PRINT STYLES --- */
+      @media print {
+        @page {
+          size: A4 portrait;
+          margin: 20mm 15mm 20mm 15mm;
+        }
+
+        html, body, #root, [data-reactroot] {
+          height: auto !important;
+          min-height: 0 !important;
+          overflow: visible !important;
+          display: block !important;
+        }
+
+        body * {
+          visibility: hidden !important;
+        }
+
+        #printable-audit-report, #printable-audit-report * {
+          visibility: visible !important;
+        }
+
+        /* FIX: the report's ancestors (the on-screen preview modal) were never
+           reset for print. .print-preview-modal stayed `position: fixed` and
+           .print-hide-scroll stayed `overflow: auto`, which together clipped
+           the printed output to a single viewport's worth of content (only
+           the first ~2 pages), cutting off everything after it. */
+        .print-preview-modal {
+          display: block !important;
+          position: static !important;
+          inset: auto !important;
+          height: auto !important;
+          min-height: 0 !important;
+          overflow: visible !important;
+          background: none !important;
+          z-index: auto !important;
+        }
+
+        .print-hide-scroll {
+          display: block !important;
+          position: static !important;
+          overflow: visible !important;
+          height: auto !important;
+          max-height: none !important;
+          flex: none !important;
+          padding: 0 !important;
+        }
+
+        .print-modal-content {
+          display: block !important;
+        }
+
+        #printable-audit-report {
+          position: absolute !important; 
+          left: 0 !important;
+          top: 0 !important;
+          width: 100% !important;
+          max-width: none !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          background: white !important;
+          box-shadow: none !important;
+        }
+
+        .audit-section {
+          display: flex !important;
+          flex-direction: column !important;
+          justify-content: space-between !important;
+          height: 257mm !important; 
+          max-height: 257mm !important;
+          page-break-after: always !important;
+          break-after: page !important;
+          page-break-inside: avoid !important;
+          break-inside: avoid !important;
+          box-sizing: border-box !important;
+          padding: 0 !important;
+          margin: 0 !important;
+          background: white !important;
+          overflow: hidden !important;
+          width: 100% !important;
+          max-width: 100% !important;
+        }
+
+        .audit-section:first-child {
+          page-break-before: avoid !important;
+          break-before: avoid !important;
+        }
+
+        /* Prevent trailing empty pages */
+        .audit-section:last-of-type {
+          page-break-after: avoid !important;
+          break-after: avoid !important;
+        }
+
+        body {
+          background: white !important;
+          color: black !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          overflow: visible !important;
+          -webkit-print-color-adjust: exact !important;
+          print-color-adjust: exact !important;
+        }
+
+        /* Table, Rows, and Signature Blocks optimization to prevent awkward cuts */
+        tr, table, .signature-block {
+          page-break-inside: avoid !important;
+          break-inside: avoid !important;
+        }
+
+        thead {
+          display: table-header-group !important; /* Repeats headers on new pages */
+        }
+
+        table {
+          width: 100% !important;
+          border-collapse: collapse !important;
+        }
+
+        /* Keep headers clean and avoid overlapping */
+        h1, h2, h3, h4, h5, h6 {
+          page-break-after: avoid !important;
+          break-after: avoid !important;
+        }
+
+        .print-page-break {
+          display: none !important;
+        }
+
+        /* Hide repeating fixed footer if we have per-page flex-based footer */
+        .print-footer-container {
+          display: none !important;
+        }
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "lucide-react": "https://aistudiocdn.com/lucide-react@^0.554.0",
+    "react-router-dom": "https://aistudiocdn.com/react-router-dom@6.22.3",
+    "uuid": "https://aistudiocdn.com/uuid@^13.0.0",
+    "react-dom": "https://aistudiocdn.com/react-dom@^19.2.0",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react-dom/client": "https://aistudiocdn.com/react-dom@^19.2.0/client",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "recharts": "https://aistudiocdn.com/recharts@^3.5.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>

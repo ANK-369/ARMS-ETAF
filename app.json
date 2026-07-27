@@ -1,0 +1,14 @@
+{
+  "expo": {
+    "name": "ARMS Tool",
+    "slug": "arms-tool",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/arms.png", // እዚህ ጋ የአይኮኑን ቦታ ትጠቅሳለህ
+    "splash": {
+      "image": "./assets/images/arms.png", // አፑ ሲከፈት መጀመሪያ እንዲታይ (Splash Screen) ከፈለግክም እዚህ ታስገባዋለህ
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    }
+  }
+}
