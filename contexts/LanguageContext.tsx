@@ -664,6 +664,8 @@ export const dictionary: Translations = {
   tagAiMl: { en: "AI & ML", am: "AI እና ML" },
   tagFullStack: { en: "FULL STACK", am: "ፉል ስታክ" },
   emailLabel: { en: "Email", am: "ኢሜይል" },
+  callLabel: { en: "Call / Phone", am: "ስልክ / ጥሪ" },
+  smsLabel: { en: "SMS / Message", am: "ኤስኤምኤስ / መልዕክት" },
   locationLabel: { en: "Location", am: "አድራሻ" },
   aboutLocationText: { en: "Ethiopian Air Force, Bishoftu", am: "የኢትዮጵያ አየር ኃይል, ቢሾፍቱ" },
   systemVersionStable: { en: "System Version 3.0.4 • Stable Build", am: "የሲስተም ስሪት 3.0.4 • የተረጋጋ ግንባታ" },

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Mail, Github, Linkedin, Cpu, Code, ShieldCheck, MapPin, Terminal, Globe } from 'lucide-react';
+import { Mail, Github, Linkedin, Cpu, Code, ShieldCheck, MapPin, Terminal, Globe, Phone, MessageSquare } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import andualemKoriyaPhoto from '../assets/images/andualem_koriya.png';
 
@@ -41,7 +41,7 @@ const About: React.FC = () => {
                </div>
 
                <div className="flex gap-4">
-                   <a href="https://github.com/andualemkoriya" target="_blank" rel="noreferrer" className="p-3 bg-slate-800 rounded-full text-gray-400 hover:text-white hover:bg-black transition border border-gray-700 hover:border-white"><Github size={20}/></a>
+                   <a href="https://github.com/ANK-369" target="_blank" rel="noopener noreferrer" className="p-3 bg-slate-800 rounded-full text-gray-400 hover:text-white hover:bg-black transition border border-gray-700 hover:border-white"><Github size={20}/></a>
                    <a href="#" className="p-3 bg-slate-800 rounded-full text-gray-400 hover:text-white hover:bg-blue-600 transition border border-gray-700 hover:border-white"><Linkedin size={20}/></a>
                </div>
            </div>
@@ -87,7 +87,7 @@ const About: React.FC = () => {
                     </div>
                </div>
 
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-gray-700 pt-6 mt-auto">
+               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-gray-700 pt-6 mt-auto">
                    <a href="mailto:andualemkoriya999@gmail.com" className="flex items-center gap-3 p-3 rounded-lg bg-slate-900/50 hover:bg-slate-900 transition border border-transparent hover:border-gold-500/30 group">
                        <div className="p-2 bg-military-800 rounded-full text-gold-500 group-hover:scale-110 transition"><Mail size={16}/></div>
                        <div className="overflow-hidden">
@@ -95,13 +95,27 @@ const About: React.FC = () => {
                            <p className="text-xs text-white truncate">andualemkoriya999@gmail.com</p>
                        </div>
                    </a>
-                   <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-900/50 hover:bg-slate-900 transition border border-transparent hover:border-gold-500/30 group">
-                       <div className="p-2 bg-military-800 rounded-full text-gold-500 group-hover:scale-110 transition"><MapPin size={16}/></div>
-                       <div>
-                           <p className="text-[10px] text-gray-500 uppercase font-bold">{t('locationLabel')}</p>
-                           <p className="text-xs text-white">{t('aboutLocationText')}</p>
+                   <a href="tel:+251934934580" className="flex items-center gap-3 p-3 rounded-lg bg-slate-900/50 hover:bg-slate-900 transition border border-transparent hover:border-gold-500/30 group">
+                       <div className="p-2 bg-military-800 rounded-full text-gold-500 group-hover:scale-110 transition"><Phone size={16}/></div>
+                       <div className="overflow-hidden">
+                           <p className="text-[10px] text-gray-500 uppercase font-bold">{t('callLabel')}</p>
+                           <p className="text-xs text-white truncate">+251 934 934 580</p>
                        </div>
-                   </div>
+                   </a>
+                   <a href="sms:+251934934580" className="flex items-center gap-3 p-3 rounded-lg bg-slate-900/50 hover:bg-slate-900 transition border border-transparent hover:border-gold-500/30 group">
+                       <div className="p-2 bg-military-800 rounded-full text-gold-500 group-hover:scale-110 transition"><MessageSquare size={16}/></div>
+                       <div className="overflow-hidden">
+                           <p className="text-[10px] text-gray-500 uppercase font-bold">{t('smsLabel')}</p>
+                           <p className="text-xs text-white truncate">+251 934 934 580</p>
+                       </div>
+                   </a>
+                   <a href="https://www.google.com/maps/search/?api=1&query=Ethiopian+Air+Force+Bishoftu" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 p-3 rounded-lg bg-slate-900/50 hover:bg-slate-900 transition border border-transparent hover:border-gold-500/30 group">
+                       <div className="p-2 bg-military-800 rounded-full text-gold-500 group-hover:scale-110 transition"><MapPin size={16}/></div>
+                       <div className="overflow-hidden">
+                           <p className="text-[10px] text-gray-500 uppercase font-bold">{t('locationLabel')}</p>
+                           <p className="text-xs text-white truncate">{t('aboutLocationText')}</p>
+                       </div>
+                   </a>
                </div>
                
                <div className="mt-8 text-center">
