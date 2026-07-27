@@ -338,12 +338,12 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       )}
 
       {/* Language Toggle */}
-      <div className="absolute top-6 right-6 z-20">
+      <div className="absolute top-3 right-3 sm:top-6 sm:right-6 z-20">
           <button 
             onClick={toggleLanguage} 
-            className="flex items-center gap-2 px-4 py-2 bg-black/40 backdrop-blur border border-gold-500/30 rounded-full text-gold-500 font-bold hover:bg-gold-500/10 transition cursor-pointer"
+            className="flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 bg-black/40 backdrop-blur border border-gold-500/30 rounded-full text-gold-500 font-bold text-xs sm:text-sm hover:bg-gold-500/10 transition cursor-pointer"
           >
-            <Globe size={16} />
+            <Globe size={14} className="sm:w-4 sm:h-4" />
             {language === 'en' ? 'ENGLISH' : 'አማርኛ'}
           </button>
       </div>
@@ -352,7 +352,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
          {/* Logo Composite */}
          <div className="flex justify-center mb-8 relative">
              <div className="relative">
-                 <div className="w-20 h-20 rounded-full overflow-hidden flex items-center justify-center relative z-10 drop-shadow-[0_0_15px_rgba(212,175,55,0.5)]">
+                 <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-full overflow-hidden flex items-center justify-center relative z-10 drop-shadow-[0_0_20px_rgba(212,175,55,0.6)] border-2 border-gold-500/40">
                      <img 
                        src={etafLogo} 
                        alt="Ethiopian Air Force Logo" 

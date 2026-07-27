@@ -261,11 +261,11 @@ const Layout: React.FC<LayoutProps> = ({ children, activePage, onNavigate, onLog
         </div>
 
         {/* --- HEADER --- */}
-        <div className={`relative z-10 p-6 flex flex-col items-center border-b border-white/5 bg-gradient-to-b from-slate-900 to-transparent text-center transition-all duration-300 ${isSidebarOpen ? 'h-48 justify-start pt-8' : 'h-28 justify-center p-2'}`}>
+        <div className={`relative z-10 p-6 flex flex-col items-center border-b border-white/5 bg-gradient-to-b from-slate-900 to-transparent text-center transition-all duration-300 ${isSidebarOpen ? 'h-52 justify-start pt-6' : 'h-28 justify-center p-2'}`}>
           
-          <div className="relative mb-4 flex items-center justify-center">
+          <div className="relative mb-3 flex items-center justify-center">
               <div className={`absolute inset-0 bg-gold-500 rounded-full blur-xl opacity-20 transition-all duration-500 ${isSidebarOpen ? 'scale-100' : 'scale-75'}`}></div>
-              <div className={`relative z-10 rounded-full overflow-hidden flex items-center justify-center transition-all duration-500 ${isSidebarOpen ? 'w-14 h-14' : 'w-8 h-8'}`}>
+              <div className={`relative z-10 rounded-full overflow-hidden flex items-center justify-center transition-all duration-500 border border-gold-500/30 ${isSidebarOpen ? 'w-18 h-18 sm:w-20 sm:h-20' : 'w-10 h-10'}`}>
                 <img 
                   src={etafLogo} 
                   alt="Ethiopian Air Force Logo" 
@@ -392,23 +392,23 @@ const Layout: React.FC<LayoutProps> = ({ children, activePage, onNavigate, onLog
         </div>
 
         {/* Mobile Header */}
-        <header className="md:hidden bg-military-900 border-b border-military-700 p-4 flex justify-between items-center z-30 shadow-md">
+        <header className="md:hidden bg-military-900 border-b border-military-700 p-3 sm:p-4 flex justify-between items-center z-30 shadow-md">
             <div className="flex items-center gap-3">
-                <div className="w-7 h-7 rounded-full overflow-hidden flex items-center justify-center shrink-0">
+                <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full overflow-hidden flex items-center justify-center shrink-0 border border-gold-500/30 drop-shadow">
                   <img src={etafLogo} alt="Ethiopian Air Force Logo" className="w-full h-full object-cover scale-108" />
                 </div>
                 <div className="flex flex-col">
-                    <span className="font-bold tracking-[0.2em] text-white text-lg leading-none font-serif">ARMS</span>
+                    <span className="font-bold tracking-[0.2em] text-white text-base sm:text-lg leading-none font-serif">ARMS</span>
                     <span className="text-[10px] text-gold-500 font-bold uppercase tracking-wider">Ethiopian Air Force</span>
                     <span className="text-[10px] text-gold-500 font-bold tracking-wider">የኢትዮጵያ አይር ሀይል</span>
                 </div>
             </div>
-            <div className="flex gap-2">
-                <button onClick={toggleLanguage} className="p-2 text-gold-500 bg-black/30 rounded-full border border-gray-700">
+            <div className="flex items-center gap-1.5 sm:gap-2">
+                <button onClick={toggleLanguage} className="p-2 text-gold-500 bg-black/30 rounded-full border border-gray-700 hover:bg-gold-500/10 transition cursor-pointer">
                     <Globe size={18} />
                 </button>
-                <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="text-gold-500 p-2 hover:bg-white/5 rounded transition">
-                    <Menu size={28} />
+                <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="text-gold-500 p-2 hover:bg-white/5 rounded transition cursor-pointer">
+                    <Menu size={26} />
                 </button>
             </div>
         </header>
@@ -418,8 +418,8 @@ const Layout: React.FC<LayoutProps> = ({ children, activePage, onNavigate, onLog
             <div className="absolute inset-0 z-[200] bg-slate-950 flex flex-col animate-in slide-in-from-right md:hidden">
                 <div className="p-6 border-b border-gray-800 flex justify-between items-center bg-military-900">
                     <div className="flex items-center gap-3">
-                         <div className="bg-gold-500/10 p-2 rounded-full flex items-center justify-center">
-                            <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center">
+                         <div className="bg-gold-500/10 p-1.5 rounded-full flex items-center justify-center border border-gold-500/30">
+                            <div className="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center">
                               <img src={etafLogo} alt="Ethiopian Air Force Logo" className="w-full h-full object-cover scale-108" />
                             </div>
                          </div>

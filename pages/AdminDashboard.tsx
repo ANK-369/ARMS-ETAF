@@ -1003,9 +1003,9 @@ export const AdminDashboard: React.FC<{ onLogout: () => void }> = ({ onLogout })
               {isMobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
             </button>
 
-            <div className="flex items-center gap-2 min-w-0">
+            <div className="flex items-center gap-2.5 min-w-0">
               <div className="relative shrink-0 flex items-center justify-center">
-                <div className="w-7 h-7 rounded-full overflow-hidden flex items-center justify-center drop-shadow-[0_0_8px_#d4af37]">
+                <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full overflow-hidden flex items-center justify-center drop-shadow-[0_0_8px_#d4af37] border border-gold-500/30">
                   <img src={etafLogo} alt="Ethiopian Air Force Logo" className="w-full h-full object-cover scale-108" />
                 </div>
               </div>
@@ -1093,7 +1093,7 @@ export const AdminDashboard: React.FC<{ onLogout: () => void }> = ({ onLogout })
           <aside className="relative w-76 bg-slate-900 border-r border-white/10 p-5 flex flex-col gap-6 h-full overflow-y-auto animate-in slide-in-from-left duration-200">
             <div className="flex justify-between items-center pb-3 border-b border-white/5">
               <div className="flex items-center gap-2.5">
-                <div className="w-6.5 h-6.5 rounded-full overflow-hidden flex items-center justify-center">
+                <div className="w-9 h-9 rounded-full overflow-hidden flex items-center justify-center border border-gold-500/30">
                   <img src={etafLogo} alt="Ethiopian Air Force Logo" className="w-full h-full object-cover scale-108" />
                 </div>
                 <span className="text-xs font-black tracking-widest text-white uppercase">{at('adminCommand')}</span>
