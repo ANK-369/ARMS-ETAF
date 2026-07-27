@@ -16,6 +16,7 @@ import {
 import { useLanguage } from '../contexts/LanguageContext';
 import { useDate } from '../contexts/DateContext';
 import CustomSelect from '../components/CustomSelect';
+import etafLogo from '../assets/images/etaf_logo.png';
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
@@ -766,7 +767,9 @@ const Home: React.FC = () => {
 
       <div className="bg-gradient-to-r from-military-900 to-military-800 rounded-2xl p-6 md:p-8 border border-military-700 shadow-2xl relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition transform group-hover:scale-110 pointer-events-none">
-              <ShieldCheck size={120} className="text-gold-500" />
+              <div className="w-28 h-28 rounded-full overflow-hidden flex items-center justify-center">
+                <img src={etafLogo} alt="Ethiopian Air Force Watermark" className="w-full h-full object-cover scale-108" />
+              </div>
           </div>
           <div className="relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8 items-center">
               <div className="lg:col-span-2">

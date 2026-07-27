@@ -6,6 +6,7 @@ import {
 import { useLanguage } from '../contexts/LanguageContext';
 import { saveDB, getStoredUsername, getStoredAdminUsername, verifyAdminPassword, verifyUserPassword, verifyPassword, getStoredSecurityQuestion, verifySecurityAnswer, resetPasswordDirectly } from '../services/db';
 import { getGitHubConfig, saveGitHubConfig, fetchFromGitHub, findFilesBySecretKey } from '../services/githubService';
+import etafLogo from '../assets/images/etaf_logo.png';
 
 interface LoginProps {
   onLoginSuccess: (role: 'admin' | 'user') => void;
@@ -351,8 +352,13 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
          {/* Logo Composite */}
          <div className="flex justify-center mb-8 relative">
              <div className="relative">
-                 <ShieldCheck size={80} className="text-gold-500 drop-shadow-[0_0_15px_rgba(212,175,55,0.5)]" />
-                 <Plane size={40} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-black -rotate-45" />
+                 <div className="w-20 h-20 rounded-full overflow-hidden flex items-center justify-center relative z-10 drop-shadow-[0_0_15px_rgba(212,175,55,0.5)]">
+                     <img 
+                       src={etafLogo} 
+                       alt="Ethiopian Air Force Logo" 
+                       className="w-full h-full object-cover scale-108" 
+                     />
+                 </div>
              </div>
              <div className="absolute -inset-4 border-2 border-gold-500/10 rounded-full animate-[spin_10s_linear_infinite]"></div>
              <div className="absolute -inset-8 border border-dashed border-gold-500/10 rounded-full animate-[spin_15s_linear_infinite_reverse]"></div>

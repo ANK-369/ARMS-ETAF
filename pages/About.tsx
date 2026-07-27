@@ -2,6 +2,7 @@
 import React from 'react';
 import { Mail, Github, Linkedin, Cpu, Code, ShieldCheck, MapPin, Terminal, Globe } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
+import andualemKoriyaPhoto from '../assets/images/andualem_koriya.png';
 
 const About: React.FC = () => {
   const { t } = useLanguage();
@@ -16,7 +17,11 @@ const About: React.FC = () => {
                
                <div className="relative mb-6">
                    <div className="w-32 h-32 md:w-48 md:h-48 rounded-full bg-military-800 border-4 border-gold-500 shadow-[0_0_20px_rgba(212,175,55,0.3)] flex items-center justify-center overflow-hidden relative z-10 group">
-                        <span className="text-6xl md:text-7xl group-hover:scale-110 transition duration-500">👨‍✈️</span>
+                       <img 
+                         src={andualemKoriyaPhoto} 
+                         alt={t('name_andualem')} 
+                         className="w-full h-full object-cover group-hover:scale-105 transition duration-500" 
+                       />
                    </div>
                    <div className="absolute -bottom-2 -right-2 bg-gold-500 text-black p-2 rounded-full border-4 border-slate-900 z-20">
                        <ShieldCheck size={24} />

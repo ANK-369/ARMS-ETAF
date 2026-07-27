@@ -18,6 +18,7 @@ import { AppData, StoreItem, Manpower, Expense, IncomeItem, Subsidy, Transfer, R
 import { formatEthiopianDate, getCurrentEthiopianDate } from '../services/ethiopianDate';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useDate } from '../contexts/DateContext';
+import etafLogo from '../assets/images/etaf_logo.png';
 
 export const AdminDashboard: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   const { language, toggleLanguage, t } = useLanguage();
@@ -1003,9 +1004,10 @@ export const AdminDashboard: React.FC<{ onLogout: () => void }> = ({ onLogout })
             </button>
 
             <div className="flex items-center gap-2 min-w-0">
-              <div className="relative shrink-0">
-                <ShieldCheck size={28} className="text-gold-400 drop-shadow-[0_0_8px_#d4af37]" />
-                <Plane size={14} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-slate-950 -rotate-45" />
+              <div className="relative shrink-0 flex items-center justify-center">
+                <div className="w-7 h-7 rounded-full overflow-hidden flex items-center justify-center drop-shadow-[0_0_8px_#d4af37]">
+                  <img src={etafLogo} alt="Ethiopian Air Force Logo" className="w-full h-full object-cover scale-108" />
+                </div>
               </div>
               <div className="min-w-0">
                 <h1 className="text-[10px] sm:text-xs font-black tracking-wider text-white uppercase leading-none truncate max-w-[130px] xs:max-w-[180px] sm:max-w-none">{at('adminCommand')}</h1>
@@ -1091,7 +1093,9 @@ export const AdminDashboard: React.FC<{ onLogout: () => void }> = ({ onLogout })
           <aside className="relative w-76 bg-slate-900 border-r border-white/10 p-5 flex flex-col gap-6 h-full overflow-y-auto animate-in slide-in-from-left duration-200">
             <div className="flex justify-between items-center pb-3 border-b border-white/5">
               <div className="flex items-center gap-2.5">
-                <ShieldCheck size={26} className="text-gold-400" />
+                <div className="w-6.5 h-6.5 rounded-full overflow-hidden flex items-center justify-center">
+                  <img src={etafLogo} alt="Ethiopian Air Force Logo" className="w-full h-full object-cover scale-108" />
+                </div>
                 <span className="text-xs font-black tracking-widest text-white uppercase">{at('adminCommand')}</span>
               </div>
               <button 

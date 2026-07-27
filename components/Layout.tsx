@@ -10,6 +10,7 @@ import { downloadFile } from '../services/dataTransfer';
 import { AppData } from '../types';
 import ConfirmDialog from './ConfirmDialog';
 import { useLanguage } from '../contexts/LanguageContext';
+import etafLogo from '../assets/images/etaf_logo.png';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -252,10 +253,9 @@ const Layout: React.FC<LayoutProps> = ({ children, activePage, onNavigate, onLog
             <div className="absolute -top-20 -left-20 w-64 h-64 bg-gold-500/5 rounded-full blur-3xl"></div>
             
             {/* Bottom Emblem Watermark (Air Force Logo Styled) */}
-            <div className={`absolute bottom-20 -right-10 transition-all duration-700 opacity-[0.04] ${isSidebarOpen ? 'scale-100 rotate-0' : 'scale-50 rotate-12'}`}>
-                 <div className="relative">
-                    <ShieldCheck size={320} className="text-white" />
-                    <Plane size={180} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-white -rotate-45" />
+            <div className={`absolute bottom-20 -right-10 transition-all duration-700 opacity-[0.05] pointer-events-none ${isSidebarOpen ? 'scale-100 rotate-0' : 'scale-50 rotate-12'}`}>
+                 <div className="w-[320px] h-[320px] rounded-full overflow-hidden flex items-center justify-center">
+                   <img src={etafLogo} alt="Ethiopian Air Force Watermark" className="w-full h-full object-cover scale-108 filter brightness-200" />
                  </div>
             </div>
         </div>
@@ -263,11 +263,15 @@ const Layout: React.FC<LayoutProps> = ({ children, activePage, onNavigate, onLog
         {/* --- HEADER --- */}
         <div className={`relative z-10 p-6 flex flex-col items-center border-b border-white/5 bg-gradient-to-b from-slate-900 to-transparent text-center transition-all duration-300 ${isSidebarOpen ? 'h-48 justify-start pt-8' : 'h-28 justify-center p-2'}`}>
           
-          <div className="relative mb-4">
+          <div className="relative mb-4 flex items-center justify-center">
               <div className={`absolute inset-0 bg-gold-500 rounded-full blur-xl opacity-20 transition-all duration-500 ${isSidebarOpen ? 'scale-100' : 'scale-75'}`}></div>
-              <ShieldCheck size={isSidebarOpen ? 56 : 32} className="text-gold-500 relative z-10 drop-shadow-lg transition-all duration-500" />
-              {/* Overlay Plane Icon on Shield */}
-              <Plane size={isSidebarOpen ? 28 : 16} className={`absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-slate-900 z-20 -rotate-45 transition-all duration-500`} />
+              <div className={`relative z-10 rounded-full overflow-hidden flex items-center justify-center transition-all duration-500 ${isSidebarOpen ? 'w-14 h-14' : 'w-8 h-8'}`}>
+                <img 
+                  src={etafLogo} 
+                  alt="Ethiopian Air Force Logo" 
+                  className="w-full h-full object-cover scale-108 drop-shadow-lg" 
+                />
+              </div>
           </div>
           
           <div className={`transition-all duration-500 overflow-hidden flex flex-col items-center ${isSidebarOpen ? 'opacity-100 max-h-40 translate-y-0' : 'opacity-0 max-h-0 translate-y-4'}`}>
@@ -390,7 +394,9 @@ const Layout: React.FC<LayoutProps> = ({ children, activePage, onNavigate, onLog
         {/* Mobile Header */}
         <header className="md:hidden bg-military-900 border-b border-military-700 p-4 flex justify-between items-center z-30 shadow-md">
             <div className="flex items-center gap-3">
-                <ShieldCheck size={28} className="text-gold-500" />
+                <div className="w-7 h-7 rounded-full overflow-hidden flex items-center justify-center shrink-0">
+                  <img src={etafLogo} alt="Ethiopian Air Force Logo" className="w-full h-full object-cover scale-108" />
+                </div>
                 <div className="flex flex-col">
                     <span className="font-bold tracking-[0.2em] text-white text-lg leading-none font-serif">ARMS</span>
                     <span className="text-[10px] text-gold-500 font-bold uppercase tracking-wider">Ethiopian Air Force</span>
@@ -412,8 +418,10 @@ const Layout: React.FC<LayoutProps> = ({ children, activePage, onNavigate, onLog
             <div className="absolute inset-0 z-[200] bg-slate-950 flex flex-col animate-in slide-in-from-right md:hidden">
                 <div className="p-6 border-b border-gray-800 flex justify-between items-center bg-military-900">
                     <div className="flex items-center gap-3">
-                         <div className="bg-gold-500/10 p-2 rounded-full">
-                            <ShieldCheck size={32} className="text-gold-500" />
+                         <div className="bg-gold-500/10 p-2 rounded-full flex items-center justify-center">
+                            <div className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center">
+                              <img src={etafLogo} alt="Ethiopian Air Force Logo" className="w-full h-full object-cover scale-108" />
+                            </div>
                          </div>
                          <div>
                             <h2 className="text-white font-bold text-xl tracking-wider font-serif">ARMS</h2>
