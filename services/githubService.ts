@@ -6,6 +6,11 @@ export const getGitHubConfig = (): GitHubConfig => {
   return stored ? JSON.parse(stored) : { token: '', owner: '', repo: '', path: 'arms_db.json', enabled: false };
 };
 
+export const isGitHubConfigured = (config?: GitHubConfig): boolean => {
+  const cfg = config || getGitHubConfig();
+  return Boolean(cfg && cfg.enabled && cfg.token?.trim() && cfg.owner?.trim() && cfg.repo?.trim() && cfg.path?.trim());
+};
+
 export const saveGitHubConfig = (config: GitHubConfig) => {
   localStorage.setItem('arms_github_config', JSON.stringify(config));
 };

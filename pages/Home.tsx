@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getDB, saveDB } from '../services/db';
-import { findFilesBySecretKey, fetchFromGitHub, getFolderName, listUserBackups, getGitHubConfig } from '../services/githubService';
+import { findFilesBySecretKey, fetchFromGitHub, getFolderName, listUserBackups, getGitHubConfig, isGitHubConfigured } from '../services/githubService';
 import { AppData, Manpower, ManpowerType } from '../types';
 import { formatEthiopianDate, getCurrentEthiopianDate, isSameMonth, ETHIOPIAN_MONTHS, ETHIOPIAN_MONTHS_AMHARIC } from '../services/ethiopianDate';
 import { 
@@ -64,7 +64,11 @@ const Home: React.FC = () => {
 
   // Helper to get current user's own file path
   const getMyOwnFilePath = (): string => {
-    return (getGitHubConfig().path || '').trim();
+    const config = getGitHubConfig();
+    if (!isGitHubConfigured(config)) {
+      return '';
+    }
+    return (config.path || '').trim();
   };
 
   // Helper to format file paths professionally: "July 2018 arms001 (My File)" or "ሐምሌ 2018 arms001 (የእኔ ፋይል)"
