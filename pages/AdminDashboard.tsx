@@ -279,15 +279,13 @@ export const AdminDashboard: React.FC<{ onLogout: () => void }> = ({ onLogout })
         setGhConfig(updated);
         setPathInput(targetPath);
         
-        // Save to local database
-        saveDB(data, true);
+        // Update state in memory for observation
         setLiveDb(data);
         setLoadedBackupPath(targetPath);
-        setGithubMessage(language === 'en' ? "Successfully shifted path and loaded database!" : "የፋይል መንገዱ በትክክል ተቀይሮ የዳታቤዝ መረጃው ተጭኗል!");
+        setGithubMessage(language === 'en' ? "Successfully loaded database for observation!" : "የፋይል መንገዱ መረጃ ለዕይታ በድል ተጭኗል!");
         setTimeout(() => {
           setGithubMessage('');
-          window.location.reload();
-        }, 1500);
+        }, 3000);
       }
     } catch (err: any) {
       alert(`Error loading database file: ${err.message || String(err)}`);
@@ -396,23 +394,23 @@ export const AdminDashboard: React.FC<{ onLogout: () => void }> = ({ onLogout })
       }
       
       if (data) {
-        // Admin is above all; do not require secure passcode proving to connect or load databases from within the Admin Dashboard
+        // Admin is above all; load database for in-memory observation in Admin Dashboard
         const updated = { ...ghConfig, path: targetPath, enabled: true };
         saveGitHubConfig(updated);
         setGhConfig(updated);
-        saveDB(data, true);
-        setGithubMessage(language === 'en' ? "Data retrieved and loaded successfully!" : "ክላውድ ዳታው በትክክል ተጭኗል!");
-        setTimeout(() => window.location.reload(), 1500);
+        setLiveDb(data);
+        setLoadedBackupPath(targetPath);
+        setGithubMessage(language === 'en' ? "Data retrieved and loaded for observation!" : "ክላውድ ዳታው ለመመልከት በትክክል ተጭኗል!");
+        setTimeout(() => setGithubMessage(''), 3000);
       } else {
         const updated = { ...ghConfig, path: targetPath, enabled: true };
         saveGitHubConfig(updated);
         setGhConfig(updated);
-        clearDatabaseDataForFreshStart(); // Clear local display state since the path is completely empty!
         setGithubMessage(language === 'en' 
-          ? "Path linked to empty file. Local database state reset for new file." 
-          : "መንገዱ ከባዶ ፋይል ጋር ተገናኝቷል። ለአዲሱ ፋይል የአካባቢው መረጃ ተጠርጓል።"
+          ? "Path linked to empty file." 
+          : "መንገዱ ከባዶ ፋይል ጋር ተገናኝቷል።"
         );
-        setTimeout(() => window.location.reload(), 1500);
+        setTimeout(() => setGithubMessage(''), 3000);
       }
     } catch (err: any) {
       setGithubMessage(language === 'en' ? `Connection failed: ${err.message || err}` : `መገናኘት አልተሳካም፦ ${err.message || err}`);
@@ -429,14 +427,15 @@ export const AdminDashboard: React.FC<{ onLogout: () => void }> = ({ onLogout })
     try {
       const inputHash = await sha256(provingPassword);
       const targetCreds = remoteDbData?.securityCredentials;
-      const adminHash = targetCreds?.adminPasswordHash;
-      const userHash = targetCreds?.userPasswordHash;
+      const adminHash = targetCreds?.adminPasswordHash || remoteDbData?.adminPasswordHash;
+      const userHash = targetCreds?.userPasswordHash || remoteDbData?.userPasswordHash;
       
-      const isValidAdmin = adminHash === inputHash;
-      const isValidUser = userHash === inputHash;
+      const isValidAdmin = !!adminHash && adminHash === inputHash;
+      const isValidUser = !!userHash && userHash === inputHash;
       
-      const isDefaultAdmin = !targetCreds?.adminCustomized && provingPassword === 'etaf';
-      const isDefaultUser = !targetCreds?.userCustomized && provingPassword === 'admin';
+      // Fallbacks for default accounts ONLY IF the remote file path does NOT have custom password hashes configured!
+      const isDefaultAdmin = !adminHash && (!targetCreds?.adminCustomized || targetCreds?.adminCustomized === 'false') && provingPassword === 'etaf';
+      const isDefaultUser = !userHash && (!targetCreds?.userCustomized || targetCreds?.userCustomized === 'false') && provingPassword === 'admin';
       
       if (isValidAdmin || isValidUser || isDefaultAdmin || isDefaultUser) {
         const updated = { ...ghConfig, path: provingPath, enabled: true };

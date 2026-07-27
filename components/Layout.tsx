@@ -3,7 +3,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { 
   Home, DollarSign, ShoppingCart, FileText, User, LogOut, Search, Menu, 
   ShieldCheck, Database, Book, Download, Upload, Package, PanelLeftClose, 
-  PanelLeftOpen, ChevronRight, Plane, Activity, X, Globe
+  PanelLeftOpen, ChevronRight, Plane, Activity, X, Globe, Edit3
 } from 'lucide-react';
 import { getDB, saveDB } from '../services/db';
 import { downloadFile } from '../services/dataTransfer';
@@ -307,7 +307,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activePage, onNavigate, onLog
           </div>
           <NavItem page="dbadmin" icon={Database} label="dbAdmin" />
           <NavItem page="notebook" icon={Book} label="notebook" />
-          <NavItem page="editor" icon={Database} label="editor" />
+          <NavItem page="editor" icon={Edit3} label="editor" />
           <NavItem page="about" icon={User} label="about" />
         </nav>
 
@@ -441,7 +441,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activePage, onNavigate, onLog
                     <div className="px-4 py-2 mt-4 text-[10px] font-bold text-gray-500 uppercase tracking-wider border-b border-gray-800 mb-2">{t('system')}</div>
                     <NavItem isMobile page="dbadmin" icon={Database} label="dbAdmin" />
                     <NavItem isMobile page="notebook" icon={Book} label="notebook" />
-                    <NavItem isMobile page="editor" icon={Database} label="editor" />
+                    <NavItem isMobile page="editor" icon={Edit3} label="editor" />
                     <NavItem isMobile page="about" icon={User} label="about" />
                 </div>
                 

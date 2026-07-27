@@ -92,7 +92,8 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       // 1. Check for Admin Role
       // If customized, default "etaf/etaf" credentials are disabled (unless etaf is kept as the custom username)
       const isCustomAdmin = localStorage.getItem('arms_admin_customized') === 'true';
-      if (trimmedUsername === adminUser || (!isCustomAdmin && trimmedUsername === 'etaf')) {
+      const isAdminUsernameMatch = (trimmedUsername === adminUser && adminUser !== standardUser) || (!isCustomAdmin && trimmedUsername === 'etaf');
+      if (isAdminUsernameMatch) {
         const isValidAdmin = await verifyAdminPassword(password);
         if (isValidAdmin || (!isCustomAdmin && password === 'etaf')) {
           setLoading(false);
@@ -104,7 +105,8 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       // 2. Check for Regular User Role
       // If customized, default "admin/admin" credentials are disabled (unless admin is kept as the custom username)
       const isCustomUser = localStorage.getItem('arms_user_customized') === 'true';
-      if (trimmedUsername === standardUser || (!isCustomUser && trimmedUsername === 'admin')) {
+      const isUserUsernameMatch = (trimmedUsername === standardUser) || (!isCustomUser && trimmedUsername === 'admin');
+      if (isUserUsernameMatch) {
         const isValidUser = await verifyUserPassword(password);
         if (isValidUser || (!isCustomUser && password === 'admin')) {
           setLoading(false);
@@ -281,8 +283,8 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       if (error) {
         setSecretKeyMessage({ text: error, type: "error" });
       } else if (data) {
-        // Successfully fetched! Save locally and setup READ-ONLY mode.
-        saveDB(data, true);
+        // Successfully fetched! Save into shared read-only database (arms_shared_database)
+        localStorage.setItem('arms_shared_database', JSON.stringify(data));
         localStorage.setItem('arms_readonly_mode', 'true');
         localStorage.setItem('arms_readonly_secret_key', enteredSecretKey);
         localStorage.setItem('arms_readonly_file_path', filePath);

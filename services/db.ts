@@ -627,7 +627,12 @@ export const getStoredUsername = (): string => {
 };
 
 export const getStoredAdminUsername = (): string => {
-    return localStorage.getItem('arms_admin_username') || DEFAULT_ADMIN_USERNAME;
+    const adminUser = localStorage.getItem('arms_admin_username');
+    const userUser = localStorage.getItem('arms_user_username') || localStorage.getItem('arms_username') || DEFAULT_USERNAME;
+    if (adminUser && adminUser.toLowerCase() === userUser.toLowerCase() && userUser.toLowerCase() !== DEFAULT_ADMIN_USERNAME) {
+        return DEFAULT_ADMIN_USERNAME;
+    }
+    return adminUser || DEFAULT_ADMIN_USERNAME;
 };
 
 export const verifyAdminPassword = async (passwordInput: string): Promise<boolean> => {
@@ -657,6 +662,14 @@ export const updateStoredCredentials = async (newUsername: string, newPassword?:
     localStorage.setItem('arms_user_username', newUsername);
     localStorage.setItem('arms_user_customized', 'true');
     localStorage.setItem('arms_username', newUsername);
+
+    const currentAdminUser = localStorage.getItem('arms_admin_username');
+    if (currentAdminUser && currentAdminUser.toLowerCase() === newUsername.toLowerCase() && newUsername.toLowerCase() !== DEFAULT_ADMIN_USERNAME) {
+        localStorage.setItem('arms_admin_username', DEFAULT_ADMIN_USERNAME);
+        localStorage.removeItem('arms_admin_customized');
+        localStorage.removeItem('arms_admin_password_hash');
+    }
+
     if (newPassword) {
         const hash = await sha256(newPassword);
         localStorage.setItem('arms_user_password_hash', hash);
@@ -664,7 +677,7 @@ export const updateStoredCredentials = async (newUsername: string, newPassword?:
     }
     const currentDb = getDB();
     saveDB(currentDb, true);
-    return await pushToGitHub(currentDb);
+    return await pushToGitHub(currentDb, undefined, true);
 };
 
 export const getStoredSecurityQuestion = (): string => {
@@ -687,7 +700,7 @@ export const updateSecurityQuestion = async (question: string, answer?: string) 
     }
     const currentDb = getDB();
     saveDB(currentDb, true);
-    return await pushToGitHub(currentDb);
+    return await pushToGitHub(currentDb, undefined, true);
 };
 
 export const updateAdminCredentialsDirectly = async (newUsername: string, newPassword?: string) => {
@@ -699,19 +712,17 @@ export const updateAdminCredentialsDirectly = async (newUsername: string, newPas
     }
     const currentDb = getDB();
     saveDB(currentDb, true);
-    return await pushToGitHub(currentDb);
+    return await pushToGitHub(currentDb, undefined, true);
 };
 
 export const resetPasswordDirectly = async (newPassword: string) => {
     const hash = await sha256(newPassword);
-    localStorage.setItem('arms_admin_password_hash', hash);
     localStorage.setItem('arms_user_password_hash', hash);
     localStorage.setItem('arms_password_hash', hash);
-    localStorage.setItem('arms_admin_customized', 'true');
     localStorage.setItem('arms_user_customized', 'true');
     const currentDb = getDB();
     saveDB(currentDb, true);
-    return await pushToGitHub(currentDb);
+    return await pushToGitHub(currentDb, undefined, true);
 };
 
 export const isNewUser = (): boolean => {

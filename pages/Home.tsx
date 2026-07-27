@@ -2,7 +2,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getDB, saveDB } from '../services/db';
-import { findFilesBySecretKey, fetchFromGitHub, getFolderName, listUserBackups } from '../services/githubService';
+import { findFilesBySecretKey, fetchFromGitHub, getFolderName, listUserBackups, getGitHubConfig } from '../services/githubService';
 import { AppData, Manpower, ManpowerType } from '../types';
 import { formatEthiopianDate, getCurrentEthiopianDate, isSameMonth, ETHIOPIAN_MONTHS, ETHIOPIAN_MONTHS_AMHARIC } from '../services/ethiopianDate';
 import { 
@@ -46,7 +46,90 @@ const Home: React.FC = () => {
   const isFetchingRemoteRef = useRef(false);
 
   // Get secretKey from sessionStorage (temporary) or localStorage (fallback/permanent)
-  const secretKey = sessionStorage.getItem('arms_session_secret_key') || localStorage.getItem('arms_readonly_secret_key') || localStorage.getItem('arms_secret_key') || '';
+  const [activeSecretKey, setActiveSecretKey] = useState<string>(() => {
+    return sessionStorage.getItem('arms_session_secret_key') || localStorage.getItem('arms_readonly_secret_key') || localStorage.getItem('arms_secret_key') || '';
+  });
+
+  // Listen for read-only / secret key state changes
+  useEffect(() => {
+    const handleReadonlyUpdate = () => {
+      const currentKey = sessionStorage.getItem('arms_session_secret_key') || localStorage.getItem('arms_readonly_secret_key') || localStorage.getItem('arms_secret_key') || '';
+      setActiveSecretKey(currentKey);
+      setData(getDB());
+    };
+
+    window.addEventListener('arms_readonly_update', handleReadonlyUpdate);
+    return () => window.removeEventListener('arms_readonly_update', handleReadonlyUpdate);
+  }, []);
+
+  // Helper to get current user's own file path
+  const getMyOwnFilePath = (): string => {
+    return (getGitHubConfig().path || '').trim();
+  };
+
+  // Helper to format file paths professionally: "July 2018 arms001 (My File)" or "ሐምሌ 2018 arms001 (የእኔ ፋይል)"
+  const formatFilePathNice = (filePath: string, isMine: boolean, lang: 'en' | 'am') => {
+    if (!filePath) return '';
+    const parts = filePath.split('/');
+    const folder = parts[0] || '';
+    const filename = (parts[1] || parts[0] || '').replace(/\.json$/i, '');
+    
+    let formattedLabel = filePath;
+    const match = folder.toLowerCase().match(/^([a-z]+)(\d{4})$/);
+    if (match) {
+      const monthKey = match[1];
+      const year = match[2];
+      
+      const monthMapAmharic: Record<string, string> = {
+        "september": "መስከረም", "meskerem": "መስከረም",
+        "october": "ጥቅምት", "tikimt": "ጥቅምት",
+        "november": "ህዳር", "hidar": "ህዳር",
+        "december": "ታህሳስ", "tahsas": "ታህሳስ",
+        "january": "ጥር", "tir": "ጥር",
+        "february": "የካቲት", "yekatit": "የካቲት",
+        "march": "መጋቢት", "megabit": "መጋቢት",
+        "april": "ሚያዚያ", "miazia": "ሚያዚያ",
+        "may": "ግንቦት", "genbot": "ግንቦት",
+        "june": "ሰኔ", "sene": "ሰኔ",
+        "july": "ሐምሌ", "hamle": "ሐምሌ",
+        "august": "ነሐሴ", "nehasse": "ነሐሴ",
+        "pagume": "ጳጉሜ"
+      };
+
+      const monthMapEnglish: Record<string, string> = {
+        "september": "September", "meskerem": "Meskerem",
+        "october": "October", "tikimt": "Tikimt",
+        "november": "November", "hidar": "Hidar",
+        "december": "December", "tahsas": "Tahsas",
+        "january": "January", "tir": "Tir",
+        "february": "February", "yekatit": "Yekatit",
+        "march": "March", "megabit": "Megabit",
+        "april": "April", "miazia": "Miazia",
+        "may": "May", "genbot": "Genbot",
+        "june": "June", "sene": "Sene",
+        "july": "July", "hamle": "Hamle",
+        "august": "August", "nehasse": "Nehasse",
+        "pagume": "Pagume"
+      };
+
+      if (lang === 'am') {
+        const monthAm = monthMapAmharic[monthKey] || monthKey;
+        formattedLabel = `${monthAm} ${year} ${filename}`;
+      } else {
+        const monthEn = monthMapEnglish[monthKey] || (monthKey.charAt(0).toUpperCase() + monthKey.slice(1));
+        formattedLabel = `${monthEn} ${year} ${filename}`;
+      }
+    } else if (filename) {
+      formattedLabel = filename;
+    }
+
+    if (isMine) {
+      const suffix = lang === 'am' ? '(የእኔ ፋይል)' : '(My File)';
+      return `${formattedLabel} ${suffix}`;
+    }
+
+    return formattedLabel;
+  };
 
   // Helper to parse Month and Year from a file path
   const parseMonthAndYearFromPath = (filePath: string) => {
@@ -68,14 +151,20 @@ const Home: React.FC = () => {
     return null;
   };
 
-  // 1. Fetch available paths based on selectedMonth, selectedYear, and optional secretKey
+  // 1. Fetch available paths based on selectedMonth, selectedYear, and activeSecretKey
   useEffect(() => {
     let isMounted = true;
+    const myOwnPath = getMyOwnFilePath();
 
-    // Secret Key is the authorization mechanism. Without it, do not list any paths.
-    if (!secretKey.trim()) {
-      setAvailablePaths([]);
-      setSelectedFilePath("");
+    // If no secret key provided, show only the user's own file path (if available)
+    if (!activeSecretKey.trim()) {
+      const defaultPaths = myOwnPath ? [myOwnPath] : [];
+      setAvailablePaths(defaultPaths);
+      if (myOwnPath) {
+        setSelectedFilePath(myOwnPath);
+      } else {
+        setSelectedFilePath("");
+      }
       return;
     }
 
@@ -86,41 +175,27 @@ const Home: React.FC = () => {
       isFetchingRemoteRef.current = true;
       setFileError(null);
       try {
-        const folder = getFolderName(selectedYear, selectedMonth);
-        const { backups, error } = await listUserBackups(folder);
+        const { paths, error } = await findFilesBySecretKey(activeSecretKey.trim());
         if (!isMounted || currentReqId !== fetchPathsReqIdRef.current) return;
 
         if (error) {
-          console.error("Error listing user backups:", error);
-          setAvailablePaths([]);
-          setSelectedFilePath("");
+          console.warn("Could not list user backups by secret key:", error);
+          setAvailablePaths(myOwnPath ? [myOwnPath] : []);
           return;
         }
 
-        const paths = backups.map(b => b.path || `${b.folder}/${b.filename}`);
-
-        // Search only datasets containing that Secret Key
-        const checkedPaths: string[] = [];
-        await Promise.all(paths.map(async (p) => {
-          try {
-            const { data: fetchedData } = await fetchFromGitHub(p);
-            if (fetchedData && isMounted && currentReqId === fetchPathsReqIdRef.current) {
-              const fileKey = fetchedData.secretKey || fetchedData.securityCredentials?.secretKey;
-              if (fileKey && fileKey.trim().toLowerCase() === secretKey.trim().toLowerCase()) {
-                checkedPaths.push(p);
-              }
-            }
-          } catch (err) {
-            console.error(`Error checking secret key for ${p}:`, err);
-          }
-        }));
         if (isMounted && currentReqId === fetchPathsReqIdRef.current) {
-          const sorted = [...checkedPaths].sort((a, b) => b.localeCompare(a));
-          setAvailablePaths(sorted);
+          const sorted = [...paths].sort((a, b) => b.localeCompare(a));
+          // Always ensure user's own file path is placed FIRST at index 0
+          const foreignPaths = sorted.filter(p => p !== myOwnPath);
+          const finalPaths = myOwnPath ? [myOwnPath, ...foreignPaths] : foreignPaths;
+          setAvailablePaths(finalPaths);
         }
       } catch (err) {
-        console.error("Error fetching available paths:", err);
-        if (isMounted && currentReqId === fetchPathsReqIdRef.current) setFileError("Failed to retrieve file paths.");
+        console.warn("Notice: available paths fetch handled gracefully:", err);
+        if (isMounted && currentReqId === fetchPathsReqIdRef.current) {
+          setAvailablePaths(myOwnPath ? [myOwnPath] : []);
+        }
       } finally {
         if (isMounted && currentReqId === fetchPathsReqIdRef.current) {
           setIsLoadingFile(false);
@@ -134,7 +209,7 @@ const Home: React.FC = () => {
     return () => {
       isMounted = false;
     };
-  }, [selectedMonth, selectedYear, secretKey]);
+  }, [selectedMonth, selectedYear, activeSecretKey]);
 
   // 2. Automatically load the defaulted/selected file path from availablePaths
   useEffect(() => {
@@ -143,50 +218,59 @@ const Home: React.FC = () => {
       return;
     }
 
+    const myOwnPath = getMyOwnFilePath();
     const currentLoadedPath = localStorage.getItem('arms_readonly_file_path') || '';
     
-    // Default to newest file path if none selected or if selected is not in available paths
+    // Default to user's own path if present, otherwise first available path
     let targetPath = selectedFilePath;
     if (!targetPath || !availablePaths.includes(targetPath)) {
-      targetPath = availablePaths[0]; // Newest file path
+      targetPath = availablePaths.includes(myOwnPath) ? myOwnPath : availablePaths[0];
     }
 
     if (targetPath && targetPath !== currentLoadedPath) {
-      const currentReqId = ++loadFileReqIdRef.current;
-      const loadFileContent = async () => {
-        setIsLoadingFile(true);
-        isFetchingRemoteRef.current = true;
-        setFileError(null);
-        try {
-          const { data: fetchedData, error } = await fetchFromGitHub(targetPath);
-          if (currentReqId !== loadFileReqIdRef.current) return;
-          if (error) {
-            setFileError(error);
-          } else if (fetchedData) {
-            // Save locally as temporary session state (updates memory DB in read-only mode)
-            saveDB(fetchedData, true);
-            setSelectedFilePath(targetPath);
-            localStorage.setItem('arms_readonly_file_path', targetPath);
-            
-            // Dispatch custom event to let other parts of UI reload
-            window.dispatchEvent(new Event('arms_readonly_update'));
-            
-            // Update local state database representation
-            setData(fetchedData);
+      if (targetPath === myOwnPath) {
+        // User's OWN path: clear read-only mode and restore live master database
+        localStorage.removeItem('arms_readonly_mode');
+        localStorage.removeItem('arms_shared_database');
+        localStorage.removeItem('arms_readonly_file_path');
+        window.dispatchEvent(new Event('arms_readonly_update'));
+        setSelectedFilePath(targetPath);
+        setData(getDB());
+      } else {
+        // Previewing another user's path: fetch and put in read-only arms_shared_database
+        const currentReqId = ++loadFileReqIdRef.current;
+        const loadFileContent = async () => {
+          setIsLoadingFile(true);
+          isFetchingRemoteRef.current = true;
+          setFileError(null);
+          try {
+            const { data: fetchedData, error } = await fetchFromGitHub(targetPath);
+            if (currentReqId !== loadFileReqIdRef.current) return;
+            if (error) {
+              setFileError(error);
+            } else if (fetchedData) {
+              localStorage.setItem('arms_shared_database', JSON.stringify(fetchedData));
+              localStorage.setItem('arms_readonly_mode', 'true');
+              localStorage.setItem('arms_readonly_file_path', targetPath);
+              
+              window.dispatchEvent(new Event('arms_readonly_update'));
+              setSelectedFilePath(targetPath);
+              setData(fetchedData);
+            }
+          } catch (err) {
+            if (currentReqId === loadFileReqIdRef.current) {
+              setFileError("Failed to fetch file content");
+            }
+          } finally {
+            if (currentReqId === loadFileReqIdRef.current) {
+              setIsLoadingFile(false);
+              isFetchingRemoteRef.current = false;
+            }
           }
-        } catch (err) {
-          if (currentReqId === loadFileReqIdRef.current) {
-            setFileError("Failed to fetch file content");
-          }
-        } finally {
-          if (currentReqId === loadFileReqIdRef.current) {
-            setIsLoadingFile(false);
-            isFetchingRemoteRef.current = false;
-          }
-        }
-      };
+        };
 
-      loadFileContent();
+        loadFileContent();
+      }
     } else if (targetPath && targetPath === currentLoadedPath && targetPath !== selectedFilePath) {
       setSelectedFilePath(targetPath);
     }
@@ -194,6 +278,19 @@ const Home: React.FC = () => {
 
   const handleFilePathChange = async (filePath: string) => {
     if (!filePath) return;
+    const myOwnPath = getMyOwnFilePath();
+
+    if (filePath === myOwnPath) {
+      // Switching back to user's OWN file path: full read/write, master DB
+      localStorage.removeItem('arms_readonly_mode');
+      localStorage.removeItem('arms_shared_database');
+      localStorage.removeItem('arms_readonly_file_path');
+      window.dispatchEvent(new Event('arms_readonly_update'));
+      setSelectedFilePath(filePath);
+      setData(getDB());
+      return;
+    }
+
     const currentReqId = ++loadFileReqIdRef.current;
     setIsLoadingFile(true);
     isFetchingRemoteRef.current = true;
@@ -204,8 +301,8 @@ const Home: React.FC = () => {
       if (error) {
         setFileError(error);
       } else if (fetchedData) {
-        saveDB(fetchedData, true);
-        setSelectedFilePath(filePath);
+        localStorage.setItem('arms_shared_database', JSON.stringify(fetchedData));
+        localStorage.setItem('arms_readonly_mode', 'true');
         localStorage.setItem('arms_readonly_file_path', filePath);
         
         // Keep selected month and year in sync with the parsed path
@@ -216,6 +313,7 @@ const Home: React.FC = () => {
         }
 
         window.dispatchEvent(new Event('arms_readonly_update'));
+        setSelectedFilePath(filePath);
         setData(fetchedData);
       }
     } catch (err) {
@@ -613,10 +711,16 @@ const Home: React.FC = () => {
                   <CustomSelect 
                       value={selectedFilePath}
                       onChange={val => handleFilePathChange(val)}
-                      options={availablePaths.map(p => ({
-                        value: p,
-                        label: p.split('/').pop() || p
-                      }))}
+                      options={availablePaths.map(p => {
+                        const isMine = getMyOwnFilePath() && p === getMyOwnFilePath();
+                        return {
+                          value: p,
+                          label: formatFilePathNice(p, !!isMine, language as 'en' | 'am'),
+                          className: isMine 
+                            ? 'border-2 border-emerald-500/80 bg-emerald-950/60 text-emerald-400 font-bold my-0.5 rounded-lg shadow-[0_0_10px_rgba(16,185,129,0.2)]' 
+                            : 'hover:bg-slate-800/80'
+                        };
+                      })}
                       placeholder={language === 'en' ? 'Select File Path' : 'የፋይል መንገድ ይምረጡ'}
                       className="text-xs font-mono text-amber-400 border border-amber-500/30 bg-amber-500/5"
                   />
