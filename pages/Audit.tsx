@@ -273,8 +273,8 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
     const formattedMonthAm = ETHIOPIAN_MONTHS_AMHARIC[parseInt(filterMonth) - 1] || filterMonth;
     
     const printTitle = language === 'am'
-      ? `${formattedMonthAm}_${filterYear}_ኦዲት_ሪፖርት`
-      : `${formattedMonth}_${filterYear}_Audit_Report`;
+      ? `የ${formattedMonthAm} ወር ኦዲት ${filterYear}`
+      : `${formattedMonth} Month Audit ${filterYear}`;
       
     document.title = printTitle;
     window.print();
@@ -872,8 +872,8 @@ const ManualAudit = () => {
         const formattedMonthAm = ETHIOPIAN_MONTHS_AMHARIC[parseInt(month) - 1] || month;
         
         const printTitle = language === 'am'
-          ? `ማኑዋል_${formattedMonthAm}_${year}_ኦዲት_ሪፖርት`
-          : `Manual_${formattedMonth}_${year}_Audit_Report`;
+          ? `የ${formattedMonthAm} ወር ማኑዋል ኦዲት ${year}`
+          : `${formattedMonth} Month Manual Audit ${year}`;
           
         document.title = printTitle;
         window.print();
@@ -958,9 +958,9 @@ const ManualAudit = () => {
                          <button onClick={handleSyncFromAutomated} className="p-2 text-gold-500 hover:bg-gold-500 hover:text-black rounded transition flex items-center gap-1 text-xs font-bold" title={t('syncFromAutomatedTooltip')}><RefreshCw size={14}/> {t('syncAutomatedBtn')}</button>
                     </div>
                 </div>
-                <div className="flex gap-2">
-                    <button onClick={handlePrintManual} className="bg-gold-500 hover:bg-gold-600 text-black px-4 py-2 rounded font-bold text-xs flex items-center gap-2"><Printer size={14} /> {t('printReport')}</button>
-                    <button onClick={() => { handlePrintManual(); setTimeout(() => handlePrintManualNow(), 300); }} className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded font-bold text-xs flex items-center gap-2"><FileText size={14} /> {t('downloadPdf')}</button>
+                <div className="flex gap-2 flex-wrap sm:flex-nowrap">
+                    <button onClick={handlePrintManual} className="bg-gold-500 hover:bg-gold-600 text-black px-3 py-1.5 sm:px-4 sm:py-2 rounded font-bold text-xs flex items-center gap-1.5"><Printer size={14} /> {t('printReport')}</button>
+                    <button onClick={() => { handlePrintManual(); setTimeout(() => handlePrintManualNow(), 300); }} className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded font-bold text-xs flex items-center gap-1.5"><FileText size={14} /> {t('downloadPdf')}</button>
                 </div>
             </div>
 
@@ -975,17 +975,17 @@ const ManualAudit = () => {
 
             {showPrintModal && createPortal(
                 <div className="fixed inset-0 z-[100] bg-black/90 flex flex-col items-center print-preview-modal animate-in zoom-in-95 duration-200">
-                    <div className="w-full bg-military-900 border-b border-gold-500 p-4 flex justify-between items-center no-print shrink-0">
-                        <h2 className="text-gold-500 font-bold text-xl flex items-center gap-2">
-                            <Printer size={24}/> {t('printPreview')} (Manual Audit)
+                    <div className="w-full bg-military-900 border-b border-gold-500 p-4 flex flex-col sm:flex-row justify-between items-center no-print shrink-0 gap-3">
+                        <h2 className="text-gold-500 font-bold text-lg sm:text-xl flex items-center gap-2">
+                            <Printer size={20} className="sm:w-[24px] sm:h-[24px]"/> {t('printPreview')} (Manual Audit)
                         </h2>
-                        <div className="flex gap-3">
-                            <button onClick={() => setShowPrintModal(false)} className="px-4 py-2 text-gray-400 hover:text-white font-bold rounded-lg border border-gray-600 hover:bg-white/10 transition">{t('closePreview')}</button>
-                            <button onClick={handlePrintManualNow} className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-lg transition flex items-center gap-2">
-                                <FileText size={18}/> {t('downloadPdf')}
+                        <div className="flex flex-wrap gap-2 justify-end w-full sm:w-auto">
+                            <button onClick={() => setShowPrintModal(false)} className="px-3 py-1.5 md:px-4 md:py-2 text-xs text-gray-400 hover:text-white font-bold rounded-lg border border-gray-600 hover:bg-white/10 transition">{t('closePreview')}</button>
+                            <button onClick={handlePrintManualNow} className="px-3 py-1.5 md:px-6 md:py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-lg transition flex items-center gap-2 text-xs md:text-sm">
+                                <FileText size={14} className="md:w-[18px] md:h-[18px]"/> {t('downloadPdf')}
                             </button>
-                            <button onClick={handlePrintManualNow} className="px-6 py-2 bg-gold-500 hover:bg-gold-600 text-black font-bold rounded-lg shadow-lg transition flex items-center gap-2">
-                                <Printer size={18}/> {t('printNow')}
+                            <button onClick={handlePrintManualNow} className="px-3 py-1.5 md:px-6 md:py-2 bg-gold-500 hover:bg-gold-600 text-black font-bold rounded-lg shadow-lg transition flex items-center gap-2 text-xs md:text-sm">
+                                <Printer size={14} className="md:w-[18px] md:h-[18px]"/> {t('printNow')}
                             </button>
                         </div>
                     </div>
