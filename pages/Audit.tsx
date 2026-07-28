@@ -9,7 +9,7 @@ import {
   Calculator, Plus, X, RotateCcw, Download, Upload, 
   Database, Book, AlertTriangle, CheckCircle, Save, Type, ArrowLeftRight, Hash, DollarSign,
   Maximize2, Minimize2, History, CheckSquare, Square, Delete, Edit, Monitor, Eye, Github, Cloud, RefreshCw, Link,
-  AlignLeft, AlignCenter, AlignRight, Table as TableIcon, Eraser, Delete as DeleteIcon, Lock, EyeOff, KeyRound, Cpu, Copy
+  AlignLeft, AlignCenter, AlignRight, Table as TableIcon, Eraser, Delete as DeleteIcon, Lock, EyeOff, KeyRound, Cpu, Copy, PlusSquare
 } from 'lucide-react';
 import { ETHIOPIAN_MONTHS, ETHIOPIAN_MONTHS_AMHARIC, getCurrentEthiopianDate, isActiveDate, formatEthiopianDate } from '../services/ethiopianDate';
 import { downloadFile, generateHTMLDoc, parseImportFile } from '../services/dataTransfer';
@@ -773,8 +773,12 @@ const ManualAudit = () => {
         if (editorRef.current) editorRef.current.focus();
     };
 
+    const AUDIT_PAGE_CLASS = "audit-section p-[10mm] md:p-[20mm] bg-white w-full min-h-[297mm] shadow-2xl relative text-black outline-none";
+
     const cleanSyncedAuditHtml = (rawHtml: string): string => {
-        if (!rawHtml) return '';
+        if (!rawHtml) {
+            return `<div class="${AUDIT_PAGE_CLASS}"><h1 style="text-align: center; text-decoration: underline;">${t('manualReport')}</h1><p>${t('startTyping')}</p></div>`;
+        }
         const temp = document.createElement('div');
         temp.innerHTML = rawHtml;
 
@@ -792,10 +796,16 @@ const ManualAudit = () => {
                     parts.push(clone.innerHTML);
                 }
             });
-            return parts.join('<div style="margin: 24px 0; border-top: 1px dashed #cbd5e1;" class="no-print"></div><p><br></p>');
+            return parts.map(p => `<div class="${AUDIT_PAGE_CLASS}">${p}</div>`).join('');
         }
 
-        return rawHtml;
+        const dividerRegex = /<div[^>]*?(?:manual-page-divider|border-top:\s*1px\s*dashed|border-top:\s*2px\s*dashed)[^>]*?>\s*<\/div>/gi;
+        if (dividerRegex.test(rawHtml)) {
+            const chunks = rawHtml.split(dividerRegex).filter(c => c.trim().length > 0);
+            return chunks.map(c => `<div class="${AUDIT_PAGE_CLASS}">${c}</div>`).join('');
+        }
+
+        return `<div class="${AUDIT_PAGE_CLASS}">${rawHtml}</div>`;
     };
 
     const handleInsertTableSubmit = (e: React.FormEvent) => {
@@ -927,9 +937,10 @@ const ManualAudit = () => {
                          <button onClick={() => execCmd('insertUnorderedList')} className="p-2 text-gray-300 hover:bg-gold-500 hover:text-black rounded transition" title={t('editorBulletList')}><List size={16}/></button>
                     </div>
 
-                    {/* Table */}
+                    {/* Table & Add Page */}
                     <div className="flex bg-slate-900 rounded p-1 space-x-1 border border-gray-700">
                          <button onClick={() => { setTableRows("3"); setTableCols("3"); setShowTableModal(true); }} className="p-2 text-gray-300 hover:bg-gold-500 hover:text-black rounded transition" title={t('editorInsertTable')}><TableIcon size={16}/></button>
+                         <button onClick={() => execCmd('insertHTML', `<div class="audit-section p-[10mm] md:p-[20mm] bg-white w-full min-h-[297mm] shadow-2xl relative text-black outline-none my-4"><p><br></p></div>`)} className="p-2 text-gray-300 hover:bg-gold-500 hover:text-black rounded transition" title={language === 'am' ? 'አዲስ ገጽ ጨምር' : 'Add New Page'}><PlusSquare size={16}/></button>
                     </div>
 
                     {/* Sync from Automated */}
@@ -943,10 +954,12 @@ const ManualAudit = () => {
                 </div>
             </div>
 
-            <div className="flex-1 overflow-auto p-4 md:p-8 pb-20">
-                <div ref={editorRef} className="bg-white mx-auto w-full max-w-[210mm] min-h-[297mm] p-[10mm] md:p-[25mm] shadow-[0_10px_40px_rgba(0,0,0,0.5)] text-black outline-none leading-relaxed overflow-y-visible" contentEditable suppressContentEditableWarning={true}>
-                    <h1 style={{textAlign: 'center', textDecoration: 'underline'}}>{t('manualReport')}</h1>
-                    <p>{t('startTyping')}</p>
+            <div className="flex-1 overflow-auto p-4 md:p-8 pb-20 bg-stone-950">
+                <div ref={editorRef} className="mx-auto w-full max-w-[210mm] flex flex-col gap-8 text-black outline-none leading-relaxed overflow-y-visible bg-transparent shadow-none" contentEditable suppressContentEditableWarning={true}>
+                    <div className="audit-section p-[10mm] md:p-[20mm] bg-white w-full min-h-[297mm] shadow-2xl relative text-black outline-none">
+                        <h1 style={{textAlign: 'center', textDecoration: 'underline'}}>{t('manualReport')}</h1>
+                        <p>{t('startTyping')}</p>
+                    </div>
                 </div>
             </div>
 
@@ -967,14 +980,49 @@ const ManualAudit = () => {
                         </div>
                     </div>
                     <div className="flex-1 w-full overflow-auto bg-gray-800 p-8 flex justify-center print-hide-scroll">
-                        <div id="printable-audit-report" className="bg-white text-black w-[210mm] min-h-[297mm] print:w-full print:h-auto print:min-h-0 print:shadow-none shadow-2xl mx-auto print-modal-content manual-audit-preview-page print:bg-white relative p-[20mm]">
-                            {/* Dynamic Fixed Footer for Printed Media */}
-                            <div className="print-footer-container font-sans" data-lang={language}>
-                              <span>
-                                {t('generatedOn')} {formatEthiopianDate(getCurrentEthiopianDate(), language)}, {new Date().toLocaleTimeString()}
-                              </span>
-                            </div>
-                            <div dangerouslySetInnerHTML={{ __html: printHtml }} />
+                        <div id="printable-audit-report" className="print-modal-content text-black relative flex flex-col xl:flex-row xl:flex-wrap xl:justify-center gap-8 print:gap-0 bg-transparent shadow-none w-full max-w-[210mm] xl:max-w-none mx-auto">
+                            {(() => {
+                                const pages = (() => {
+                                    if (!printHtml) return [];
+                                    const temp = document.createElement('div');
+                                    temp.innerHTML = printHtml;
+                                    const secElements = temp.querySelectorAll('.audit-section');
+                                    if (secElements.length > 0) {
+                                        return Array.from(secElements).map(sec => {
+                                            const flexGrow = sec.querySelector('.flex-grow');
+                                            if (flexGrow) return flexGrow.innerHTML;
+                                            const clone = sec.cloneNode(true) as HTMLElement;
+                                            const footer = clone.querySelector('.border-t');
+                                            if (footer) footer.remove();
+                                            return clone.innerHTML;
+                                        });
+                                    }
+                                    const dividerRegex = /<div[^>]*?(?:manual-page-divider|border-top:\s*1px\s*dashed|border-top:\s*2px\s*dashed)[^>]*?>\s*<\/div>/gi;
+                                    return printHtml.split(dividerRegex).filter(p => p.trim().length > 0);
+                                })();
+
+                                const totalPages = pages.length || 1;
+                                const pagesToRender = pages.length > 0 ? pages : [printHtml];
+
+                                return pagesToRender.map((pageContent, idx) => (
+                                    <React.Fragment key={idx}>
+                                        {idx > 0 && <PageBreak />}
+                                        <div className="audit-section p-[20mm] bg-white w-[210mm] min-h-[297mm] print:w-full print:h-auto print:min-h-0 print:shadow-none shadow-2xl flex flex-col justify-between relative print:bg-white text-black">
+                                            <div className="flex-grow">
+                                                <div dangerouslySetInnerHTML={{ __html: pageContent }} />
+                                            </div>
+                                            <div className="border-t border-black/20 pt-2 flex justify-between text-[10px] text-slate-700 font-sans mt-4">
+                                                <span>
+                                                    {t('generatedOn')} {formatEthiopianDate(getCurrentEthiopianDate(), language)}, {new Date().toLocaleTimeString()}
+                                                </span>
+                                                <span>
+                                                    {language === 'am' ? `ገጽ ${idx + 1} ከ ${totalPages}` : `Page ${idx + 1} of ${totalPages}`}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </React.Fragment>
+                                ));
+                            })()}
                         </div>
                     </div>
                 </div>,
