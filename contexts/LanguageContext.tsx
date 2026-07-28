@@ -419,6 +419,7 @@ export const dictionary: Translations = {
   otherCosts: { en: "Other Costs", am: "ሌሎች ወጪዎች" },
   totalExpense: { en: "TOTAL EXPENSE", am: "ጠቅላላ ወጪ" },
   netBalance: { en: "NET BALANCE", am: "ከወጪ ቀሪ" },
+  netPlusTransfersSummary: { en: "Net Balance + Total price of items transferred to next month", am: "ከወጪ ቀሪ + ወደሚቀጥለው ወር በንብረት የተሸጋገረ ጠቅላላ ዋጋ" },
   marketListTitle: { en: "Market Expense Details", am: "የገበያ ወጪ ዝርዝር" },
   sno: { en: "S.No", am: "ተ.ቁ" },
   itemType: { en: "Item Type", am: "የዕቃ ዓይነት" },

@@ -102,6 +102,20 @@
           display: block !important;
         }
 
+        .manual-audit-preview-page {
+          box-sizing: border-box !important;
+        }
+
+        @media print {
+          .manual-audit-preview-page {
+            padding: 20mm !important;
+            width: 100% !important;
+            min-height: 297mm !important;
+            background: white !important;
+            box-shadow: none !important;
+          }
+        }
+
         #printable-audit-report {
           position: absolute !important; 
           left: 0 !important;

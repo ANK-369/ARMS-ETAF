@@ -300,7 +300,20 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
   };
 
   const PrintableContent = () => {
-    const sectionsToRender = [
+    const chunkArray = <T,>(arr: T[], size: number): T[][] => {
+      if (!arr || arr.length === 0) return [[]];
+      const chunks: T[][] = [];
+      for (let i = 0; i < arr.length; i += size) {
+        chunks.push(arr.slice(i, i + size));
+      }
+      return chunks;
+    };
+
+    const marketChunks = chunkArray(aggregatedMarketExpenses, 15);
+    const transferChunks = chunkArray(transferredItems, 14);
+    const manpowerChunks = chunkArray(sortedManpower, 20);
+
+    const sectionsToRender: Array<{ id: string; render: () => React.ReactNode }> = [
       // 1. Cover Letter
       {
         id: 'letter',
@@ -344,8 +357,7 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
                     </div>
                 </div>
           </div>
-        ),
-        showGeneratedOn: true
+        )
       },
       // 2. Summary
       {
@@ -397,165 +409,214 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
                 </div>
           </div>
         )
-      },
-      // 3. Market Expense Detail
-      {
-        id: 'market',
-        render: () => (
-          <div>
-                <h2 className="text-xl font-bold text-center underline mb-6 text-black uppercase">{t('marketListTitle')}</h2>
-                <div>
-                    <table className="w-full text-xs md:text-sm text-black border border-black">
-                        <thead className="bg-gray-200 font-bold uppercase">
-                            <tr>
-                                <th className="border border-black p-2 text-center w-12">{t('sno')}</th>
-                                <th className="border border-black p-2 text-left">{t('itemType')}</th>
-                                <th className="border border-black p-2 text-center">{t('quantity')}</th>
-                                <th className="border border-black p-2 text-center">{t('measurement')}</th>
-                                <th className="border border-black p-2 text-right">{t('singlePrice')}</th>
-                                <th className="border border-black p-2 text-right">{t('totalPrice')}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {aggregatedMarketExpenses.map((item, idx) => (
-                                <tr key={idx} className="border-b border-black/50">
-                                    <td className="border-r border-black/50 p-2 text-center">{idx + 1}</td>
-                                    <td className="border-r border-black/50 p-2 font-bold">{item.itemName}</td>
-                                    <td className="border-r border-black/50 p-2 text-center">{item.amount}</td>
-                                    <td className="border-r border-black/50 p-2 text-center">{t(item.measurement)}</td>
-                                    <td className="border-r border-black/50 p-2 text-right font-mono">{Number(item.singlePrice).toFixed(2)}</td>
-                                    <td className="p-2 text-right font-mono font-bold">{(Number(item.amount) * Number(item.singlePrice)).toLocaleString()}</td>
-                                </tr>
-                            ))}
-                            {aggregatedMarketExpenses.length === 0 && (<tr><td colSpan={6} className="p-8 text-center italic">{t('noMarketData')}</td></tr>)}
-                            {aggregatedMarketExpenses.length > 0 && (
-                                <tr className="bg-gray-200 font-bold border-t-2 border-black">
-                                    <td colSpan={5} className="p-2 text-right uppercase">{t('total')}</td>
-                                    <td className="p-2 text-right font-mono">{fmt(marketTotal)}</td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-          </div>
-        )
-      },
-      // 4. Transfers to Next Month
-      {
-        id: 'transfers',
-        render: () => (
-          <div>
-                <h2 className="text-xl font-bold text-center underline mb-6 text-black uppercase">{t('transferNextTitle')}</h2>
-                <div>
-                    <table className="w-full text-xs md:text-sm text-black border border-black">
-                        <thead className="bg-gray-200 font-bold uppercase">
-                            <tr>
-                                <th className="border border-black p-2 text-center w-12">{t('sno')}</th>
-                                <th className="border border-black p-2 text-left">{t('itemType')}</th>
-                                <th className="border border-black p-2 text-center">{t('quantity')}</th>
-                                <th className="border border-black p-2 text-center">{t('measurement')}</th>
-                                <th className="border border-black p-2 text-right">{t('estimation')}</th>
-                                <th className="border border-black p-2 text-right">{t('totalPrice')}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                             {transferredItems.map((item, idx) => (
-                                 <tr key={idx} className="border-b border-black/50">
-                                    <td className="border-r border-black/50 p-2 text-center">{idx + 1}</td>
-                                    <td className="border-r border-black/50 p-2 font-bold">{item.name}</td>
-                                    <td className="border-r border-black/50 p-2 text-center">{item.amount}</td>
-                                    <td className="border-r border-black/50 p-2 text-center">{t(item.measurement)}</td>
-                                    <td className="border-r border-black/50 p-2 text-right font-mono">{Number(item.singlePrice).toFixed(2)}</td>
-                                    <td className="p-2 text-right font-mono font-bold">{(Number(item.amount) * Number(item.singlePrice)).toLocaleString()}</td>
-                                 </tr>
-                             ))}
-                             {transferredItems.length === 0 && (<tr><td colSpan={6} className="p-8 text-center italic">{t('noTransferData')}</td></tr>)}
-                            {/* TOTAL ROW FOR TRANSFERS */}
-                            {transferredItems.length > 0 && (
-                                <tr className="bg-gray-200 font-bold border-t-2 border-black">
-                                    <td colSpan={5} className="p-2 text-right uppercase">{t('total')}</td>
-                                    <td className="p-2 text-right font-mono">{fmt(totalTransferredValue)}</td>
-                                </tr>
-                            )}
-                        </tbody>
-                    </table>
-                </div>
-          </div>
-        )
-      },
-      // 5. Manpower Roster
-      {
-        id: 'manpower',
-        render: () => (
-          <div>
-                <h2 className="text-xl font-bold text-center underline mb-6 text-black uppercase">{t('manpowerRosterTitle')}</h2>
-                <div>
-                     <table className="w-full text-xs text-black border border-black">
-                        <thead className="bg-gray-200 font-bold uppercase">
-                            <tr>
-                                <th className="border border-black p-2 text-center w-12">{t('sno')}</th>
-                                <th className="border border-black p-2 text-left">{t('rank')}</th>
-                                <th className="border border-black p-2 text-left">{t('name')}</th>
-                                <th className="border border-black p-2 text-center">{t('type')}</th>
-                                <th className="border border-black p-2 text-right">{t('payment')}</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {sortedManpower.map((m, idx) => {
-                                const active = isFutureMonth ? true : isManpowerActive(m);
-                                let displayAmount = Number(m.amount);
-                                if (!displayAmount) {
-                                    if (useStandardRate) {
-                                        if (m.type === ManpowerType.PAYROLL || m.type === ManpowerType.FULL_CASH) displayAmount = Number(rateVal);
-                                        else if (m.type === ManpowerType.HALF_CASH) displayAmount = 1500;
-                                        else displayAmount = 0;
-                                    } else {
-                                        displayAmount = 0;
-                                    }
-                                }
-
-                                return (
-                                    <tr key={idx} className={`border-b border-black/50 ${!active ? 'text-red-600 line-through bg-red-50' : ''}`}>
-                                        <td className="border-r border-black/50 p-1.5 text-center">{idx + 1}</td>
-                                        <td className="border-r border-black/50 p-1.5">{t(m.rank)}</td>
-                                        <td className="border-r border-black/50 p-1.5 font-bold">{m.firstName} {m.lastName}</td>
-                                        <td className="border-r border-black/50 p-1.5 text-center">{t(m.type)}</td>
-                                        <td className="p-1.5 text-right font-mono">{displayAmount.toLocaleString()}</td>
-                                    </tr>
-                                );
-                            })}
-                            {sortedManpower.length === 0 && (<tr><td colSpan={5} className="p-8 text-center italic">{t('noManpowerData')}</td></tr>)}
-                            <tr className="bg-gray-200 font-bold border-t-2 border-black text-sm">
-                                <td colSpan={4} className="p-2 text-right uppercase">{t('total')}</td>
-                                <td className="p-2 text-right font-mono">
-                                    {fmt(sortedManpower.reduce((acc, m) => {
-                                        let val = Number(m.amount);
-                                        if (!val) {
-                                            if (useStandardRate) {
-                                                if (m.type === ManpowerType.PAYROLL || m.type === ManpowerType.FULL_CASH) val = Number(rateVal);
-                                                else if (m.type === ManpowerType.HALF_CASH) val = 1500;
-                                                else val = 0;
-                                            } else {
-                                                val = 0;
-                                            }
-                                        }
-                                        return acc + val;
-                                    }, 0))}
-                                </td>
-                            </tr>
-                        </tbody>
-                     </table>
-                     
-                     <div className="mt-4 flex gap-4 text-xs font-bold border-t border-black pt-2">
-                         <div>{t('activeLabel')}: {activeCount}</div>
-                         <div className="text-red-600">{t('inactiveLabel')}: {inactiveCount}</div>
-                         <div>{t('totalRoster')}: {sortedManpower.length}</div>
-                     </div>
-                </div>
-          </div>
-        )
       }
     ];
+
+    // 3. Market Expense Detail (Paginated)
+    marketChunks.forEach((chunk, chunkIdx) => {
+      const isLast = chunkIdx === marketChunks.length - 1;
+      const startIdx = chunkIdx * 15;
+      sectionsToRender.push({
+        id: `market-${chunkIdx}`,
+        render: () => (
+          <div>
+            <h2 className="text-xl font-bold text-center underline mb-6 text-black uppercase">
+              {t('marketListTitle')}{marketChunks.length > 1 ? ` (${chunkIdx + 1}/${marketChunks.length})` : ''}
+            </h2>
+            <div>
+              <table className="w-full text-xs md:text-sm text-black border border-black">
+                <thead className="bg-gray-200 font-bold uppercase">
+                  <tr>
+                    <th className="border border-black p-2 text-center w-12">{t('sno')}</th>
+                    <th className="border border-black p-2 text-left">{t('itemType')}</th>
+                    <th className="border border-black p-2 text-center">{t('quantity')}</th>
+                    <th className="border border-black p-2 text-center">{t('measurement')}</th>
+                    <th className="border border-black p-2 text-right">{t('singlePrice')}</th>
+                    <th className="border border-black p-2 text-right">{t('totalPrice')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {chunk.map((item: any, idx) => {
+                    const rowNum = startIdx + idx + 1;
+                    return (
+                      <tr key={idx} className="border-b border-black/50">
+                        <td className="border-r border-black/50 p-2 text-center">{rowNum}</td>
+                        <td className="border-r border-black/50 p-2 font-bold">{item.itemName}</td>
+                        <td className="border-r border-black/50 p-2 text-center">{item.amount}</td>
+                        <td className="border-r border-black/50 p-2 text-center">{t(item.measurement)}</td>
+                        <td className="border-r border-black/50 p-2 text-right font-mono">{Number(item.singlePrice).toFixed(2)}</td>
+                        <td className="p-2 text-right font-mono font-bold">{(Number(item.amount) * Number(item.singlePrice)).toLocaleString()}</td>
+                      </tr>
+                    );
+                  })}
+                  {aggregatedMarketExpenses.length === 0 && (
+                    <tr><td colSpan={6} className="p-8 text-center italic">{t('noMarketData')}</td></tr>
+                  )}
+                  {isLast && aggregatedMarketExpenses.length > 0 && (
+                    <tr className="bg-gray-200 font-bold border-t-2 border-black">
+                      <td colSpan={5} className="p-2 text-right uppercase">{t('total')}</td>
+                      <td className="p-2 text-right font-mono">{fmt(marketTotal)}</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )
+      });
+    });
+
+    // 4. Transfers to Next Month (Paginated)
+    transferChunks.forEach((chunk, chunkIdx) => {
+      const isLast = chunkIdx === transferChunks.length - 1;
+      const startIdx = chunkIdx * 14;
+      sectionsToRender.push({
+        id: `transfers-${chunkIdx}`,
+        render: () => (
+          <div>
+            <h2 className="text-xl font-bold text-center underline mb-6 text-black uppercase">
+              {t('transferNextTitle')}{transferChunks.length > 1 ? ` (${chunkIdx + 1}/${transferChunks.length})` : ''}
+            </h2>
+            <div>
+              <table className="w-full text-xs md:text-sm text-black border border-black">
+                <thead className="bg-gray-200 font-bold uppercase">
+                  <tr>
+                    <th className="border border-black p-2 text-center w-12">{t('sno')}</th>
+                    <th className="border border-black p-2 text-left">{t('itemType')}</th>
+                    <th className="border border-black p-2 text-center">{t('quantity')}</th>
+                    <th className="border border-black p-2 text-center">{t('measurement')}</th>
+                    <th className="border border-black p-2 text-right">{t('estimation')}</th>
+                    <th className="border border-black p-2 text-right">{t('totalPrice')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {chunk.map((item: any, idx) => {
+                    const rowNum = startIdx + idx + 1;
+                    return (
+                      <tr key={idx} className="border-b border-black/50">
+                        <td className="border-r border-black/50 p-2 text-center">{rowNum}</td>
+                        <td className="border-r border-black/50 p-2 font-bold">{item.name}</td>
+                        <td className="border-r border-black/50 p-2 text-center">{item.amount}</td>
+                        <td className="border-r border-black/50 p-2 text-center">{t(item.measurement)}</td>
+                        <td className="border-r border-black/50 p-2 text-right font-mono">{Number(item.singlePrice).toFixed(2)}</td>
+                        <td className="p-2 text-right font-mono font-bold">{(Number(item.amount) * Number(item.singlePrice)).toLocaleString()}</td>
+                      </tr>
+                    );
+                  })}
+                  {transferredItems.length === 0 && (
+                    <tr><td colSpan={6} className="p-8 text-center italic">{t('noTransferData')}</td></tr>
+                  )}
+                  {isLast && transferredItems.length > 0 && (
+                    <tr className="bg-gray-200 font-bold border-t-2 border-black">
+                      <td colSpan={5} className="p-2 text-right uppercase">{t('total')}</td>
+                      <td className="p-2 text-right font-mono">{fmt(totalTransferredValue)}</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+
+              {/* ISSUE 3: New Summary Row */}
+              {isLast && (
+                <div className="mt-6 border-t-4 border-double border-black pt-4">
+                  <div className="flex justify-between items-center text-sm md:text-base font-bold text-black">
+                    <span>{t('netPlusTransfersSummary')}</span>
+                    <span className={`font-mono px-4 py-1.5 rounded ${netResult + totalTransferredValue >= 0 ? 'bg-gray-200' : 'bg-red-100'}`}>
+                      {(netResult + totalTransferredValue).toLocaleString()} {t('birr')}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )
+      });
+    });
+
+    // 5. Manpower Roster (Paginated)
+    manpowerChunks.forEach((chunk, chunkIdx) => {
+      const isLast = chunkIdx === manpowerChunks.length - 1;
+      const startIdx = chunkIdx * 20;
+      sectionsToRender.push({
+        id: `manpower-${chunkIdx}`,
+        render: () => (
+          <div>
+            <h2 className="text-xl font-bold text-center underline mb-6 text-black uppercase">
+              {t('manpowerRosterTitle')}{manpowerChunks.length > 1 ? ` (${chunkIdx + 1}/${manpowerChunks.length})` : ''}
+            </h2>
+            <div>
+              <table className="w-full text-xs text-black border border-black">
+                <thead className="bg-gray-200 font-bold uppercase">
+                  <tr>
+                    <th className="border border-black p-2 text-center w-12">{t('sno')}</th>
+                    <th className="border border-black p-2 text-left">{t('rank')}</th>
+                    <th className="border border-black p-2 text-left">{t('name')}</th>
+                    <th className="border border-black p-2 text-center">{t('type')}</th>
+                    <th className="border border-black p-2 text-right">{t('payment')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {chunk.map((m: any, idx) => {
+                    const rowNum = startIdx + idx + 1;
+                    const active = isFutureMonth ? true : isManpowerActive(m);
+                    let displayAmount = Number(m.amount);
+                    if (!displayAmount) {
+                      if (useStandardRate) {
+                        if (m.type === ManpowerType.PAYROLL || m.type === ManpowerType.FULL_CASH) displayAmount = Number(rateVal);
+                        else if (m.type === ManpowerType.HALF_CASH) displayAmount = 1500;
+                        else displayAmount = 0;
+                      } else {
+                        displayAmount = 0;
+                      }
+                    }
+
+                    return (
+                      <tr key={idx} className={`border-b border-black/50 ${!active ? 'text-red-600 line-through bg-red-50' : ''}`}>
+                        <td className="border-r border-black/50 p-1.5 text-center">{rowNum}</td>
+                        <td className="border-r border-black/50 p-1.5">{t(m.rank)}</td>
+                        <td className="border-r border-black/50 p-1.5 font-bold">{m.firstName} {m.lastName}</td>
+                        <td className="border-r border-black/50 p-1.5 text-center">{t(m.type)}</td>
+                        <td className="p-1.5 text-right font-mono">{displayAmount.toLocaleString()}</td>
+                      </tr>
+                    );
+                  })}
+                  {sortedManpower.length === 0 && (
+                    <tr><td colSpan={5} className="p-8 text-center italic">{t('noManpowerData')}</td></tr>
+                  )}
+                  {isLast && (
+                    <tr className="bg-gray-200 font-bold border-t-2 border-black text-sm">
+                      <td colSpan={4} className="p-2 text-right uppercase">{t('total')}</td>
+                      <td className="p-2 text-right font-mono">
+                        {fmt(sortedManpower.reduce((acc, m) => {
+                          let val = Number(m.amount);
+                          if (!val) {
+                            if (useStandardRate) {
+                              if (m.type === ManpowerType.PAYROLL || m.type === ManpowerType.FULL_CASH) val = Number(rateVal);
+                              else if (m.type === ManpowerType.HALF_CASH) val = 1500;
+                              else val = 0;
+                            } else {
+                              val = 0;
+                            }
+                          }
+                          return acc + val;
+                        }, 0))}
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+
+              {isLast && (
+                <div className="mt-4 flex gap-4 text-xs font-bold border-t border-black pt-2">
+                  <div>{t('activeLabel')}: {activeCount}</div>
+                  <div className="text-red-600">{t('inactiveLabel')}: {inactiveCount}</div>
+                  <div>{t('totalRoster')}: {sortedManpower.length}</div>
+                </div>
+              )}
+            </div>
+          </div>
+        )
+      });
+    });
 
     const totalSections = sectionsToRender.length;
 
@@ -576,7 +637,7 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
                     {t('generatedOn')} {formatEthiopianDate(getCurrentEthiopianDate(), language)}, {new Date().toLocaleTimeString()}
                   </span>
                   <span>
-                    {language === 'am' ? `ገጽ ${currentPage} ከ 5` : `Page ${currentPage} of 5`}
+                    {language === 'am' ? `ገጽ ${currentPage} ከ ${totalSections}` : `Page ${currentPage} of ${totalSections}`}
                   </span>
                 </div>
               </div>
@@ -712,6 +773,31 @@ const ManualAudit = () => {
         if (editorRef.current) editorRef.current.focus();
     };
 
+    const cleanSyncedAuditHtml = (rawHtml: string): string => {
+        if (!rawHtml) return '';
+        const temp = document.createElement('div');
+        temp.innerHTML = rawHtml;
+
+        const sections = temp.querySelectorAll('.audit-section');
+        if (sections.length > 0) {
+            const parts: string[] = [];
+            sections.forEach((sec) => {
+                const flexGrow = sec.querySelector('.flex-grow');
+                if (flexGrow) {
+                    parts.push(flexGrow.innerHTML);
+                } else {
+                    const clone = sec.cloneNode(true) as HTMLElement;
+                    const footer = clone.querySelector('.border-t');
+                    if (footer) footer.remove();
+                    parts.push(clone.innerHTML);
+                }
+            });
+            return parts.join('<div style="margin: 24px 0; border-top: 1px dashed #cbd5e1;" class="no-print"></div><p><br></p>');
+        }
+
+        return rawHtml;
+    };
+
     const handleInsertTableSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setShowTableModal(false);
@@ -747,7 +833,7 @@ const ManualAudit = () => {
         setShowSyncConfirm(false);
         const stored = localStorage.getItem('arms_automated_audit_html');
         if (stored && editorRef.current) {
-            editorRef.current.innerHTML = stored;
+            editorRef.current.innerHTML = cleanSyncedAuditHtml(stored);
         } else {
             setShowNoAuditAlert(true);
         }
@@ -755,7 +841,7 @@ const ManualAudit = () => {
 
     const handlePrintManual = () => {
         if (editorRef.current) {
-            setPrintHtml(editorRef.current.innerHTML);
+            setPrintHtml(cleanSyncedAuditHtml(editorRef.current.innerHTML));
             setShowPrintModal(true);
         }
     };
@@ -779,7 +865,7 @@ const ManualAudit = () => {
     useEffect(() => {
         const stored = localStorage.getItem('arms_automated_audit_html');
         if (stored && editorRef.current) {
-            editorRef.current.innerHTML = stored;
+            editorRef.current.innerHTML = cleanSyncedAuditHtml(stored);
         }
     }, []);
 
@@ -881,7 +967,7 @@ const ManualAudit = () => {
                         </div>
                     </div>
                     <div className="flex-1 w-full overflow-auto bg-gray-800 p-8 flex justify-center print-hide-scroll">
-                        <div id="printable-audit-report" className="bg-white text-black w-[210mm] min-h-[297mm] print:w-full print:h-auto print:min-h-0 print:shadow-none shadow-2xl mx-auto print-modal-content print:bg-white relative p-[20mm]">
+                        <div id="printable-audit-report" className="bg-white text-black w-[210mm] min-h-[297mm] print:w-full print:h-auto print:min-h-0 print:shadow-none shadow-2xl mx-auto print-modal-content manual-audit-preview-page print:bg-white relative p-[20mm]">
                             {/* Dynamic Fixed Footer for Printed Media */}
                             <div className="print-footer-container font-sans" data-lang={language}>
                               <span>
