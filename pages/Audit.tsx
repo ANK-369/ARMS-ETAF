@@ -515,14 +515,24 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
                 </tbody>
               </table>
 
-              {/* ISSUE 3: New Summary Row */}
+              {/* Financial Summary Block */}
               {isLast && (
-                <div className="mt-6 border-t-4 border-double border-black pt-4">
-                  <div className="flex justify-between items-center text-sm md:text-base font-bold text-black">
-                    <span>{t('netPlusTransfersSummary')}</span>
-                    <span className={`font-mono px-4 py-1.5 rounded ${netResult + totalTransferredValue >= 0 ? 'bg-gray-200' : 'bg-red-100'}`}>
-                      {(netResult + totalTransferredValue).toLocaleString()} {t('birr')}
-                    </span>
+                <div className="mt-6 border border-black/30 bg-gray-50/80 p-4 rounded text-black font-sans">
+                  <div className="space-y-2 text-xs md:text-sm">
+                    <div className="flex justify-between items-center py-1 border-b border-black/10">
+                      <span className="font-medium text-slate-800">{t('summaryNetBalanceCash')}</span>
+                      <span className="font-mono font-semibold text-slate-900">{netResult.toLocaleString()} {t('birr')}</span>
+                    </div>
+                    <div className="flex justify-between items-center py-1 border-b border-black/10">
+                      <span className="font-medium text-slate-800">{t('summaryTransferredItems')}</span>
+                      <span className="font-mono font-semibold text-slate-900">{totalTransferredValue.toLocaleString()} {t('birr')}</span>
+                    </div>
+                    <div className="pt-2 flex justify-between items-center text-sm md:text-base font-bold text-black">
+                      <span className="uppercase">{t('summaryTotalTransferredNextMonth')}</span>
+                      <span className={`font-mono px-3 py-1 rounded border border-black/20 ${netResult + totalTransferredValue >= 0 ? 'bg-gray-200 text-black' : 'bg-red-100 text-red-900'}`}>
+                        {(netResult + totalTransferredValue).toLocaleString()} {t('birr')}
+                      </span>
+                    </div>
                   </div>
                 </div>
               )}
