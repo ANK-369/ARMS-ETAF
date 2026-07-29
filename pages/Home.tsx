@@ -682,15 +682,15 @@ const Home: React.FC = () => {
       {modalOpen && renderModalContent()}
 
       {/* FILTER BAR */}
-      <div className="bg-military-900 p-4 rounded-xl border border-military-700 flex flex-col md:flex-row gap-4 items-center justify-between shadow-lg">
-          <div className="flex items-center gap-2 text-gold-500">
+      <div className="bg-military-900 p-4 rounded-xl border border-military-700 flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between shadow-lg min-w-0">
+          <div className="flex items-center gap-2 text-gold-500 shrink-0">
               <Filter size={20} />
               <span className="font-bold text-sm uppercase tracking-wide">{t('filters')}</span>
           </div>
-          <div className="flex flex-col gap-3 w-full md:w-auto items-stretch md:items-end">
-              <div className="flex gap-4 w-full md:w-auto">
-                  <div className="w-1/2 md:w-40 flex flex-col gap-1">
-                      <span className="text-[10px] uppercase font-mono text-gray-500 font-bold">{language === 'en' ? 'Month' : 'ወር'}</span>
+          <div className="flex flex-col sm:flex-row sm:flex-wrap lg:flex-nowrap gap-3 w-full lg:w-auto items-stretch lg:items-end min-w-0">
+              <div className="flex gap-3 w-full sm:w-auto min-w-0">
+                  <div className="w-1/2 sm:w-36 lg:w-40 flex flex-col gap-1 min-w-0">
+                      <span className="text-[10px] uppercase font-mono text-amber-500 font-bold truncate">{language === 'en' ? 'Month' : 'ወር'}</span>
                       <CustomSelect 
                           value={selectedMonth}
                           onChange={val => setSelectedMonth(val)}
@@ -698,8 +698,8 @@ const Home: React.FC = () => {
                           className="text-sm font-bold"
                       />
                   </div>
-                  <div className="w-1/2 md:w-32 flex flex-col gap-1">
-                      <span className="text-[10px] uppercase font-mono text-gray-500 font-bold">{language === 'en' ? 'Year' : 'ዓመት'}</span>
+                  <div className="w-1/2 sm:w-28 lg:w-32 flex flex-col gap-1 min-w-0">
+                      <span className="text-[10px] uppercase font-mono text-amber-500 font-bold truncate">{language === 'en' ? 'Year' : 'ዓመት'}</span>
                       <CustomSelect 
                           value={selectedYear}
                           onChange={val => setSelectedYear(val)}
@@ -708,8 +708,8 @@ const Home: React.FC = () => {
                       />
                   </div>
               </div>
-              <div className="w-full md:w-[304px] flex flex-col gap-1">
-                  <span className="text-[10px] uppercase font-mono text-amber-500 font-bold flex items-center gap-1.5">
+              <div className="w-full sm:w-72 lg:w-[304px] flex flex-col gap-1 min-w-0">
+                  <span className="text-[10px] uppercase font-mono text-amber-500 font-bold flex items-center gap-1.5 truncate">
                     {language === 'en' ? 'Available File Path' : 'የሚገኝ የፋይል መንገድ'}
                     {isLoadingFile && <div className="w-3 h-3 rounded-full border-2 border-amber-500 border-t-transparent animate-spin shrink-0"></div>}
                   </span>
@@ -731,40 +731,42 @@ const Home: React.FC = () => {
                   />
               </div>
           </div>
-      </div>
+      </div>   
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-          <div className="bg-black/20 rounded-xl p-4 border border-military-700 flex flex-wrap gap-3 items-center justify-between shadow-lg min-w-0">
+          {/* Card 1: Ethiopian Date & Time */}
+          <div className="bg-black/20 rounded-xl p-3 md:p-4 border border-military-700 flex flex-row items-center justify-between md:flex-col md:items-start lg:flex-row lg:items-center lg:justify-between gap-3 shadow-lg min-w-0">
                <div className="flex items-center gap-3 min-w-0">
                    <div className="bg-gold-500/20 p-2 md:p-3 rounded-full text-gold-500 animate-pulse shrink-0">
                        <Clock size={20} className="md:w-6 md:h-6" />
                    </div>
                    <div className="min-w-0">
-                       <h4 className="text-white font-bold text-sm md:text-base">{t('ethiopianDate')}</h4>
-                       <p className="text-xs md:text-sm text-gold-500 font-bold truncate">{formatEthiopianDate(getCurrentEthiopianDate(), language)}</p>
+                       <h4 className="text-white font-bold text-xs sm:text-sm md:text-base truncate">{t('ethiopianDate')}</h4>
+                       <p className="text-[11px] sm:text-xs md:text-sm text-gold-500 font-bold break-words">{formatEthiopianDate(getCurrentEthiopianDate(), language)}</p>
                    </div>
                </div>
-               <div className="text-gray-400 font-mono text-sm sm:text-base md:text-lg lg:text-xl font-bold tracking-normal sm:tracking-wider whitespace-nowrap shrink ml-auto">
+               <div className="text-gray-400 font-mono text-xs sm:text-sm md:text-base font-bold tracking-normal sm:tracking-wider whitespace-nowrap shrink-0 ml-auto md:ml-11 lg:ml-auto">
                    {currentTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second: '2-digit'})}
                </div>
           </div>
 
-          <div className="bg-black/20 rounded-xl p-4 border border-military-700 flex flex-wrap gap-3 items-center justify-between shadow-lg min-w-0">
+          {/* Card 2: System Status */}
+          <div className="bg-black/20 rounded-xl p-3 md:p-4 border border-military-700 flex flex-row items-center justify-between md:flex-col md:items-start lg:flex-row lg:items-center lg:justify-between gap-3 shadow-lg min-w-0">
                <div className="flex items-center gap-3 min-w-0">
                    <div className="bg-green-500/20 p-2 md:p-3 rounded-full text-green-500 shrink-0">
                        <Zap size={20} className="md:w-6 md:h-6" />
                    </div>
                    <div className="min-w-0">
-                       <h4 className="text-white font-bold text-sm md:text-base">{t('systemStatus')}</h4>
-                       <p className="text-[10px] md:text-xs text-gray-400">{t('dbIntegrity')}</p>
+                       <h4 className="text-white font-bold text-xs sm:text-sm md:text-base truncate">{t('systemStatus')}</h4>
+                       <p className="text-[10px] md:text-xs text-gray-400 truncate">{t('dbIntegrity')}</p>
                    </div>
                </div>
-               <div className="text-green-500 font-bold text-xs md:text-sm flex items-center gap-1 bg-green-900/20 px-3 py-1 rounded-full border border-green-500/30 shrink-0 ml-auto">
+               <div className="text-green-500 font-bold text-[11px] sm:text-xs md:text-sm flex items-center gap-1 bg-green-900/20 px-2.5 py-1 rounded-full border border-green-500/30 whitespace-nowrap shrink-0 ml-auto md:ml-11 lg:ml-auto">
                    <ShieldCheck size={14} className="md:w-4 md:h-4" /> {t('online')}
                </div>
           </div>
       </div>
-
+         
       <div className="bg-gradient-to-r from-military-900 to-military-800 rounded-2xl p-6 md:p-8 border border-military-700 shadow-2xl relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition transform group-hover:scale-110 pointer-events-none">
               <div className="w-28 h-28 rounded-full overflow-hidden flex items-center justify-center">
