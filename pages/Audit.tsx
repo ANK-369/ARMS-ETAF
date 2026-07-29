@@ -450,8 +450,8 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
                 <div className="mb-12 text-justify text-lg leading-8 text-black">
                     <p>
                         {language === 'am'
-                            ? `${t('auditBodyIntro')}${mName} ${t('auditBodyMid')} ${filterYear} ${t('auditBodyEnd')} ${pageCount || totalSections} ${t('auditBodyPages')}`
-                            : `${t('auditBodyIntro')} ${mName} ${t('auditBodyMid')} ${filterYear} ${t('auditBodyEnd')} ${pageCount || totalSections} ${t('auditBodyPages')}`
+                            ? `${t('auditBodyIntro')}${mName} ${t('auditBodyMid')} ${filterYear} ${t('auditBodyEnd')} ${pageCount || (totalSections > 1 ? totalSections - 1 : 1)} ${t('auditBodyPages')}`
+                            : `${t('auditBodyIntro')} ${mName} ${t('auditBodyMid')} ${filterYear} ${t('auditBodyEnd')} ${pageCount || (totalSections > 1 ? totalSections - 1 : 1)} ${t('auditBodyPages')}`
                         }
                     </p>
                 </div>
