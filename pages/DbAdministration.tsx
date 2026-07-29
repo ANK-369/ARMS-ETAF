@@ -159,7 +159,6 @@ const DbAdministration: React.FC = () => {
 
     // Auto-detect and populate GitHub File Path when Owner, Repo, and Token are entered/modified
     useEffect(() => {
-        if (!isNewUser()) return; // Skip automatic path generation for old users
         if (!initialConfig) return; // Prevent overwriting on initial mount before config is set
 
         const { owner, repo, token } = ghConfig;
