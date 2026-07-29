@@ -382,10 +382,10 @@ const Layout: React.FC<LayoutProps> = ({ children, activePage, onNavigate, onLog
                     {language === 'en' ? 'ENGLISH' : 'AMHARIC'}
                  </button>
                  <div className="h-6 w-px bg-gray-700"></div>
-                 <div className="text-[10px] text-green-500 font-mono border border-green-900 bg-green-900/10 px-2 py-0.5 rounded flex items-center gap-1">
+                 <div className="hidden lg:flex text-[10px] text-green-500 font-mono border border-green-900 bg-green-900/10 px-2 py-0.5 rounded items-center gap-1">
                      <Activity size={10} className="animate-pulse"/> {t('systemSecure')}
                  </div>
-                 <div className="text-xs text-gray-600 font-mono">
+                 <div className="hidden lg:block text-xs text-gray-600 font-mono">
                      V3.0.4 • ETAF
                  </div>
              </div>
