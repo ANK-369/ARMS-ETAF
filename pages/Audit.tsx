@@ -7,23 +7,41 @@ import { getDB } from '../services/db';
 
 const downloadElementAsPDF = async (targetElement: HTMLElement, filename: string) => {
   const clone = targetElement.cloneNode(true) as HTMLElement;
+  clone.className = "w-[210mm] max-w-[210mm] mx-auto flex flex-col gap-0 text-black outline-none bg-transparent shadow-none";
   clone.style.width = '210mm';
   clone.style.maxWidth = '210mm';
   clone.style.flexDirection = 'column';
   clone.style.display = 'flex';
   clone.style.gap = '0px';
-  clone.style.margin = '0';
+  clone.style.margin = '0 auto';
   clone.style.padding = '0';
+  clone.style.boxSizing = 'border-box';
   
   const sections = clone.querySelectorAll('.audit-section');
-  sections.forEach((sec) => {
-    (sec as HTMLElement).style.width = '210mm';
-    (sec as HTMLElement).style.boxShadow = 'none';
-    (sec as HTMLElement).style.margin = '0';
-  });
+  if (sections.length > 0) {
+    sections.forEach((sec) => {
+      (sec as HTMLElement).style.width = '210mm';
+      (sec as HTMLElement).style.maxWidth = '210mm';
+      (sec as HTMLElement).style.minHeight = '297mm';
+      (sec as HTMLElement).style.boxSizing = 'border-box';
+      (sec as HTMLElement).style.boxShadow = 'none';
+      (sec as HTMLElement).style.margin = '0 auto';
+      (sec as HTMLElement).style.padding = '20mm';
+    });
+  } else {
+    clone.style.padding = '20mm';
+    clone.style.minHeight = '297mm';
+    clone.style.backgroundColor = '#ffffff';
+  }
 
   const styleEl = document.createElement('style');
   styleEl.textContent = `
+    * {
+      box-sizing: border-box !important;
+    }
+    table {
+      border-collapse: collapse !important;
+    }
     tr, .audit-card, .avoid-break {
       break-inside: avoid !important;
       page-break-inside: avoid !important;
@@ -52,7 +70,7 @@ const downloadElementAsPDF = async (targetElement: HTMLElement, filename: string
   }
 
   const opt = {
-    margin: [8, 8, 8, 8],
+    margin: [0, 0, 0, 0],
     filename: `${filename}.pdf`,
     image: { 
       type: 'jpeg', 
@@ -63,7 +81,7 @@ const downloadElementAsPDF = async (targetElement: HTMLElement, filename: string
       useCORS: true,
       scrollY: 0,
       scrollX: 0,
-      windowWidth: 1200,
+      windowWidth: 794,
       logging: false
     },
     jsPDF: {
@@ -75,7 +93,7 @@ const downloadElementAsPDF = async (targetElement: HTMLElement, filename: string
     pagebreak: { 
       mode: ['css', 'legacy'],
       before: ['.page-break-before', '#market-expense-section', '#transferred-items-section', '#manpower-section'],
-      avoid: ['tr', '.avoid-break', 'h1', 'h2', 'h3']
+      avoid: ['tr', '.avoid-break']
     }
   };
 
