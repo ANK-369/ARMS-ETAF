@@ -22,13 +22,61 @@ const downloadElementAsPDF = async (targetElement: HTMLElement, filename: string
     (sec as HTMLElement).style.margin = '0';
   });
 
+  const styleEl = document.createElement('style');
+  styleEl.textContent = `
+    tr, .audit-card, .avoid-break {
+      break-inside: avoid !important;
+      page-break-inside: avoid !important;
+    }
+    thead {
+      display: table-header-group;
+    }
+    .page-break-before, #market-expense-section, #transferred-items-section, #manpower-section {
+      break-before: page !important;
+      page-break-before: always !important;
+    }
+  `;
+  clone.prepend(styleEl);
+
+  const childNodes = Array.from(clone.children);
+  for (let i = childNodes.length - 1; i >= 0; i--) {
+    const node = childNodes[i] as HTMLElement;
+    if (
+      node.classList.contains('print-page-break') || 
+      (node.tagName === 'DIV' && !node.innerText.trim() && !node.querySelector('img, table'))
+    ) {
+      node.remove();
+    } else {
+      break;
+    }
+  }
+
   const opt = {
-    margin: 0,
+    margin: [8, 8, 8, 8],
     filename: `${filename}.pdf`,
-    image: { type: 'jpeg', quality: 0.98 },
-    html2canvas: { scale: 2, useCORS: true, logging: false },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    pagebreak: { mode: ['css', 'legacy'], after: '.audit-section' }
+    image: { 
+      type: 'jpeg', 
+      quality: 0.98 
+    },
+    html2canvas: {
+      scale: 2,
+      useCORS: true,
+      scrollY: 0,
+      scrollX: 0,
+      windowWidth: 1200,
+      logging: false
+    },
+    jsPDF: {
+      unit: 'mm',
+      format: 'a4',
+      orientation: 'portrait',
+      compress: true
+    },
+    pagebreak: { 
+      mode: ['css', 'legacy'],
+      before: ['.page-break-before', '#market-expense-section', '#transferred-items-section', '#manpower-section'],
+      avoid: ['tr', '.avoid-break', 'h1', 'h2', 'h3']
+    }
   };
 
   try {
@@ -78,7 +126,7 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
   const [recipient, setRecipient] = useState("ለ4ኛ አ/ም/ም/አዛዥ ለኤር ሎጀስቲክ");
   const [city, setCity] = useState("ባህር ዳር");
   const [subjectPrefix, setSubjectPrefix] = useState("ጉዳዩ");
-  const [pageCount, setPageCount] = useState("4");
+  const [pageCount, setPageCount] = useState("");
   const [leaderName, setLeaderName] = useState("ሻ/ል ጌታሰው");
   const [diningName, setDiningName] = useState("የሜድሮክ ግብር ቤት ቦርድ ሰብሳቢ");
   const [auditorName, setAuditorName] = useState("፲/አለቃ አንዱዓለም ኮሪያ");
@@ -384,8 +432,8 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
                 <div className="mb-12 text-justify text-lg leading-8 text-black">
                     <p>
                         {language === 'am'
-                            ? `${t('auditBodyIntro')}${mName} ${t('auditBodyMid')} ${filterYear} ${t('auditBodyEnd')} ${pageCount} ${t('auditBodyPages')}`
-                            : `${t('auditBodyIntro')} ${mName} ${t('auditBodyMid')} ${filterYear} ${t('auditBodyEnd')} ${pageCount} ${t('auditBodyPages')}`
+                            ? `${t('auditBodyIntro')}${mName} ${t('auditBodyMid')} ${filterYear} ${t('auditBodyEnd')} ${pageCount || totalSections} ${t('auditBodyPages')}`
+                            : `${t('auditBodyIntro')} ${mName} ${t('auditBodyMid')} ${filterYear} ${t('auditBodyEnd')} ${pageCount || totalSections} ${t('auditBodyPages')}`
                         }
                     </p>
                 </div>
@@ -469,8 +517,8 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
       sectionsToRender.push({
         id: `market-${chunkIdx}`,
         render: () => (
-          <div>
-            <h2 className="text-xl font-bold text-center underline mb-6 text-black uppercase">
+          <div id={chunkIdx === 0 ? "market-expense-section" : undefined} className={chunkIdx === 0 ? "page-break-before" : ""}>
+            <h2 className="text-xl font-bold text-center underline mb-6 text-black uppercase page-break-before" style={{ breakBefore: 'page', pageBreakBefore: 'always' }}>
               {t('marketListTitle')}{marketChunks.length > 1 ? ` (${chunkIdx + 1}/${marketChunks.length})` : ''}
             </h2>
             <div>
@@ -523,8 +571,8 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
       sectionsToRender.push({
         id: `transfers-${chunkIdx}`,
         render: () => (
-          <div>
-            <h2 className="text-xl font-bold text-center underline mb-6 text-black uppercase">
+          <div id={chunkIdx === 0 ? "transferred-items-section" : undefined} className={chunkIdx === 0 ? "page-break-before" : ""}>
+            <h2 className="text-xl font-bold text-center underline mb-6 text-black uppercase page-break-before" style={{ breakBefore: 'page', pageBreakBefore: 'always' }}>
               {t('transferNextTitle')}{transferChunks.length > 1 ? ` (${chunkIdx + 1}/${transferChunks.length})` : ''}
             </h2>
             <div>
@@ -599,8 +647,8 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
       sectionsToRender.push({
         id: `manpower-${chunkIdx}`,
         render: () => (
-          <div>
-            <h2 className="text-xl font-bold text-center underline mb-6 text-black uppercase">
+          <div id={chunkIdx === 0 ? "manpower-section" : undefined} className={chunkIdx === 0 ? "page-break-before" : ""}>
+            <h2 className="text-xl font-bold text-center underline mb-6 text-black uppercase page-break-before" style={{ breakBefore: 'page', pageBreakBefore: 'always' }}>
               {t('manpowerRosterTitle')}{manpowerChunks.length > 1 ? ` (${chunkIdx + 1}/${manpowerChunks.length})` : ''}
             </h2>
             <div>
