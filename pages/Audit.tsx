@@ -1,112 +1,10 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
-// @ts-ignore
-import html2pdf from 'html2pdf.js';
 import { getDB } from '../services/db';
-
-const downloadElementAsPDF = async (targetElement: HTMLElement, filename: string) => {
-  const clone = targetElement.cloneNode(true) as HTMLElement;
-  clone.className = "w-[210mm] max-w-[210mm] mx-auto flex flex-col gap-0 text-black outline-none bg-transparent shadow-none";
-  clone.style.width = '210mm';
-  clone.style.maxWidth = '210mm';
-  clone.style.flexDirection = 'column';
-  clone.style.display = 'flex';
-  clone.style.gap = '0px';
-  clone.style.margin = '0 auto';
-  clone.style.padding = '0';
-  clone.style.boxSizing = 'border-box';
-  
-  const sections = clone.querySelectorAll('.audit-section');
-  if (sections.length > 0) {
-    sections.forEach((sec) => {
-      (sec as HTMLElement).style.width = '210mm';
-      (sec as HTMLElement).style.maxWidth = '210mm';
-      (sec as HTMLElement).style.minHeight = '297mm';
-      (sec as HTMLElement).style.boxSizing = 'border-box';
-      (sec as HTMLElement).style.boxShadow = 'none';
-      (sec as HTMLElement).style.margin = '0 auto';
-      (sec as HTMLElement).style.padding = '20mm';
-    });
-  } else {
-    clone.style.padding = '20mm';
-    clone.style.minHeight = '297mm';
-    clone.style.backgroundColor = '#ffffff';
-  }
-
-  const styleEl = document.createElement('style');
-  styleEl.textContent = `
-    * {
-      box-sizing: border-box !important;
-    }
-    table {
-      border-collapse: collapse !important;
-    }
-    tr, .audit-card, .avoid-break {
-      break-inside: avoid !important;
-      page-break-inside: avoid !important;
-    }
-    thead {
-      display: table-header-group;
-    }
-    .page-break-before, #market-expense-section, #transferred-items-section, #manpower-section {
-      break-before: page !important;
-      page-break-before: always !important;
-    }
-  `;
-  clone.prepend(styleEl);
-
-  const childNodes = Array.from(clone.children);
-  for (let i = childNodes.length - 1; i >= 0; i--) {
-    const node = childNodes[i] as HTMLElement;
-    if (
-      node.classList.contains('print-page-break') || 
-      (node.tagName === 'DIV' && !node.innerText.trim() && !node.querySelector('img, table'))
-    ) {
-      node.remove();
-    } else {
-      break;
-    }
-  }
-
-  const opt = {
-    margin: [0, 0, 0, 0],
-    filename: `${filename}.pdf`,
-    image: { 
-      type: 'jpeg', 
-      quality: 0.98 
-    },
-    html2canvas: {
-      scale: 2,
-      useCORS: true,
-      scrollY: 0,
-      scrollX: 0,
-      windowWidth: 794,
-      logging: false
-    },
-    jsPDF: {
-      unit: 'mm',
-      format: 'a4',
-      orientation: 'portrait',
-      compress: true
-    },
-    pagebreak: { 
-      mode: ['css', 'legacy'],
-      before: ['.page-break-before', '#market-expense-section', '#transferred-items-section', '#manpower-section'],
-      avoid: ['tr', '.avoid-break']
-    }
-  };
-
-  try {
-    // @ts-ignore
-    await html2pdf().set(opt).from(clone).save();
-  } catch (err) {
-    console.error('PDF generation error:', err);
-  }
-};
 import { AppData, ManpowerType, Command, GitHubConfig, Manpower } from '../types';
 import { 
-  Printer, Trash2, Settings, FileText, 
+  Printer, Trash2, Settings, FileText,
   Bold, Italic, Underline, List, ListOrdered, 
   Calculator, Plus, X, RotateCcw, Download, Upload, 
   Database, Book, AlertTriangle, CheckCircle, Save, Type, ArrowLeftRight, Hash, DollarSign,
@@ -383,20 +281,6 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
     setTimeout(() => {
       document.title = originalTitle;
     }, 1000);
-  };
-
-  const handleDownloadPdfAutomated = async () => {
-    const formattedMonth = ETHIOPIAN_MONTHS[parseInt(filterMonth) - 1] || filterMonth;
-    const formattedMonthAm = ETHIOPIAN_MONTHS_AMHARIC[parseInt(filterMonth) - 1] || filterMonth;
-    
-    const filename = language === 'am'
-      ? `የ${formattedMonthAm}_ወር_ኦዲት_${filterYear}`
-      : `${formattedMonth}_Month_Audit_${filterYear}`;
-
-    const element = auditRef.current || document.getElementById('printable-audit-report');
-    if (element) {
-      await downloadElementAsPDF(element, filename);
-    }
   };
 
   const yearsOptions = Array.from({length: 51}, (_, i) => (2000 + i).toString());
@@ -830,9 +714,8 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
                     </div>
                 </div>
             </div>
-            <div className="mt-6 pt-4 border-t border-gray-700 flex gap-2">
-                <button onClick={() => setShowPrintModal(true)} className="flex-1 bg-gold-500 hover:bg-gold-600 text-black font-bold py-2.5 md:py-3 rounded-lg flex items-center justify-center gap-2 transition shadow-lg text-xs"><Printer size={16}/> {t('printReport')}</button>
-                <button onClick={handleDownloadPdfAutomated} className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 md:py-3 rounded-lg flex items-center justify-center gap-2 transition shadow-lg text-xs"><FileText size={16}/> {t('downloadPdf')}</button>
+            <div className="mt-6 pt-4 border-t border-gray-700 flex">
+                <button onClick={() => setShowPrintModal(true)} className="w-full bg-gold-500 hover:bg-gold-600 text-black font-bold py-2.5 md:py-3 rounded-lg flex items-center justify-center gap-2 transition shadow-lg text-xs md:text-sm"><Printer size={18}/> {t('printReport')}</button>
             </div>
         </div>
       )}
@@ -843,13 +726,10 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
                   <h2 className="text-gold-500 font-bold text-lg sm:text-xl flex items-center gap-2">
                       <Printer size={20} className="sm:w-[24px] sm:h-[24px]"/> {t('printPreview')}
                   </h2>
-                  <div className="flex flex-wrap gap-2 justify-end w-full sm:w-auto">
-                      <button onClick={() => setShowPrintModal(false)} className="px-3 py-1.5 md:px-4 md:py-2 text-xs text-gray-400 hover:text-white font-bold rounded-lg border border-gray-600 hover:bg-white/10 transition">{t('closePreview')}</button>
-                      <button onClick={handleDownloadPdfAutomated} className="px-3 py-1.5 md:px-6 md:py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-lg transition flex items-center gap-2 text-xs md:text-sm">
-                          <FileText size={14} className="md:w-[18px] md:h-[18px]"/> {t('downloadPdf')}
-                      </button>
-                      <button onClick={handlePrint} className="px-3 py-1.5 md:px-6 md:py-2 bg-gold-500 hover:bg-gold-600 text-black font-bold rounded-lg shadow-lg transition flex items-center gap-2 text-xs md:text-sm">
-                          <Printer size={14} className="md:w-[18px] md:h-[18px]"/> {t('printNow')}
+                  <div className="flex items-center gap-3 justify-end w-full sm:w-auto">
+                      <button onClick={() => setShowPrintModal(false)} className="px-4 py-2 text-xs md:text-sm text-gray-300 hover:text-white font-semibold rounded-lg border border-gray-600 hover:bg-white/10 transition">{t('closePreview')}</button>
+                      <button onClick={handlePrint} className="px-5 py-2 bg-gold-500 hover:bg-gold-600 text-black font-bold rounded-lg shadow-lg transition flex items-center gap-2 text-xs md:text-sm">
+                          <Printer size={16}/> {t('printNow')}
                       </button>
                   </div>
               </div>
@@ -1039,22 +919,6 @@ const ManualAudit = () => {
         }, 1000);
     };
 
-    const handleDownloadPdfManual = async () => {
-        const m = month.padStart(2, '0');
-        const y = year;
-        const formattedMonth = ETHIOPIAN_MONTHS[parseInt(m) - 1] || m;
-        const formattedMonthAm = ETHIOPIAN_MONTHS_AMHARIC[parseInt(m) - 1] || m;
-        
-        const filename = language === 'am'
-          ? `የ${formattedMonthAm}_ወር_ኦዲት_${y}`
-          : `${formattedMonth}_Month_Audit_${y}`;
-
-        const element = editorRef.current || document.getElementById('printable-audit-report');
-        if (element) {
-            await downloadElementAsPDF(element, filename);
-        }
-    };
-
     useEffect(() => {
         const stored = localStorage.getItem('arms_automated_audit_html');
         if (stored && editorRef.current) {
@@ -1132,9 +996,8 @@ const ManualAudit = () => {
                          <button onClick={handleSyncFromAutomated} className="p-2 text-gold-500 hover:bg-gold-500 hover:text-black rounded transition flex items-center gap-1 text-xs font-bold" title={t('syncFromAutomatedTooltip')}><RefreshCw size={14}/> {t('syncAutomatedBtn')}</button>
                     </div>
                 </div>
-                <div className="flex gap-2 flex-wrap sm:flex-nowrap">
-                    <button onClick={handlePrintManual} className="bg-gold-500 hover:bg-gold-600 text-black px-3 py-1.5 sm:px-4 sm:py-2 rounded font-bold text-xs flex items-center gap-1.5"><Printer size={14} /> {t('printReport')}</button>
-                    <button onClick={handleDownloadPdfManual} className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded font-bold text-xs flex items-center gap-1.5"><FileText size={14} /> {t('downloadPdf')}</button>
+                <div className="flex gap-2 items-center">
+                    <button onClick={handlePrintManual} className="bg-gold-500 hover:bg-gold-600 text-black px-4 py-2 rounded-lg font-bold text-xs md:text-sm flex items-center gap-2 shadow-md hover:shadow-gold-500/10 transition"><Printer size={16} /> {t('printReport')}</button>
                 </div>
             </div>
 
@@ -1168,13 +1031,10 @@ const ManualAudit = () => {
                         <h2 className="text-gold-500 font-bold text-lg sm:text-xl flex items-center gap-2">
                             <Printer size={20} className="sm:w-[24px] sm:h-[24px]"/> {t('printPreview')} (Manual Audit)
                         </h2>
-                        <div className="flex flex-wrap gap-2 justify-end w-full sm:w-auto">
-                            <button onClick={() => setShowPrintModal(false)} className="px-3 py-1.5 md:px-4 md:py-2 text-xs text-gray-400 hover:text-white font-bold rounded-lg border border-gray-600 hover:bg-white/10 transition">{t('closePreview')}</button>
-                            <button onClick={handleDownloadPdfManual} className="px-3 py-1.5 md:px-6 md:py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-lg transition flex items-center gap-2 text-xs md:text-sm">
-                                <FileText size={14} className="md:w-[18px] md:h-[18px]"/> {t('downloadPdf')}
-                            </button>
-                            <button onClick={handlePrintManualNow} className="px-3 py-1.5 md:px-6 md:py-2 bg-gold-500 hover:bg-gold-600 text-black font-bold rounded-lg shadow-lg transition flex items-center gap-2 text-xs md:text-sm">
-                                <Printer size={14} className="md:w-[18px] md:h-[18px]"/> {t('printNow')}
+                        <div className="flex items-center gap-3 justify-end w-full sm:w-auto">
+                            <button onClick={() => setShowPrintModal(false)} className="px-4 py-2 text-xs md:text-sm text-gray-300 hover:text-white font-semibold rounded-lg border border-gray-600 hover:bg-white/10 transition">{t('closePreview')}</button>
+                            <button onClick={handlePrintManualNow} className="px-5 py-2 bg-gold-500 hover:bg-gold-600 text-black font-bold rounded-lg shadow-lg transition flex items-center gap-2 text-xs md:text-sm">
+                                <Printer size={16}/> {t('printNow')}
                             </button>
                         </div>
                     </div>
