@@ -1,7 +1,43 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+// @ts-ignore
+import html2pdf from 'html2pdf.js';
 import { getDB } from '../services/db';
+
+const downloadElementAsPDF = async (targetElement: HTMLElement, filename: string) => {
+  const clone = targetElement.cloneNode(true) as HTMLElement;
+  clone.style.width = '210mm';
+  clone.style.maxWidth = '210mm';
+  clone.style.flexDirection = 'column';
+  clone.style.display = 'flex';
+  clone.style.gap = '0px';
+  clone.style.margin = '0';
+  clone.style.padding = '0';
+  
+  const sections = clone.querySelectorAll('.audit-section');
+  sections.forEach((sec) => {
+    (sec as HTMLElement).style.width = '210mm';
+    (sec as HTMLElement).style.boxShadow = 'none';
+    (sec as HTMLElement).style.margin = '0';
+  });
+
+  const opt = {
+    margin: 0,
+    filename: `${filename}.pdf`,
+    image: { type: 'jpeg', quality: 0.98 },
+    html2canvas: { scale: 2, useCORS: true, logging: false },
+    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+    pagebreak: { mode: ['css', 'legacy'], after: '.audit-section' }
+  };
+
+  try {
+    // @ts-ignore
+    await html2pdf().set(opt).from(clone).save();
+  } catch (err) {
+    console.error('PDF generation error:', err);
+  }
+};
 import { AppData, ManpowerType, Command, GitHubConfig, Manpower } from '../types';
 import { 
   Printer, Trash2, Settings, FileText, 
@@ -281,6 +317,20 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
     setTimeout(() => {
       document.title = originalTitle;
     }, 1000);
+  };
+
+  const handleDownloadPdfAutomated = async () => {
+    const formattedMonth = ETHIOPIAN_MONTHS[parseInt(filterMonth) - 1] || filterMonth;
+    const formattedMonthAm = ETHIOPIAN_MONTHS_AMHARIC[parseInt(filterMonth) - 1] || filterMonth;
+    
+    const filename = language === 'am'
+      ? `የ${formattedMonthAm}_ወር_ኦዲት_${filterYear}`
+      : `${formattedMonth}_Month_Audit_${filterYear}`;
+
+    const element = auditRef.current || document.getElementById('printable-audit-report');
+    if (element) {
+      await downloadElementAsPDF(element, filename);
+    }
   };
 
   const yearsOptions = Array.from({length: 51}, (_, i) => (2000 + i).toString());
@@ -716,7 +766,7 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
             </div>
             <div className="mt-6 pt-4 border-t border-gray-700 flex gap-2">
                 <button onClick={() => setShowPrintModal(true)} className="flex-1 bg-gold-500 hover:bg-gold-600 text-black font-bold py-2.5 md:py-3 rounded-lg flex items-center justify-center gap-2 transition shadow-lg text-xs"><Printer size={16}/> {t('printReport')}</button>
-                <button onClick={() => { setShowPrintModal(true); setTimeout(() => handlePrint(), 300); }} className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 md:py-3 rounded-lg flex items-center justify-center gap-2 transition shadow-lg text-xs"><FileText size={16}/> {t('downloadPdf')}</button>
+                <button onClick={handleDownloadPdfAutomated} className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 md:py-3 rounded-lg flex items-center justify-center gap-2 transition shadow-lg text-xs"><FileText size={16}/> {t('downloadPdf')}</button>
             </div>
         </div>
       )}
@@ -729,7 +779,7 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
                   </h2>
                   <div className="flex flex-wrap gap-2 justify-end w-full sm:w-auto">
                       <button onClick={() => setShowPrintModal(false)} className="px-3 py-1.5 md:px-4 md:py-2 text-xs text-gray-400 hover:text-white font-bold rounded-lg border border-gray-600 hover:bg-white/10 transition">{t('closePreview')}</button>
-                      <button onClick={handlePrint} className="px-3 py-1.5 md:px-6 md:py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-lg transition flex items-center gap-2 text-xs md:text-sm">
+                      <button onClick={handleDownloadPdfAutomated} className="px-3 py-1.5 md:px-6 md:py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-lg transition flex items-center gap-2 text-xs md:text-sm">
                           <FileText size={14} className="md:w-[18px] md:h-[18px]"/> {t('downloadPdf')}
                       </button>
                       <button onClick={handlePrint} className="px-3 py-1.5 md:px-6 md:py-2 bg-gold-500 hover:bg-gold-600 text-black font-bold rounded-lg shadow-lg transition flex items-center gap-2 text-xs md:text-sm">
@@ -783,7 +833,7 @@ const ManualAudit = () => {
         if (editorRef.current) editorRef.current.focus();
     };
 
-    const AUDIT_PAGE_CLASS = "audit-section p-[10mm] md:p-[20mm] bg-white w-[210mm] min-h-[297mm] shadow-2xl flex flex-col justify-between relative text-black outline-none";
+    const AUDIT_PAGE_CLASS = "audit-section p-[20mm] bg-white w-[210mm] min-h-[297mm] shadow-2xl flex flex-col justify-between relative text-black outline-none";
 
     const createPageFooterHtml = (currentPage = 1, totalPages = 1) => {
         const generatedOnText = t('generatedOn') || (language === 'am' ? 'የተዘጋጀበት ቀን፡' : 'Generated on:');
@@ -923,6 +973,22 @@ const ManualAudit = () => {
         }, 1000);
     };
 
+    const handleDownloadPdfManual = async () => {
+        const m = month.padStart(2, '0');
+        const y = year;
+        const formattedMonth = ETHIOPIAN_MONTHS[parseInt(m) - 1] || m;
+        const formattedMonthAm = ETHIOPIAN_MONTHS_AMHARIC[parseInt(m) - 1] || m;
+        
+        const filename = language === 'am'
+          ? `የ${formattedMonthAm}_ወር_ኦዲት_${y}`
+          : `${formattedMonth}_Month_Audit_${y}`;
+
+        const element = editorRef.current || document.getElementById('printable-audit-report');
+        if (element) {
+            await downloadElementAsPDF(element, filename);
+        }
+    };
+
     useEffect(() => {
         const stored = localStorage.getItem('arms_automated_audit_html');
         if (stored && editorRef.current) {
@@ -1002,27 +1068,29 @@ const ManualAudit = () => {
                 </div>
                 <div className="flex gap-2 flex-wrap sm:flex-nowrap">
                     <button onClick={handlePrintManual} className="bg-gold-500 hover:bg-gold-600 text-black px-3 py-1.5 sm:px-4 sm:py-2 rounded font-bold text-xs flex items-center gap-1.5"><Printer size={14} /> {t('printReport')}</button>
-                    <button onClick={handlePrintManualNow} className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded font-bold text-xs flex items-center gap-1.5"><FileText size={14} /> {t('downloadPdf')}</button>
+                    <button onClick={handleDownloadPdfManual} className="bg-red-600 hover:bg-red-700 text-white px-3 py-1.5 sm:px-4 sm:py-2 rounded font-bold text-xs flex items-center gap-1.5"><FileText size={14} /> {t('downloadPdf')}</button>
                 </div>
             </div>
 
-            <div className="flex-1 overflow-auto p-4 md:p-8 pb-20 bg-stone-950 flex justify-center">
-                <div 
-                    ref={editorRef} 
-                    id={showPrintModal ? undefined : "printable-audit-report"} 
-                    className="w-[210mm] min-w-[210mm] flex flex-col gap-8 text-black outline-none leading-relaxed overflow-y-visible bg-transparent shadow-none" 
-                    contentEditable 
-                    suppressContentEditableWarning={true}
-                    onInput={() => updateEditorPageFooters()}
-                >
-                    <div className="audit-section p-[10mm] md:p-[20mm] bg-white w-[210mm] min-h-[297mm] shadow-2xl flex flex-col justify-between relative text-black outline-none">
-                        <div className="flex-grow">
-                            <h1 style={{textAlign: 'center', textDecoration: 'underline'}}>{t('manualReport')}</h1>
-                            <p>{t('startTyping')}</p>
-                        </div>
-                        <div className="audit-page-footer border-t border-black/20 pt-2 flex justify-between text-[10px] text-slate-700 font-sans mt-4 select-none" contentEditable={false}>
-                            <span>{t('generatedOn')} {formatEthiopianDate(getCurrentEthiopianDate(), language)}, {new Date().toLocaleTimeString()}</span>
-                            <span>{language === 'am' ? 'ገጽ 1 ከ 1' : 'Page 1 of 1'}</span>
+            <div className="flex-1 overflow-auto bg-[url('https://www.transparenttextures.com/patterns/dark-leather.png')] bg-fixed relative">
+                <div className="min-w-fit p-4 md:p-8 flex justify-center pb-20">
+                    <div 
+                        ref={editorRef} 
+                        id={showPrintModal ? undefined : "printable-audit-report"} 
+                        className="w-[210mm] flex flex-col gap-8 text-black outline-none leading-relaxed overflow-y-visible bg-transparent shadow-none" 
+                        contentEditable 
+                        suppressContentEditableWarning={true}
+                        onInput={() => updateEditorPageFooters()}
+                    >
+                        <div className="audit-section p-[20mm] bg-white w-[210mm] min-h-[297mm] shadow-2xl flex flex-col justify-between relative text-black outline-none">
+                            <div className="flex-grow">
+                                <h1 style={{textAlign: 'center', textDecoration: 'underline'}}>{t('manualReport')}</h1>
+                                <p>{t('startTyping')}</p>
+                            </div>
+                            <div className="audit-page-footer border-t border-black/20 pt-2 flex justify-between text-[10px] text-slate-700 font-sans mt-4 select-none" contentEditable={false}>
+                                <span>{t('generatedOn')} {formatEthiopianDate(getCurrentEthiopianDate(), language)}, {new Date().toLocaleTimeString()}</span>
+                                <span>{language === 'am' ? 'ገጽ 1 ከ 1' : 'Page 1 of 1'}</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1036,7 +1104,7 @@ const ManualAudit = () => {
                         </h2>
                         <div className="flex flex-wrap gap-2 justify-end w-full sm:w-auto">
                             <button onClick={() => setShowPrintModal(false)} className="px-3 py-1.5 md:px-4 md:py-2 text-xs text-gray-400 hover:text-white font-bold rounded-lg border border-gray-600 hover:bg-white/10 transition">{t('closePreview')}</button>
-                            <button onClick={handlePrintManualNow} className="px-3 py-1.5 md:px-6 md:py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-lg transition flex items-center gap-2 text-xs md:text-sm">
+                            <button onClick={handleDownloadPdfManual} className="px-3 py-1.5 md:px-6 md:py-2 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-lg transition flex items-center gap-2 text-xs md:text-sm">
                                 <FileText size={14} className="md:w-[18px] md:h-[18px]"/> {t('downloadPdf')}
                             </button>
                             <button onClick={handlePrintManualNow} className="px-3 py-1.5 md:px-6 md:py-2 bg-gold-500 hover:bg-gold-600 text-black font-bold rounded-lg shadow-lg transition flex items-center gap-2 text-xs md:text-sm">
