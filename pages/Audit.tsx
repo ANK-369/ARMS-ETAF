@@ -160,7 +160,6 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
   const fullCashList: Manpower[] = [];
   const halfCashList: Manpower[] = [];
   const transientList: Manpower[] = [];
-  const pensionList: Manpower[] = [];
 
   const overpaidMap: Record<number, number> = {}; 
   let totalOverpaid = 0;
@@ -170,10 +169,8 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
           halfCashList.push(m);
       } else if (m.type === ManpowerType.TRANSIENT) {
           transientList.push(m);
-      } else if (m.type === ManpowerType.PENSION) {
-          pensionList.push(m);
       } else {
-          // Standard/Full Payers
+          // Standard/Full Payers (including PAYROLL, Commands, FULL_CASH, PENSION)
           if (useStandardRate) {
               const actualAmount = Number(m.amount) || 0;
               if (actualAmount > rateVal) {
