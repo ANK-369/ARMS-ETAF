@@ -1,7 +1,7 @@
 import express from "express";
 import path from "path";
 import fs from "fs";
-import { analyzeDataServer, chatWithAIServer, performLogisticsAnalysisServer } from "../server/gemini";
+import { analyzeDataServer, chatWithAIServer, performLogisticsAnalysisServer } from "../server/gemini.js";
 
 // Zero-dependency environment file loader to support local .env.local and .env
 function loadEnvFile() {
