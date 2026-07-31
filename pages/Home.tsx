@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useDate } from '../contexts/DateContext';
+import { useSidebar } from '../contexts/SidebarContext';
 import CustomSelect from '../components/CustomSelect';
 import etafLogo from '../assets/images/etaf_logo.png';
 
@@ -24,6 +25,7 @@ const Home: React.FC = () => {
   const [currentTime, setCurrentTime] = useState<Date>(new Date());
   
   const { t, language } = useLanguage();
+  const { isSidebarOpen } = useSidebar();
   
   // Use Global Date Context
   const { month: selectedMonth, setMonth: setSelectedMonth, year: selectedYear, setYear: setSelectedYear } = useDate();
@@ -506,7 +508,7 @@ const Home: React.FC = () => {
     ...thisMonthExpenses.map(e => ({
         ...e,
         totalValue: e.category === 'Market' ? (Number(e.amount || 0) * Number(e.singlePrice || 0)) : Number(e.amount || 0),
-        displayName: e.category === 'Market' ? e.itemName : (e.workerName || e.reason || 'Expense')
+        displayName: e.category === 'Market' ? e.itemName : (e.workerName || e.reason || t('expenditure'))
     })),
     ...thisMonthRefunds.map(r => ({
         ...r,
@@ -528,13 +530,13 @@ const Home: React.FC = () => {
     ...thisMonthSubsidies.filter(s => s.type === 'Financial').map(s => ({
         ...s,
         totalValue: Number(s.amount || 0),
-        displayName: s.itemName || s.source || 'Subsidy',
+        displayName: s.itemName || s.source || t('subsidy'),
         displaySubtext: t('subsidy')
     })),
     ...thisMonthTransfers.map(tItem => ({
         ...tItem,
         totalValue: Number(tItem.amount || 0),
-        displayName: tItem.description || 'Transfer',
+        displayName: tItem.description || t('transfer'),
         displaySubtext: t('budgetTransfer'),
         date: `${selectedYear}-${selectedMonth}-01`
     }))
@@ -551,13 +553,20 @@ const Home: React.FC = () => {
       { name: t('operationalExpense'), value: otherCost },
   ].sort((a, b) => b.value - a.value);
 
+  const incomeBreakdownData = [
+      { name: t('manpower'), value: manpowerMonthlyTotal },
+      { name: t('salesIncome'), value: incomeItemsMonthlyTotal },
+      { name: t('subsidy'), value: subsidiesMonthlyTotal },
+      { name: t('transfer'), value: transfersMonthlyTotal },
+  ].sort((a, b) => b.value - a.value);
+
   // Options for Dropdown
   const monthOptions = ETHIOPIAN_MONTHS.map((m, i) => ({
       value: (i + 1).toString().padStart(2, '0'),
       label: language === 'am' ? ETHIOPIAN_MONTHS_AMHARIC[i] : m
   }));
   
-  const yearsOptions = Array.from({length: 51}, (_, i) => (2000 + i).toString());
+  const yearsOptions = Array.from({length: 63}, (_, i) => (2018 + i).toString());
 
   // Modal Handler
   const openModal = (type: typeof modalType) => {
@@ -733,9 +742,9 @@ const Home: React.FC = () => {
           </div>
       </div>   
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+      <div className={`grid grid-cols-1 ${isSidebarOpen ? 'md:grid-cols-1' : 'md:grid-cols-2'} lg:grid-cols-2 gap-4 md:gap-6`}>
           {/* Card 1: Ethiopian Date & Time */}
-          <div className="bg-black/20 rounded-xl p-3 md:p-4 border border-military-700 flex flex-row items-center justify-between md:flex-col md:items-start lg:flex-row lg:items-center lg:justify-between gap-3 shadow-lg min-w-0">
+          <div className="bg-black/20 rounded-xl p-3 md:p-4 border border-military-700 flex flex-row items-center justify-between lg:flex-row lg:items-center lg:justify-between gap-3 shadow-lg min-w-0">
                <div className="flex items-center gap-3 min-w-0">
                    <div className="bg-gold-500/20 p-2 md:p-3 rounded-full text-gold-500 animate-pulse shrink-0">
                        <Clock size={20} className="md:w-6 md:h-6" />
@@ -751,7 +760,7 @@ const Home: React.FC = () => {
           </div>
 
           {/* Card 2: System Status */}
-          <div className="bg-black/20 rounded-xl p-3 md:p-4 border border-military-700 flex flex-row items-center justify-between md:flex-col md:items-start lg:flex-row lg:items-center lg:justify-between gap-3 shadow-lg min-w-0">
+          <div className="bg-black/20 rounded-xl p-3 md:p-4 border border-military-700 flex flex-row items-center justify-between lg:flex-row lg:items-center lg:justify-between gap-3 shadow-lg min-w-0">
                <div className="flex items-center gap-3 min-w-0">
                    <div className="bg-green-500/20 p-2 md:p-3 rounded-full text-green-500 shrink-0">
                        <Zap size={20} className="md:w-6 md:h-6" />
@@ -833,7 +842,7 @@ const Home: React.FC = () => {
           </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
+      <div className={`grid grid-cols-2 gap-3 md:gap-4 ${isSidebarOpen ? 'md:grid-cols-2' : 'md:grid-cols-4'} lg:grid-cols-4`}>
           <button onClick={() => openModal('manpower')} className="text-left bg-military-800 p-3 md:p-4 rounded-xl border-l-4 border-blue-500 shadow-lg hover:bg-military-700 hover:scale-[1.02] transition active:scale-95 group">
               <div className="flex justify-between items-start mb-2">
                   <span className="text-[10px] text-blue-400 font-bold uppercase group-hover:text-white transition">{t('manpower')} ({selectedMonth}/{selectedYear})</span>
@@ -969,15 +978,15 @@ const Home: React.FC = () => {
                </h3>
                <div className="space-y-3">
                    {topExpenses.map((e, idx) => (
-                       <div key={idx} className="flex justify-between items-center p-3 bg-military-900/40 rounded border border-gray-800 hover:border-red-500/50 transition">
-                           <div className="flex items-center gap-3">
+                       <div key={idx} className={`flex justify-between items-center p-3 bg-military-900/40 rounded border border-gray-800 hover:border-red-500/50 transition ${isSidebarOpen ? 'md:flex-col md:items-start md:justify-start md:gap-2 lg:flex-row lg:items-center lg:justify-between lg:gap-0' : ''}`}>
+                           <div className={`flex items-center gap-3 ${isSidebarOpen ? 'md:min-w-0 lg:min-w-0' : ''}`}>
                                <div className="w-6 h-6 rounded-full bg-red-900/30 text-red-500 flex items-center justify-center font-bold text-xs shrink-0">{idx + 1}</div>
                                <div className="min-w-0">
                                    <p className="font-bold text-white text-sm truncate">{e.displayName}</p>
                                    <p className="text-[10px] text-gray-500">{formatEthiopianDate(e.date, language)}</p>
                                </div>
                            </div>
-                           <div className="text-right shrink-0">
+                           <div className={`text-right shrink-0 ${isSidebarOpen ? 'md:text-left md:shrink md:w-full md:mt-1 lg:text-right lg:shrink-0 lg:w-auto lg:mt-0' : ''}`}>
                                <p className="text-red-400 font-mono font-bold text-sm md:text-base">-{Number(e.totalValue).toLocaleString()}</p>
                            </div>
                        </div>
@@ -992,15 +1001,15 @@ const Home: React.FC = () => {
                </h3>
                <div className="space-y-3">
                    {topIncome.map((i, idx) => (
-                       <div key={idx} className="flex justify-between items-center p-3 bg-military-900/40 rounded border border-gray-800 hover:border-green-500/50 transition">
-                           <div className="flex items-center gap-3">
+                       <div key={idx} className={`flex justify-between items-center p-3 bg-military-900/40 rounded border border-gray-800 hover:border-green-500/50 transition ${isSidebarOpen ? 'md:flex-col md:items-start md:justify-start md:gap-2 lg:flex-row lg:items-center lg:justify-between lg:gap-0' : ''}`}>
+                           <div className={`flex items-center gap-3 ${isSidebarOpen ? 'md:min-w-0 lg:min-w-0' : ''}`}>
                                <div className="w-6 h-6 rounded-full bg-green-900/30 text-green-500 flex items-center justify-center font-bold text-xs shrink-0">{idx + 1}</div>
                                <div className="min-w-0">
                                    <p className="font-bold text-white text-sm truncate">{i.displayName}</p>
                                    <p className="text-[10px] text-gray-500">{i.amount} {t(i.measurement)}</p>
                                </div>
                            </div>
-                           <div className="text-right shrink-0">
+                           <div className={`text-right shrink-0 ${isSidebarOpen ? 'md:text-left md:shrink md:w-full md:mt-1 lg:text-right lg:shrink-0 lg:w-auto lg:mt-0' : ''}`}>
                                <p className="text-green-400 font-mono font-bold text-sm md:text-base">+{Number(i.totalValue).toLocaleString()}</p>
                            </div>
                        </div>
@@ -1036,6 +1045,32 @@ const Home: React.FC = () => {
            </div>
       </div>
 
+       <div className="bg-slate-900 border border-military-700 rounded-2xl flex flex-col shadow-xl overflow-hidden h-72 md:h-80">
+            <div className="p-4 border-b border-military-800 bg-military-900/50 flex justify-between items-center">
+                <h3 className="text-green-400 font-bold text-sm uppercase tracking-widest flex items-center gap-2">
+                    <TrendingUp size={16}/> {t('incomeBreakdown')}
+                </h3>
+            </div>
+            <div className="flex-1 w-full p-2 md:p-4">
+                 <ResponsiveContainer width="100%" height="100%">
+                     <BarChart
+                         data={incomeBreakdownData}
+                         margin={{ top: 20, right: 10, left: 0, bottom: 5 }}
+                     >
+                         <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
+                         <XAxis dataKey="name" stroke="#94a3b8" tick={{fontSize: 10}} axisLine={false} tickLine={false} />
+                         <YAxis stroke="#94a3b8" tick={{fontSize: 9}} axisLine={false} tickLine={false} />
+                         <RechartsTooltip 
+                             cursor={{fill: '#ffffff10'}} 
+                             contentStyle={{ backgroundColor: '#0f172a', borderColor: '#d4af37', color: '#fff' }}
+                             formatter={(value: any) => [Number(value).toLocaleString(), t('amount')]}
+                         />
+                         <Bar dataKey="value" fill="#22c55e" radius={[4, 4, 0, 0]} barSize={40} />
+                     </BarChart>
+                 </ResponsiveContainer>
+            </div>
+       </div>
+
       <div className="bg-slate-900 border border-military-700 rounded-2xl p-4 md:p-6 shadow-xl">
           <div className="flex justify-between items-center mb-4">
               <h3 className="text-gold-500 font-bold text-sm uppercase tracking-widest flex items-center gap-2">
@@ -1054,16 +1089,20 @@ const Home: React.FC = () => {
                   </thead>
                   <tbody className="divide-y divide-gray-800">
                       {[
-                          ...thisMonthExpenses.map(e => ({ id: e.id, type: 'Expenditure', label: e.category === 'Market' ? e.itemName : e.category, amount: -(Number(e.category === 'Market' ? (Number(e.amount) * Number(e.singlePrice || 1)) : e.amount)), date: e.date })),
-                          ...thisMonthIncomeItems.map(i => ({ id: i.id, type: 'Income', label: i.name, amount: (Number(i.amount) * Number(i.singlePrice)), date: i.date })),
-                          ...thisMonthRefunds.map(r => ({ id: r.id, type: 'Refunds', label: `${r.firstName} ${r.lastName}`, amount: -Number(r.amount), date: r.stopDate })),
-                          ...thisMonthSubsidies.map(s => ({ id: s.id, type: 'Subsidy', label: s.itemName || s.source || 'Subsidy', amount: s.type === 'Financial' ? Number(s.amount) : 0, date: s.date })),
-                          ...thisMonthTransfers.map(tr => ({ id: tr.id, type: 'Transfer', label: tr.description || 'Transfer', amount: Number(tr.amount), date: `${selectedYear}-${selectedMonth}-01` })),
-                          ...monthlyManpower.map(m => ({ id: m.id, type: 'Manpower', label: `${m.firstName} ${m.lastName} (${m.type})`, amount: m.amount ? Number(m.amount) : 0, date: m.startDate })),
-                          ...data.storeItems.filter(si => isSameMonth(si.date, `${filterDatePrefix}-01`)).map(si => ({ id: si.id, type: 'StoreItem', label: si.name, amount: 0, date: si.date })),
-                          ...data.storeOrders.filter(so => isSameMonth(so.date, `${filterDatePrefix}-01`)).map(so => ({ id: so.id, type: 'StoreOrder', label: so.itemName, amount: 0, date: so.date })),
-                          ...data.notes.filter(n => isSameMonth(n.date, `${filterDatePrefix}-01`)).map(n => ({ id: n.id, type: 'Note', label: n.title, amount: 0, date: n.date }))
-                      ].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 8).map((item, idx) => (
+                          ...thisMonthExpenses.map((e, _i) => ({ id: e.id, type: 'Expenditure', label: e.category === 'Market' ? e.itemName : e.category === 'Other' ? t('operationalExpense') : t(e.category.toLowerCase()), amount: -(Number(e.category === 'Market' ? (Number(e.amount) * Number(e.singlePrice || 1)) : e.amount)), date: e.date, _seq: _i })),
+                          ...thisMonthIncomeItems.map((i, _i) => ({ id: i.id, type: 'Income', label: i.name, amount: (Number(i.amount) * Number(i.singlePrice)), date: i.date, _seq: _i })),
+                          ...thisMonthRefunds.map((r, _i) => ({ id: r.id, type: 'Refunds', label: `${r.firstName} ${r.lastName}`, amount: -Number(r.amount), date: r.stopDate, _seq: _i })),
+                          ...thisMonthSubsidies.map((s, _i) => ({ id: s.id, type: 'Subsidy', label: s.itemName || s.source || t('subsidy'), amount: s.type === 'Financial' ? Number(s.amount) : 0, date: s.date, _seq: _i })),
+                          ...thisMonthTransfers.map((tr, _i) => ({ id: tr.id, type: 'Transfer', label: tr.description || t('transfer'), amount: Number(tr.amount), date: `${selectedYear}-${selectedMonth}-01`, _seq: _i })),
+                          ...monthlyManpower.map((m, _i) => ({ id: m.id, type: 'Manpower', label: `${m.firstName} ${m.lastName} (${m.type})`, amount: m.amount ? Number(m.amount) : 0, date: m.startDate, _seq: _i })),
+                          ...data.storeItems.filter(si => isSameMonth(si.date, `${filterDatePrefix}-01`)).map((si, _i) => ({ id: si.id, type: 'StoreItem', label: si.name, amount: 0, date: si.date, _seq: _i })),
+                          ...data.storeOrders.filter(so => isSameMonth(so.date, `${filterDatePrefix}-01`)).map((so, _i) => ({ id: so.id, type: 'StoreOrder', label: so.itemName, amount: 0, date: so.date, _seq: _i })),
+                          ...data.notes.filter(n => isSameMonth(n.date, `${filterDatePrefix}-01`)).map((n, _i) => ({ id: n.id, type: 'Note', label: n.title, amount: 0, date: n.date, _seq: _i }))
+                      ].sort((a, b) => {
+                          const dateCompare = b.date.localeCompare(a.date);
+                          if (dateCompare !== 0) return dateCompare;
+                          return b._seq - a._seq;
+                      }).slice(0, 10).map((item, idx) => (
                           <tr key={idx} className="hover:bg-military-800/50 transition">
                               <td className="p-3">
                                   <span className={`text-[10px] font-bold px-2 py-1 rounded ${

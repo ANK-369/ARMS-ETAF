@@ -158,6 +158,7 @@ export const dictionary: Translations = {
   topExpenses: { en: "Top Expenses", am: "ከፍተኛ ወጪዎች" },
   topIncome: { en: "Top Income Sources", am: "ከፍተኛ ገቢዎች" },
   expenditureBreakdown: { en: "Expenditure Breakdown", am: "የወጪ ዝርዝር ሁኔታ" },
+  incomeBreakdown: { en: "Income Breakdown", am: "የገቢ ዝርዝር ሁኔታ" },
   market: { en: "Market", am: "ገበያ" },
   wage: { en: "Wage", am: "ደመወዝ" },
   operationalExpense: { en: "Others Cost", am: "ልዩ ልዩ ወጪ" },

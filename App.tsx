@@ -15,6 +15,7 @@ import DbAdministration from './pages/DbAdministration';
 import { ShieldCheck, Plane, Lock, User, Cpu, Globe, Cloud, RefreshCw, CheckCircle } from 'lucide-react';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import { DateProvider } from './contexts/DateContext';
+import { SidebarProvider } from './contexts/SidebarContext';
 import { getGitHubConfig, fetchFromGitHub } from './services/githubService';
 import { saveDB, getStoredUsername, verifyPassword, getStoredSecurityQuestion, verifySecurityAnswer, resetPasswordDirectly } from './services/db';
 import { Login } from './pages/Login';
@@ -126,9 +127,11 @@ const App: React.FC = () => {
   return (
     <LanguageProvider>
       <DateProvider>
-        <Router>
-            <AppContent isAuth={isAuthenticated} authRole={authRole} onLogin={updateAuth} onLogout={() => updateAuth(null)} />
-        </Router>
+        <SidebarProvider>
+          <Router>
+              <AppContent isAuth={isAuthenticated} authRole={authRole} onLogin={updateAuth} onLogout={() => updateAuth(null)} />
+          </Router>
+        </SidebarProvider>
       </DateProvider>
     </LanguageProvider>
   );

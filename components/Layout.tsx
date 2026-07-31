@@ -10,6 +10,7 @@ import { downloadFile } from '../services/dataTransfer';
 import { AppData } from '../types';
 import ConfirmDialog from './ConfirmDialog';
 import { useLanguage } from '../contexts/LanguageContext';
+import { useSidebar } from '../contexts/SidebarContext';
 import etafLogo from '../assets/images/etaf_logo.png';
 
 interface LayoutProps {
@@ -21,7 +22,7 @@ interface LayoutProps {
 
 const Layout: React.FC<LayoutProps> = ({ children, activePage, onNavigate, onLogout }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
-  const [isSidebarOpen, setIsSidebarOpen] = React.useState(true); // Global Sidebar State
+  const { isSidebarOpen, setIsSidebarOpen } = useSidebar(); // Global Sidebar State
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { t, language, toggleLanguage } = useLanguage();
