@@ -395,7 +395,7 @@ const DbAdministration: React.FC = () => {
         setGeminiTestResult(null);
         try {
             const { analyzeData } = await import('../services/geminiService');
-            const result = await analyzeData("Respond with exactly the word 'OK'.", "[]", language, geminiApiKey);
+            const result = await analyzeData("Respond with exactly the word 'OK'.", "[]", language, geminiApiKey, true);
             if (result && result.toUpperCase().includes("OK")) {
                 setGeminiTestResult({ success: true, msg: "Connection successful! Gemini response: " + result });
             } else if (result && result.includes("Error connecting")) {

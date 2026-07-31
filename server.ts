@@ -50,9 +50,9 @@ async function startServer() {
 
   app.post(["/api/gemini/analyze", "/gemini/analyze"], async (req, res) => {
     try {
-      const { query, contextData, language } = req.body;
+      const { query, contextData, language, isTestPing } = req.body;
       const customKey = req.headers['x-gemini-api-key'] as string | undefined;
-      const result = await analyzeDataServer(query, contextData, language, customKey);
+      const result = await analyzeDataServer(query, contextData, language, customKey, isTestPing);
       res.json({ result });
     } catch (err: any) {
       console.error("Express Error /api/gemini/analyze:", err);

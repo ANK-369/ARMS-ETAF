@@ -47,12 +47,37 @@ async function runWithModelFallback<T>(
     throw lastError || new Error("All fallback models failed.");
 }
 
-export const analyzeDataServer = async (query: string, contextData: string, language: 'en' | 'am' = 'en', customApiKey?: string) => {
+export const analyzeDataServer = async (query: string, contextData: string, language: 'en' | 'am' = 'en', customApiKey?: string, isTestPing?: boolean) => {
   const apiKey = getGeminiApiKey(customApiKey);
   if (!apiKey) {
     throw new Error(language === 'am' 
         ? "የጌሚኒ ኤፒአይ ቁልፍ አልተዋቀረም ወይም አልተገኘም። እባክዎ በዳታቤዝ አስተዳደር ክፍል ውስጥ ያስቀምጡት።" 
         : "Gemini API Key is not configured or saved. Please configure it in the database administration section.");
+  }
+
+  if (isTestPing) {
+    const testPrompt = "Respond with exactly the word 'OK', nothing else.";
+    try {
+      return await runWithModelFallback(apiKey, async (ai, model) => {
+        const response = await ai.models.generateContent({
+          model: model,
+          contents: testPrompt,
+        });
+        return response.text;
+      }, language);
+    } catch (error: any) {
+      const errMsg = error?.message || String(error);
+      const isQuota = errMsg.toLowerCase().includes("quota") || 
+                      errMsg.toLowerCase().includes("exhausted") || 
+                      errMsg.toLowerCase().includes("429") ||
+                      errMsg.toLowerCase().includes("limit");
+      if (isQuota) {
+        throw error;
+      }
+      throw new Error(language === 'am'
+          ? `ከአይ አገልግሎት ጋር መገናኘት አልተሳካም። ዝርዝር፦ ${errMsg}`
+          : `Error connecting to AI service. Detail: ${errMsg}`);
+    }
   }
 
   const langInstruction = language === 'am' 

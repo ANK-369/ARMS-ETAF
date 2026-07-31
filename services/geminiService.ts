@@ -20,11 +20,11 @@ const getHeaders = (customApiKey?: string) => {
   return headers;
 };
 
-export const analyzeData = async (query: string, contextData: string, language: 'en' | 'am' = 'en', customApiKey?: string): Promise<string> => {
+export const analyzeData = async (query: string, contextData: string, language: 'en' | 'am' = 'en', customApiKey?: string, isTestPing?: boolean): Promise<string> => {
   const response = await fetch('/api/gemini/analyze', {
     method: 'POST',
     headers: getHeaders(customApiKey),
-    body: JSON.stringify({ query, contextData, language })
+    body: JSON.stringify({ query, contextData, language, isTestPing })
   });
   if (!response.ok) {
     let serverErr = "";
