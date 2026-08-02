@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { getDB, deleteItem, updateItem } from '../services/db';
-import { AppData } from '../types';
+import { AppData, Command, ManpowerType, MEASUREMENT_OPTIONS } from '../types';
 import { 
     Trash2, Edit, Save, X, Search, CheckCircle, Users, TrendingUp, Gift, 
     ArrowRightLeft, ShoppingCart, RotateCcw, Package, ShoppingBag, Book, 
@@ -9,9 +9,12 @@ import {
     FileText, AlertTriangle
 } from 'lucide-react';
 import ConfirmDialog from '../components/ConfirmDialog';
+import CustomSelect from '../components/CustomSelect';
+import GroupedRankSelect, { formatRankDisplay } from '../components/GroupedRankSelect';
+import EthiopianDatePicker from '../components/EthiopianDatePicker';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useDate } from '../contexts/DateContext';
-import { ETHIOPIAN_MONTHS } from '../services/ethiopianDate';
+import { ETHIOPIAN_MONTHS, ETHIOPIAN_MONTHS_AMHARIC } from '../services/ethiopianDate';
 
 const DataEditor: React.FC = () => {
   const [data, setData] = useState<AppData | null>(null);
@@ -20,7 +23,7 @@ const DataEditor: React.FC = () => {
   const [msg, setMsg] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { month: selectedMonth, year: selectedYear } = useDate();
 
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -103,12 +106,12 @@ const DataEditor: React.FC = () => {
       }, 50);
   };
 
-  const handleInputChange = (key: string, value: string, isNumeric: boolean) => {
+  const handleInputChange = (key: string, value: any, isNumeric: boolean) => {
       // Force numeric types to prevent string concatenation bugs (e.g. "3000" + "3000" = "30003000")
       if (isNumeric) {
-          setEditForm({ ...editForm, [key]: Number(value) });
+          setEditForm((prev: any) => ({ ...prev, [key]: Number(value) }));
       } else {
-          setEditForm({ ...editForm, [key]: value });
+          setEditForm((prev: any) => ({ ...prev, [key]: value }));
       }
   };
 
@@ -124,7 +127,7 @@ const DataEditor: React.FC = () => {
       if (!complexEditField) return;
       try {
           const parsed = JSON.parse(complexEditField.value);
-          setEditForm({ ...editForm, [complexEditField.key]: parsed });
+          setEditForm((prev: any) => ({ ...prev, [complexEditField.key]: parsed }));
           setComplexEditField(null);
       } catch (e) {
           setConfirmDialog({
@@ -140,6 +143,120 @@ const DataEditor: React.FC = () => {
   };
 
   const isComplex = (val: any) => typeof val === 'object' && val !== null;
+
+  // Translation helpers for labels and values
+  const getFieldLabel = (key: string, collection: string): string => {
+      switch (key) {
+          case 'firstName': return t('firstName');
+          case 'lastName': return t('lastName');
+          case 'rank': return t('rank');
+          case 'command': return t('command');
+          case 'type': 
+              if (collection === 'subsidies') return t('subsidyType');
+              return t('type');
+          case 'startDate': return t('startDate');
+          case 'endDate': return t('endDate');
+          case 'stopDate': return t('refundDate') || t('stopDate');
+          case 'archivedDate': return t('date');
+          case 'description': return t('description');
+          case 'amount':
+              if (collection === 'refunds') return t('refundAmount');
+              if (collection === 'transfers') return t('amountTransferred');
+              return t('amount');
+          case 'name':
+              if (collection === 'foodProgramArchive') return t('name');
+              return t('itemName');
+          case 'itemName': return t('itemName');
+          case 'measurement': return t('measurement');
+          case 'singlePrice': return t('singlePrice');
+          case 'date': return t('date');
+          case 'source': return t('source');
+          case 'dateFrom': return t('monthFrom');
+          case 'dateTo': return t('monthTo');
+          case 'category': return t('category');
+          case 'workerName': return t('workerName');
+          case 'workerPosition': return t('positionJob');
+          case 'reason': return t('reasonTitle');
+          case 'buyerName': return t('buyer');
+          case 'status': return t('status');
+          case 'quantity': return t('quantity');
+          case 'unitPrice': return t('unitPrice');
+          case 'totalPrice': return t('totalPrice');
+          case 'title': return t('subject');
+          case 'content': return t('details');
+          case 'program': return t('program');
+          default: {
+              const translated = t(key);
+              return translated !== key ? translated : key;
+          }
+      }
+  };
+
+  const getFieldValue = (key: string, val: any, item: any, collection: string): string => {
+      if (val === null || val === undefined) return '';
+      if (typeof val === 'object') return `[${t('complexData')}]`;
+
+      const strVal = String(val);
+
+      if (key === 'command') {
+          return t(strVal);
+      }
+
+      if (key === 'rank') {
+          return formatRankDisplay(strVal, item?.command, t);
+      }
+
+      if (key === 'type') {
+          if (collection === 'manpower') {
+              return t(strVal);
+          }
+          if (collection === 'subsidies') {
+              if (strVal === 'Financial') return t('subsidyFinancial');
+              if (strVal === 'Food') return t('subsidyFood');
+              return t(strVal);
+          }
+      }
+
+      if (key === 'category') {
+          if (collection === 'expenses') {
+              if (strVal === 'Market') return t('market');
+              if (strVal === 'Wage') return t('wage');
+              if (strVal === 'Other') return t('operationalExpense') || t('other');
+          }
+          if (collection === 'storeItems') {
+              if (strVal === 'inventory') return t('itemList');
+              if (strVal === 'transfer') return t('transfers');
+          }
+          if (collection === 'notes') {
+              if (strVal === 'Incident') return t('Incident');
+              if (strVal === 'Plan') return t('Plan');
+              if (strVal === 'General') return t('General');
+          }
+      }
+
+      if (key === 'status') {
+          if (collection === 'storeOrders') {
+              if (strVal === 'Pending') return t('pending');
+              if (strVal === 'Completed') return t('completed');
+          }
+      }
+
+      if (key === 'measurement') {
+          return t(strVal);
+      }
+
+      if (key === 'dateFrom' || key === 'dateTo') {
+          if (collection === 'transfers') {
+              const idx = ETHIOPIAN_MONTHS.indexOf(strVal);
+              if (idx !== -1 && language === 'am') {
+                  return ETHIOPIAN_MONTHS_AMHARIC[idx];
+              }
+              return strVal;
+          }
+      }
+
+      return strVal;
+  };
 
   // Filter Helper
   const isRecordInMonth = (item: any) => {
@@ -178,7 +295,199 @@ const DataEditor: React.FC = () => {
   const activeCollectionLabel = COLLECTIONS.find(c => c.key === activeCollection)?.label || activeCollection;
 
   // List of fields that MUST be numbers to prevent calculation errors
-  const NUMERIC_FIELDS = ['amount', 'singlePrice', 'quantity', 'cost', 'baseManpower', 'totalAmount', 'price'];
+  const NUMERIC_FIELDS = ['amount', 'singlePrice', 'quantity', 'cost', 'baseManpower', 'totalAmount', 'price', 'unitPrice', 'totalPrice'];
+
+  const renderEditControl = (key: string) => {
+      const isNumericField = NUMERIC_FIELDS.includes(key) || typeof editForm[key] === 'number';
+
+      if (key === 'id') {
+          return (
+              <input 
+                  className="w-full bg-black/40 border border-gray-700 rounded p-3 text-gray-500 font-mono text-sm cursor-not-allowed" 
+                  value={editForm[key] || ''} 
+                  disabled 
+              />
+          );
+      }
+
+      if (isComplex(editForm[key])) {
+          return (
+              <div className="flex items-center gap-2">
+                  <div className="flex-1 bg-black/40 border border-gray-700 rounded p-3 text-gray-500 font-mono text-sm italic">
+                      {t('complexData')}
+                  </div>
+                  <button 
+                      type="button"
+                      onClick={() => openComplexEditor(key)} 
+                      className="bg-military-800 hover:bg-gold-500 hover:text-black border border-gray-600 text-gold-500 px-4 py-3 rounded font-bold text-xs transition flex items-center gap-2 shrink-0"
+                  >
+                      <Code size={16}/> {t('editJson')}
+                  </button>
+              </div>
+          );
+      }
+
+      // Command dropdown (manpower, refunds)
+      if (key === 'command' && (activeCollection === 'manpower' || activeCollection === 'refunds')) {
+          return (
+              <CustomSelect
+                  value={editForm[key] || ''}
+                  onChange={val => handleInputChange(key, val, false)}
+                  options={Object.values(Command).map(c => ({ value: c, label: t(c) }))}
+              />
+          );
+      }
+
+      // Rank dropdown (manpower, refunds)
+      if (key === 'rank' && (activeCollection === 'manpower' || activeCollection === 'refunds')) {
+          return (
+              <GroupedRankSelect
+                  value={editForm[key] || ''}
+                  onChange={val => handleInputChange(key, val, false)}
+                  command={editForm.command}
+              />
+          );
+      }
+
+      // Type dropdown
+      if (key === 'type') {
+          if (activeCollection === 'manpower') {
+              return (
+                  <CustomSelect
+                      value={editForm[key] || ''}
+                      onChange={val => handleInputChange(key, val, false)}
+                      options={Object.values(ManpowerType)
+                          .filter(v => v !== ManpowerType.PENSION || editForm[key] === ManpowerType.PENSION)
+                          .map(v => ({ value: v, label: t(v) }))}
+                  />
+              );
+          }
+          if (activeCollection === 'subsidies') {
+              return (
+                  <CustomSelect
+                      value={editForm[key] || ''}
+                      onChange={val => handleInputChange(key, val, false)}
+                      options={[
+                          { value: 'Financial', label: t('subsidyFinancial') },
+                          { value: 'Food', label: t('subsidyFood') }
+                      ]}
+                  />
+              );
+          }
+      }
+
+      // Measurement dropdown
+      if (key === 'measurement') {
+          return (
+              <CustomSelect
+                  value={editForm[key] || ''}
+                  onChange={val => handleInputChange(key, val, false)}
+                  options={MEASUREMENT_OPTIONS.map(opt => ({ value: opt, label: t(opt) }))}
+              />
+          );
+      }
+
+      // Month dropdown for transfers
+      if ((key === 'dateFrom' || key === 'dateTo') && activeCollection === 'transfers') {
+          return (
+              <CustomSelect
+                  value={editForm[key] || ''}
+                  onChange={val => handleInputChange(key, val, false)}
+                  options={ETHIOPIAN_MONTHS.map((m, idx) => ({
+                      value: m,
+                      label: language === 'am' ? ETHIOPIAN_MONTHS_AMHARIC[idx] : m
+                  }))}
+              />
+          );
+      }
+
+      // Ethiopian Date Pickers for date fields
+      if (['startDate', 'endDate', 'stopDate', 'date', 'archivedDate'].includes(key)) {
+          return (
+              <EthiopianDatePicker
+                  value={editForm[key] || ''}
+                  onChange={val => handleInputChange(key, val, false)}
+              />
+          );
+      }
+
+      // Expense / StoreItem / Note Category dropdown
+      if (key === 'category') {
+          if (activeCollection === 'expenses') {
+              return (
+                  <CustomSelect
+                      value={editForm[key] || ''}
+                      onChange={val => handleInputChange(key, val, false)}
+                      options={[
+                          { value: 'Market', label: t('market') },
+                          { value: 'Wage', label: t('wage') },
+                          { value: 'Other', label: t('operationalExpense') || t('other') }
+                      ]}
+                  />
+              );
+          }
+          if (activeCollection === 'storeItems') {
+              return (
+                  <CustomSelect
+                      value={editForm[key] || ''}
+                      onChange={val => handleInputChange(key, val, false)}
+                      options={[
+                          { value: 'inventory', label: t('itemList') },
+                          { value: 'transfer', label: t('transfers') }
+                      ]}
+                  />
+              );
+          }
+          if (activeCollection === 'notes') {
+              return (
+                  <CustomSelect
+                      value={editForm[key] || ''}
+                      onChange={val => handleInputChange(key, val, false)}
+                      options={[
+                          { value: 'Incident', label: t('Incident') },
+                          { value: 'Plan', label: t('Plan') },
+                          { value: 'General', label: t('General') }
+                      ]}
+                  />
+              );
+          }
+      }
+
+      // Store Order Status dropdown
+      if (key === 'status' && activeCollection === 'storeOrders') {
+          return (
+              <CustomSelect
+                  value={editForm[key] || ''}
+                  onChange={val => handleInputChange(key, val, false)}
+                  options={[
+                      { value: 'Pending', label: t('pending') },
+                      { value: 'Completed', label: t('completed') }
+                  ]}
+              />
+          );
+      }
+
+      // Note content text area
+      if (key === 'content' && activeCollection === 'notes') {
+          return (
+              <textarea
+                  className="w-full bg-slate-800 border border-gray-600 rounded p-3 text-white focus:border-blue-500 outline-none transition h-32 resize-y font-sans"
+                  value={editForm[key] !== undefined && editForm[key] !== null ? editForm[key] : ''}
+                  onChange={e => handleInputChange(key, e.target.value, false)}
+              />
+          );
+      }
+
+      // Default text / number input
+      return (
+          <input 
+              type={isNumericField ? "number" : "text"}
+              className="w-full bg-slate-800 border border-gray-600 rounded p-3 text-white focus:border-blue-500 outline-none transition"
+              value={editForm[key] !== undefined && editForm[key] !== null ? editForm[key] : ''}
+              onChange={e => handleInputChange(key, e.target.value, isNumericField)}
+          />
+      );
+  };
 
   return (
     <div className="flex h-full bg-slate-900 overflow-hidden relative">
@@ -251,9 +560,9 @@ const DataEditor: React.FC = () => {
                                 onClick={() => { setActiveCollection(col.key as any); if(window.innerWidth < 768) setIsSidebarOpen(false); }}
                                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all ${activeCollection === col.key ? 'bg-gold-500 text-black shadow-lg font-bold' : 'text-gray-400 hover:bg-white/5 hover:text-white'}`}
                              >
-                                 <col.icon size={16} />
-                                 <span className="truncate">{col.label}</span>
-                                 {activeCollection === col.key && <ChevronRight size={14} className="ml-auto opacity-50"/>}
+                                  <col.icon size={16} />
+                                  <span className="truncate">{col.label}</span>
+                                  {activeCollection === col.key && <ChevronRight size={14} className="ml-auto opacity-50"/>}
                              </button>
                          ))}
                      </div>
@@ -310,9 +619,11 @@ const DataEditor: React.FC = () => {
                                <div className="flex-1 space-y-1.5 mb-2 overflow-hidden">
                                    {Object.entries(item).filter(([k]) => k !== 'id').slice(0, 5).map(([key, val]) => (
                                        <div key={key} className="grid grid-cols-3 gap-2 text-xs">
-                                           <span className="text-gray-500 font-bold uppercase truncate text-[10px] pt-0.5">{key}</span>
+                                           <span className="text-gray-500 font-bold uppercase truncate text-[10px] pt-0.5">
+                                               {getFieldLabel(key, activeCollection)}
+                                           </span>
                                            <span className="col-span-2 text-gray-300 truncate font-mono">
-                                               {typeof val === 'object' ? `[${t('complexData')}]` : String(val)}
+                                               {getFieldValue(key, val, item, activeCollection)}
                                            </span>
                                        </div>
                                    ))}
@@ -337,33 +648,14 @@ const DataEditor: React.FC = () => {
                            <AlertTriangle size={16}/> {t('dbEditCaution')}
                        </div>
 
-                       {Object.keys(editForm).map((key) => {
-                           const isNumericField = NUMERIC_FIELDS.includes(key) || typeof editForm[key] === 'number';
-                           
-                           return (
+                       {Object.keys(editForm).map((key) => (
                            <div key={key} className="space-y-1">
-                               <label className="text-xs text-gray-400 font-bold uppercase ml-1 block">{key}</label>
-                               {key === 'id' ? (
-                                   <input className="w-full bg-black/40 border border-gray-700 rounded p-3 text-gray-500 font-mono text-sm cursor-not-allowed" value={editForm[key]} disabled />
-                               ) : isComplex(editForm[key]) ? (
-                                   <div className="flex items-center gap-2">
-                                       <div className="flex-1 bg-black/40 border border-gray-700 rounded p-3 text-gray-500 font-mono text-sm italic">
-                                           {t('complexData')}
-                                       </div>
-                                       <button onClick={() => openComplexEditor(key)} className="bg-military-800 hover:bg-gold-500 hover:text-black border border-gray-600 text-gold-500 px-4 py-3 rounded font-bold text-xs transition">
-                                           <Code size={16}/> {t('editJson')}
-                                       </button>
-                                   </div>
-                               ) : (
-                                   <input 
-                                     type={isNumericField ? "number" : "text"}
-                                     className="w-full bg-slate-800 border border-gray-600 rounded p-3 text-white focus:border-blue-500 outline-none transition"
-                                     value={editForm[key]}
-                                     onChange={e => handleInputChange(key, e.target.value, isNumericField)}
-                                   />
-                               )}
+                               <label className="text-xs text-gray-400 font-bold uppercase ml-1 block">
+                                   {getFieldLabel(key, activeCollection)}
+                               </label>
+                               {renderEditControl(key)}
                            </div>
-                       )})}
+                       ))}
                    </div>
 
                    <div className="p-4 border-t border-gray-700 flex justify-end gap-3 bg-military-800 rounded-b-xl">
@@ -381,3 +673,4 @@ const DataEditor: React.FC = () => {
 };
 
 export default DataEditor;
+
