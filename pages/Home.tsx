@@ -560,6 +560,9 @@ const Home: React.FC = () => {
       { name: t('transfer'), value: transfersMonthlyTotal },
   ].sort((a, b) => b.value - a.value);
 
+  const expenseBreakdownTotal = expenseBreakdownData.reduce((sum, item) => sum + (Number(item.value) || 0), 0);
+  const incomeBreakdownTotal = incomeBreakdownData.reduce((sum, item) => sum + (Number(item.value) || 0), 0);
+
   // Options for Dropdown
   const monthOptions = ETHIOPIAN_MONTHS.map((m, i) => ({
       value: (i + 1).toString().padStart(2, '0'),
@@ -986,7 +989,7 @@ const Home: React.FC = () => {
                                    <p className="text-[10px] text-gray-500">{formatEthiopianDate(e.date, language)}</p>
                                </div>
                            </div>
-                           <div className={`text-right shrink-0 ${isSidebarOpen ? 'md:text-left md:shrink md:w-full md:mt-1 lg:text-right lg:shrink-0 lg:w-auto lg:mt-0' : ''}`}>
+                           <div className={`text-right shrink-0 ${isSidebarOpen ? 'md:text-left md:shrink md:w-full md:mt-1 md:ml-9 lg:text-right lg:shrink-0 lg:w-auto lg:mt-0 lg:ml-0' : ''}`}>
                                <p className="text-red-400 font-mono font-bold text-sm md:text-base">-{Number(e.totalValue).toLocaleString()}</p>
                            </div>
                        </div>
@@ -1009,7 +1012,7 @@ const Home: React.FC = () => {
                                    <p className="text-[10px] text-gray-500">{i.amount} {t(i.measurement)}</p>
                                </div>
                            </div>
-                           <div className={`text-right shrink-0 ${isSidebarOpen ? 'md:text-left md:shrink md:w-full md:mt-1 lg:text-right lg:shrink-0 lg:w-auto lg:mt-0' : ''}`}>
+                           <div className={`text-right shrink-0 ${isSidebarOpen ? 'md:text-left md:shrink md:w-full md:mt-1 md:ml-9 lg:text-right lg:shrink-0 lg:w-auto lg:mt-0 lg:ml-0' : ''}`}>
                                <p className="text-green-400 font-mono font-bold text-sm md:text-base">+{Number(i.totalValue).toLocaleString()}</p>
                            </div>
                        </div>
@@ -1037,7 +1040,10 @@ const Home: React.FC = () => {
                         <RechartsTooltip 
                             cursor={{fill: '#ffffff10'}} 
                             contentStyle={{ backgroundColor: '#0f172a', borderColor: '#d4af37', color: '#fff' }}
-                            formatter={(value: any) => [Number(value).toLocaleString(), t('amount')]}
+                            formatter={(value: any) => {
+                                const pct = expenseBreakdownTotal > 0 ? (Number(value) / expenseBreakdownTotal * 100).toFixed(1) : '0.0';
+                                return [`${Number(value).toLocaleString()} (${pct}%)`, t('amount')];
+                            }}
                         />
                         <Bar dataKey="value" fill="#ef4444" radius={[4, 4, 0, 0]} barSize={40} />
                     </BarChart>
@@ -1063,7 +1069,10 @@ const Home: React.FC = () => {
                          <RechartsTooltip 
                              cursor={{fill: '#ffffff10'}} 
                              contentStyle={{ backgroundColor: '#0f172a', borderColor: '#d4af37', color: '#fff' }}
-                             formatter={(value: any) => [Number(value).toLocaleString(), t('amount')]}
+                             formatter={(value: any) => {
+                                 const pct = incomeBreakdownTotal > 0 ? (Number(value) / incomeBreakdownTotal * 100).toFixed(1) : '0.0';
+                                 return [`${Number(value).toLocaleString()} (${pct}%)`, t('amount')];
+                             }}
                          />
                          <Bar dataKey="value" fill="#22c55e" radius={[4, 4, 0, 0]} barSize={40} />
                      </BarChart>
