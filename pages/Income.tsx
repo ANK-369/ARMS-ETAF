@@ -7,6 +7,7 @@ import EthiopianDatePicker from '../components/EthiopianDatePicker';
 import DataTools from '../components/DataTools';
 import { Users, Package, Gift, ArrowRightLeft, CheckCircle } from 'lucide-react';
 import CustomSelect from '../components/CustomSelect';
+import GroupedRankSelect from '../components/GroupedRankSelect';
 import SmartInput from '../components/SmartInput';
 import DuplicateResolutionModal from '../components/DuplicateResolutionModal';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -59,7 +60,7 @@ const Income: React.FC = () => {
   const [dupModal, setDupModal] = useState<{isOpen: boolean, reason: string, item: any}>({ isOpen: false, reason: '', item: null });
 
   const [manpowerForm, setManpowerForm] = useState({
-    firstName: '', lastName: '', rank: 'Air Force', command: Command.AF, type: ManpowerType.PAYROLL, 
+    firstName: '', lastName: '', rank: '', command: '' as Command, type: ManpowerType.PAYROLL, 
     startDate: getCurrentEthiopianDate(), endDate: getCurrentEthiopianDate(), description: '', amount: 0
   });
 
@@ -285,32 +286,39 @@ const Income: React.FC = () => {
             </div>
             
             <div className="mb-4">
-              <label className={LabelClass}>{t('rank')}</label>
+              <label className={LabelClass}>{t('command')}</label>
               <CustomSelect 
+                value={manpowerForm.command}
+                onChange={val => setManpowerForm(prev => ({
+                  ...prev,
+                  command: val,
+                  rank: '' // Reset rank when command changes
+                }))}
+                options={Object.values(Command).map(c => ({ value: c, label: t(c) }))}
+                placeholder={t('selectCommand')}
+              />
+            </div>
+
+            <div className="mb-4">
+              <label className={LabelClass}>{t('rank')}</label>
+              <GroupedRankSelect 
                 value={manpowerForm.rank}
-                onChange={val => setManpowerForm({...manpowerForm, rank: val})}
-                options={RANK_OPTIONS.map(opt => ({...opt, label: t(opt.label)}))}
+                command={manpowerForm.command}
+                onChange={val => setManpowerForm(prev => ({ ...prev, rank: val }))}
                 placeholder={t('selectRank')}
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-              <div>
-                <label className={LabelClass}>{t('command')}</label>
-                <CustomSelect 
-                    value={manpowerForm.command}
-                    onChange={val => setManpowerForm({...manpowerForm, command: val})}
-                    options={Object.values(Command).map(c => ({value: c, label: t(c)}))}
-                />
-              </div>
-              <div>
-                <label className={LabelClass}>{t('type')}</label>
-                <CustomSelect 
-                    value={manpowerForm.type}
-                    onChange={val => setManpowerForm({...manpowerForm, type: val})}
-                    options={Object.values(ManpowerType).map(v => ({value: v, label: t(v)}))}
-                />
-              </div>
+            <div className="mb-4">
+              <label className={LabelClass}>{t('type')}</label>
+              <CustomSelect 
+                value={manpowerForm.type}
+                onChange={val => setManpowerForm(prev => ({ ...prev, type: val }))}
+                options={Object.values(ManpowerType)
+                  .filter(v => v !== ManpowerType.PENSION)
+                  .map(v => ({ value: v, label: t(v) }))
+                }
+              />
             </div>
             
             <label className={LabelClass}>{t('amountBirr')}</label><input type="number" className={InputClass} value={manpowerForm.amount || ''} placeholder="3000" onFocus={(e) => e.target.select()} onChange={e => setManpowerForm({...manpowerForm, amount: Number(e.target.value)})} />

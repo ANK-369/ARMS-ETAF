@@ -7,6 +7,7 @@ import EthiopianDatePicker from '../components/EthiopianDatePicker';
 import DataTools from '../components/DataTools';
 import { ShoppingCart, Briefcase, Layers, RotateCcw, CheckCircle } from 'lucide-react';
 import CustomSelect from '../components/CustomSelect';
+import GroupedRankSelect from '../components/GroupedRankSelect';
 import SmartInput from '../components/SmartInput';
 import DuplicateResolutionModal from '../components/DuplicateResolutionModal';
 import { useLanguage } from '../contexts/LanguageContext';
@@ -71,7 +72,7 @@ const Expenditure: React.FC = () => {
   });
 
   const [refundForm, setRefundForm] = useState({
-    firstName: '', lastName: '', rank: 'Air Force', command: Command.AF, amount: 0, 
+    firstName: '', lastName: '', rank: '', command: '' as Command, amount: 0, 
     stopDate: getCurrentEthiopianDate(), description: ''
   });
 
@@ -321,24 +322,28 @@ const Expenditure: React.FC = () => {
                 </div>
              </div>
              
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-               <div>
-                 <label className={LabelClass}>{t('rank')}</label>
-                 <CustomSelect 
-                    value={refundForm.rank}
-                    onChange={val => setRefundForm({...refundForm, rank: val})}
-                    options={RANK_OPTIONS.map(opt => ({...opt, label: t(opt.label)}))}
-                    placeholder={t('selectRank')}
-                 />
-               </div>
-               <div>
-                 <label className={LabelClass}>{t('command')}</label>
-                 <CustomSelect 
-                    value={refundForm.command}
-                    onChange={val => setRefundForm({...refundForm, command: val})}
-                    options={Object.values(Command).map(c => ({value: c, label: t(c)}))}
-                 />
-               </div>
+             <div className="mb-4">
+               <label className={LabelClass}>{t('command')}</label>
+               <CustomSelect 
+                  value={refundForm.command}
+                  onChange={val => setRefundForm(prev => ({
+                    ...prev,
+                    command: val,
+                    rank: '' // Reset rank when command changes
+                  }))}
+                  options={Object.values(Command).map(c => ({ value: c, label: t(c) }))}
+                  placeholder={t('selectCommand')}
+               />
+             </div>
+
+             <div className="mb-4">
+               <label className={LabelClass}>{t('rank')}</label>
+               <GroupedRankSelect 
+                  value={refundForm.rank}
+                  command={refundForm.command}
+                  onChange={val => setRefundForm(prev => ({ ...prev, rank: val }))}
+                  placeholder={t('selectRank')}
+               />
              </div>
 
              <label className={LabelClass}>{t('refundAmount')}</label><input required type="number" className={InputClass} value={refundForm.amount || ''} onChange={e => setRefundForm({...refundForm, amount: Number(e.target.value)})} onFocus={(e) => e.target.select()} />

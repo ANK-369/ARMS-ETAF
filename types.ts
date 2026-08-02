@@ -29,6 +29,8 @@ export enum Command {
   GF = "Ground Force",
   NV = "Navy",
   SF = "Special Force",
+  COMMANDO = "Commando",
+  CIVIL = "Civil",
   OTHERS = "Others"
 }
 
