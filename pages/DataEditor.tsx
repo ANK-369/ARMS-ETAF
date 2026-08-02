@@ -77,7 +77,15 @@ const DataEditor: React.FC = () => {
 
   const handleSave = () => {
     if (editingId) {
-      updateItem(activeCollection, editingId, editForm);
+      const sanitizedForm = { ...editForm };
+      Object.keys(sanitizedForm).forEach((key) => {
+        const isNumericField = NUMERIC_FIELDS.includes(key) || typeof (data[activeCollection] as any[])?.find((item: any) => item.id === editingId)?.[key] === 'number';
+        if (isNumericField) {
+          const val = sanitizedForm[key];
+          sanitizedForm[key] = (val === '' || val === null || val === undefined || isNaN(Number(val))) ? 0 : Number(val);
+        }
+      });
+      updateItem(activeCollection, editingId, sanitizedForm);
       setEditingId(null);
       setEditForm({});
       refreshData();
@@ -107,12 +115,8 @@ const DataEditor: React.FC = () => {
   };
 
   const handleInputChange = (key: string, value: any, isNumeric: boolean) => {
-      // Force numeric types to prevent string concatenation bugs (e.g. "3000" + "3000" = "30003000")
-      if (isNumeric) {
-          setEditForm((prev: any) => ({ ...prev, [key]: Number(value) }));
-      } else {
-          setEditForm((prev: any) => ({ ...prev, [key]: value }));
-      }
+      // Store raw input as-is while typing so numeric inputs can be emptied without snapping back to 0 immediately
+      setEditForm((prev: any) => ({ ...prev, [key]: value }));
   };
 
   const openComplexEditor = (key: string) => {
@@ -485,6 +489,18 @@ const DataEditor: React.FC = () => {
               className="w-full bg-slate-800 border border-gray-600 rounded p-3 text-white focus:border-blue-500 outline-none transition"
               value={editForm[key] !== undefined && editForm[key] !== null ? editForm[key] : ''}
               onChange={e => handleInputChange(key, e.target.value, isNumericField)}
+              onBlur={() => {
+                  if (isNumericField) {
+                      setEditForm((prev: any) => {
+                          const val = prev[key];
+                          if (val === '' || val === null || val === undefined) {
+                              return { ...prev, [key]: 0 };
+                          }
+                          const num = Number(val);
+                          return { ...prev, [key]: isNaN(num) ? 0 : num };
+                      });
+                  }
+              }}
           />
       );
   };
