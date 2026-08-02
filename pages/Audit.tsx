@@ -9,7 +9,7 @@ import {
   Calculator, Plus, X, RotateCcw, Download, Upload, 
   Database, Book, AlertTriangle, CheckCircle, Save, Type, ArrowLeftRight, Hash, DollarSign,
   Maximize2, Minimize2, History, CheckSquare, Square, Delete, Edit, Monitor, Eye, Github, Cloud, RefreshCw, Link,
-  AlignLeft, AlignCenter, AlignRight, Table as TableIcon, Eraser, Delete as DeleteIcon, Lock, EyeOff, KeyRound, Cpu, Copy, PlusSquare
+  AlignLeft, AlignCenter, AlignRight, Table as TableIcon, Eraser, Delete as DeleteIcon, Lock, EyeOff, KeyRound, Cpu, Copy, PlusSquare, Calendar
 } from 'lucide-react';
 import { ETHIOPIAN_MONTHS, ETHIOPIAN_MONTHS_AMHARIC, getCurrentEthiopianDate, isActiveDate, formatEthiopianDate } from '../services/ethiopianDate';
 import { downloadFile, generateHTMLDoc, parseImportFile } from '../services/dataTransfer';
@@ -1401,9 +1401,399 @@ const Calculation = () => {
     )
 }
 
+// --- SUB-COMPONENT: MARKET HISTORY AUDIT ---
+const MarketHistoryAudit = ({ data }: { data: AppData }) => {
+  const { t, language } = useLanguage();
+  const { month: filterMonth, year: filterYear } = useDate();
+  const [selectedDate, setSelectedDate] = useState<string>('');
+  const [showPrintModal, setShowPrintModal] = useState<boolean>(false);
+
+  // Filter expenses belonging to the selected month and year
+  const monthExpenses = (data?.expenses || []).filter(item => {
+    if (!item.date) return false;
+    const [y, m] = item.date.split('-');
+    return y === filterYear && m === filterMonth;
+  });
+
+  // Collect distinct dates with expense records, sorted chronologically
+  const availableDates = Array.from(
+    new Set(monthExpenses.map(item => item.date))
+  ).filter(Boolean).sort();
+
+  useEffect(() => {
+    if (availableDates.length > 0) {
+      if (!selectedDate || !availableDates.includes(selectedDate)) {
+        setSelectedDate(availableDates[0]);
+      }
+    } else {
+      setSelectedDate('');
+    }
+  }, [filterMonth, filterYear, availableDates.join(',')]);
+
+  const handlePrint = () => {
+    const originalTitle = document.title;
+    const formattedDate = selectedDate ? formatEthiopianDate(selectedDate, language) : '';
+    const printTitle = language === 'am'
+      ? `የ${formattedDate} ገበያ ታሪክ`
+      : `Market History ${formattedDate}`;
+
+    document.title = printTitle;
+    window.print();
+    setTimeout(() => {
+      document.title = originalTitle;
+    }, 1000);
+  };
+
+  const selectedExpenses = monthExpenses.filter(e => e.date === selectedDate);
+
+  const marketItems = selectedExpenses.filter(
+    e => e.category === 'Market' || (!e.category && (e.measurement || e.singlePrice))
+  );
+
+  const otherCosts = selectedExpenses.filter(
+    e => e.category === 'Wage' || e.category === 'Other' || (e.category !== 'Market' && !e.measurement && !e.singlePrice)
+  );
+
+  const PrintableContent = () => {
+    const chunkArray = <T,>(arr: T[], size: number): T[][] => {
+      if (!arr || arr.length === 0) return [[]];
+      const chunks: T[][] = [];
+      for (let i = 0; i < arr.length; i += size) {
+        chunks.push(arr.slice(i, i + size));
+      }
+      return chunks;
+    };
+
+    const marketTotal = marketItems.reduce(
+      (acc, item) => acc + (Number(item.amount || 0) * Number(item.singlePrice || 0)),
+      0
+    );
+    const otherTotal = otherCosts.reduce(
+      (acc, item) => acc + Number(item.amount || 0),
+      0
+    );
+    const grandTotal = marketTotal + otherTotal;
+
+    const marketChunks = chunkArray(marketItems, 12);
+    const otherChunks = chunkArray(otherCosts, 12);
+
+    const sectionsToRender: Array<{ id: string; render: () => React.ReactNode }> = [];
+
+    const lastMarketChunkLen = marketItems.length > 0 ? marketChunks[marketChunks.length - 1].length : 0;
+    const canFitOtherOnLastMarketPage = marketItems.length > 0 && lastMarketChunkLen <= 6 && otherCosts.length <= 6;
+
+    marketChunks.forEach((chunk, chunkIdx) => {
+      const isLastMarketChunk = chunkIdx === marketChunks.length - 1;
+      const startIdx = chunkIdx * 12;
+
+      sectionsToRender.push({
+        id: `market-chunk-${chunkIdx}`,
+        render: () => (
+          <div>
+            <div className="flex justify-between items-center border-b-2 border-black pb-3 mb-6">
+              <div>
+                <h2 className="text-xl font-bold uppercase tracking-wide text-black">
+                  {t('marketHistory')}
+                </h2>
+                <p className="text-xs font-semibold text-gray-700 mt-0.5">
+                  {formatEthiopianDate(selectedDate, language)} ({selectedDate})
+                </p>
+              </div>
+              <div className="text-right text-xs text-gray-700 font-mono">
+                <div>{filterYear} {t('fiscalYear')}</div>
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <h3 className="text-sm font-bold uppercase underline mb-2 text-black">
+                {t('itemList')} {marketChunks.length > 1 ? `(${chunkIdx + 1}/${marketChunks.length})` : ''}
+              </h3>
+              <table className="w-full text-xs md:text-sm text-black border border-black">
+                <thead className="bg-gray-200 font-bold uppercase">
+                  <tr>
+                    <th className="border border-black p-2 text-center w-12">{t('sno')}</th>
+                    <th className="border border-black p-2 text-left">{t('itemType')}</th>
+                    <th className="border border-black p-2 text-center">{t('quantity')}</th>
+                    <th className="border border-black p-2 text-center">{t('measurement')}</th>
+                    <th className="border border-black p-2 text-right">{t('singlePrice')}</th>
+                    <th className="border border-black p-2 text-right">{t('totalPrice')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {chunk.map((item: any, idx) => {
+                    const rowNum = startIdx + idx + 1;
+                    const itemTot = Number(item.amount || 0) * Number(item.singlePrice || 0);
+                    return (
+                      <tr key={item.id || idx} className="border-b border-black/50">
+                        <td className="border-r border-black/50 p-2 text-center">{rowNum}</td>
+                        <td className="border-r border-black/50 p-2 font-bold">{item.itemName || item.name || '-'}</td>
+                        <td className="border-r border-black/50 p-2 text-center">{item.amount || 0}</td>
+                        <td className="border-r border-black/50 p-2 text-center">{item.measurement ? t(item.measurement) : '-'}</td>
+                        <td className="border-r border-black/50 p-2 text-right font-mono">{Number(item.singlePrice || 0).toFixed(2)}</td>
+                        <td className="p-2 text-right font-mono font-bold">{itemTot.toLocaleString()}</td>
+                      </tr>
+                    );
+                  })}
+                  {marketItems.length === 0 && (
+                    <tr><td colSpan={6} className="p-6 text-center italic text-gray-500">{t('noMarketData')}</td></tr>
+                  )}
+                  {isLastMarketChunk && marketItems.length > 0 && (
+                    <tr className="bg-gray-200 font-bold border-t-2 border-black">
+                      <td colSpan={5} className="p-2 text-right uppercase">{t('total')}</td>
+                      <td className="p-2 text-right font-mono">{marketTotal.toLocaleString()} {t('birr')}</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {isLastMarketChunk && canFitOtherOnLastMarketPage && (
+              <div className="mt-6">
+                <h3 className="text-sm font-bold uppercase underline mb-2 text-black">
+                  {t('otherDailyCosts')}
+                </h3>
+                <table className="w-full text-xs md:text-sm text-black border border-black mb-6">
+                  <thead className="bg-gray-200 font-bold uppercase">
+                    <tr>
+                      <th className="border border-black p-2 text-center w-12">{t('sno')}</th>
+                      <th className="border border-black p-2 text-left">{t('description')}</th>
+                      <th className="border border-black p-2 text-right">{t('amount')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {otherCosts.map((item: any, idx) => {
+                      const name = item.category === 'Wage'
+                        ? (item.workerName ? (item.workerPosition ? `${item.workerName} (${item.workerPosition})` : item.workerName) : (item.itemName || t('wage')))
+                        : (item.reason || item.description || item.itemName || t('other'));
+                      return (
+                        <tr key={item.id || idx} className="border-b border-black/50">
+                          <td className="border-r border-black/50 p-2 text-center">{idx + 1}</td>
+                          <td className="border-r border-black/50 p-2 font-bold">{name}</td>
+                          <td className="p-2 text-right font-mono font-bold">{Number(item.amount || 0).toLocaleString()}</td>
+                        </tr>
+                      );
+                    })}
+                    <tr className="bg-gray-200 font-bold border-t-2 border-black">
+                      <td colSpan={2} className="p-2 text-right uppercase">{t('total')}</td>
+                      <td className="p-2 text-right font-mono">{otherTotal.toLocaleString()} {t('birr')}</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {isLastMarketChunk && (otherCosts.length === 0 || canFitOtherOnLastMarketPage) && (
+              <div className="mt-6 border-2 border-black bg-gray-100 p-4 rounded text-black">
+                <div className="flex justify-between items-center text-base md:text-lg font-bold">
+                  <span className="uppercase">{t('dayGrandTotal')}</span>
+                  <span className="font-mono bg-black text-white px-4 py-1.5 rounded">
+                    {grandTotal.toLocaleString()} {t('birr')}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+        )
+      });
+    });
+
+    if (otherCosts.length > 0 && !canFitOtherOnLastMarketPage) {
+      otherChunks.forEach((chunk, chunkIdx) => {
+        const isLastOtherChunk = chunkIdx === otherChunks.length - 1;
+        const startIdx = chunkIdx * 12;
+
+        sectionsToRender.push({
+          id: `other-chunk-${chunkIdx}`,
+          render: () => (
+            <div>
+              <div className="flex justify-between items-center border-b-2 border-black pb-3 mb-6">
+                <div>
+                  <h2 className="text-xl font-bold uppercase tracking-wide text-black">
+                    {t('marketHistory')}
+                  </h2>
+                  <p className="text-xs font-semibold text-gray-700 mt-0.5">
+                    {formatEthiopianDate(selectedDate, language)} ({selectedDate})
+                  </p>
+                </div>
+                <div className="text-right text-xs text-gray-700 font-mono">
+                  <div>{filterYear} {t('fiscalYear')}</div>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <h3 className="text-sm font-bold uppercase underline mb-2 text-black">
+                  {t('otherDailyCosts')} {otherChunks.length > 1 ? `(${chunkIdx + 1}/${otherChunks.length})` : ''}
+                </h3>
+                <table className="w-full text-xs md:text-sm text-black border border-black">
+                  <thead className="bg-gray-200 font-bold uppercase">
+                    <tr>
+                      <th className="border border-black p-2 text-center w-12">{t('sno')}</th>
+                      <th className="border border-black p-2 text-left">{t('description')}</th>
+                      <th className="border border-black p-2 text-right">{t('amount')}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {chunk.map((item: any, idx) => {
+                      const rowNum = startIdx + idx + 1;
+                      const name = item.category === 'Wage'
+                        ? (item.workerName ? (item.workerPosition ? `${item.workerName} (${item.workerPosition})` : item.workerName) : (item.itemName || t('wage')))
+                        : (item.reason || item.description || item.itemName || t('other'));
+                      return (
+                        <tr key={item.id || idx} className="border-b border-black/50">
+                          <td className="border-r border-black/50 p-2 text-center">{rowNum}</td>
+                          <td className="border-r border-black/50 p-2 font-bold">{name}</td>
+                          <td className="p-2 text-right font-mono font-bold">{Number(item.amount || 0).toLocaleString()}</td>
+                        </tr>
+                      );
+                    })}
+                    {isLastOtherChunk && (
+                      <tr className="bg-gray-200 font-bold border-t-2 border-black">
+                        <td colSpan={2} className="p-2 text-right uppercase">{t('total')}</td>
+                        <td className="p-2 text-right font-mono">{otherTotal.toLocaleString()} {t('birr')}</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              {isLastOtherChunk && (
+                <div className="mt-6 border-2 border-black bg-gray-100 p-4 rounded text-black">
+                  <div className="flex justify-between items-center text-base md:text-lg font-bold">
+                    <span className="uppercase">{t('dayGrandTotal')}</span>
+                    <span className="font-mono bg-black text-white px-4 py-1.5 rounded">
+                      {grandTotal.toLocaleString()} {t('birr')}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )
+        });
+      });
+    }
+
+    const totalSections = sectionsToRender.length;
+
+    return (
+      <div className="print-modal-content text-black relative flex flex-col xl:flex-row xl:flex-wrap xl:justify-center gap-8 print:gap-0 bg-transparent shadow-none w-full max-w-[210mm] xl:max-w-none mx-auto">
+        {sectionsToRender.map((sec, idx) => {
+          const currentPage = idx + 1;
+          return (
+            <React.Fragment key={sec.id}>
+              {idx > 0 && <PageBreak />}
+              <div className="audit-section p-[20mm] bg-white w-[210mm] min-h-[297mm] print:w-full print:h-auto print:min-h-0 print:shadow-none shadow-2xl flex flex-col justify-between relative print:bg-white text-black">
+                <div className="flex-grow">
+                  {sec.render()}
+                </div>
+                <div className="border-t border-black/20 pt-2 flex justify-between text-[10px] text-slate-700 font-sans mt-4">
+                  <span>
+                    {t('generatedOn')} {formatEthiopianDate(getCurrentEthiopianDate(), language)}, {new Date().toLocaleTimeString()}
+                  </span>
+                  <span>
+                    {language === 'am' ? `ገጽ ${currentPage} ከ ${totalSections}` : `Page ${currentPage} of ${totalSections}`}
+                  </span>
+                </div>
+              </div>
+            </React.Fragment>
+          );
+        })}
+      </div>
+    );
+  };
+
+  if (availableDates.length === 0) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center p-12 text-center text-gray-400 h-full">
+        <AlertTriangle size={48} className="text-gold-500 mb-4 opacity-80 animate-pulse" />
+        <h3 className="text-xl font-bold text-gray-200 mb-2">{t('marketHistory')}</h3>
+        <p className="text-sm text-gray-400 max-w-md">{t('noMarketHistoryData')}</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex-1 flex flex-col h-full bg-stone-950 relative overflow-hidden">
+      {/* Top Date Selection Bar */}
+      <div className="p-4 md:p-6 bg-military-900 border-b border-military-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shrink-0 no-print">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-gold-500 font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 mr-2">
+            <Calendar size={16} /> {t('selectDate')}:
+          </span>
+          <div className="flex flex-wrap items-center gap-2 max-h-24 overflow-y-auto pr-2 custom-scrollbar">
+            {availableDates.map(d => (
+              <button
+                key={d}
+                onClick={() => setSelectedDate(d)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  selectedDate === d
+                    ? 'bg-gold-500 text-black shadow-lg shadow-gold-500/20'
+                    : 'bg-military-800 text-gray-300 hover:bg-white/10 hover:text-white border border-gray-700'
+                }`}
+              >
+                {formatEthiopianDate(d, language)} ({d})
+              </button>
+            ))}
+          </div>
+        </div>
+        <button
+          onClick={() => setShowPrintModal(true)}
+          className="bg-gold-500 hover:bg-gold-600 text-black font-bold px-4 py-2 rounded-lg flex items-center gap-2 transition shadow-lg text-xs md:text-sm shrink-0"
+        >
+          <Printer size={16} /> {t('printReport')}
+        </button>
+      </div>
+
+      {/* Print Modal Portal */}
+      {showPrintModal && createPortal(
+        <div className="fixed inset-0 z-[100] bg-black/90 flex flex-col items-center print-preview-modal animate-in zoom-in-95 duration-200">
+          <div className="w-full bg-military-900 border-b border-gold-500 p-4 flex flex-col sm:flex-row justify-between items-center no-print shrink-0 gap-3">
+            <h2 className="text-gold-500 font-bold text-lg sm:text-xl flex items-center gap-2">
+              <Printer size={20} className="sm:w-[24px] sm:h-[24px]" /> {t('printPreview')} - {selectedDate}
+            </h2>
+            <div className="flex items-center gap-3 justify-end w-full sm:w-auto">
+              <button
+                onClick={() => setShowPrintModal(false)}
+                className="px-4 py-2 text-xs md:text-sm text-gray-300 hover:text-white font-semibold rounded-lg border border-gray-600 hover:bg-white/10 transition"
+              >
+                {t('closePreview')}
+              </button>
+              <button
+                onClick={handlePrint}
+                className="px-5 py-2 bg-gold-500 hover:bg-gold-600 text-black font-bold rounded-lg shadow-lg transition flex items-center gap-2 text-xs md:text-sm"
+              >
+                <Printer size={16} /> {t('printNow')}
+              </button>
+            </div>
+          </div>
+          <div className="flex-1 w-full overflow-auto bg-gray-800 p-8 flex justify-center print-hide-scroll">
+            <PrintableContent />
+          </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Printable Report Preview Canvas */}
+      <div className="flex-1 overflow-auto bg-[url('https://www.transparenttextures.com/patterns/dark-leather.png')] bg-fixed relative">
+        <div className="min-w-fit p-4 md:p-8 flex justify-center pb-20 opacity-80 hover:opacity-100 transition duration-500">
+          <div className="relative group cursor-pointer" onClick={() => setShowPrintModal(true)}>
+            <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition z-10 rounded-sm">
+              <div className="bg-gold-500 text-black px-6 py-3 rounded-full font-bold flex items-center gap-2 shadow-2xl transform scale-110">
+                <Eye size={20} /> {t('clickPreview')}
+              </div>
+            </div>
+            <div className="pointer-events-none">
+              <PrintableContent />
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // --- MAIN PAGE COMPONENT ---
 const Audit: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'automated' | 'manual' | 'calc'>('automated');
+  const [activeTab, setActiveTab] = useState<'automated' | 'manual' | 'marketHistory' | 'calc'>('automated');
   const [data, setData] = useState<AppData | null>(null);
   const { t } = useLanguage();
 
@@ -1416,6 +1806,7 @@ const Audit: React.FC = () => {
   const TABS = [
     { id: 'automated', label: t('automatedAudit'), icon: FileText },
     { id: 'manual', label: t('manualAudit'), icon: Edit },
+    { id: 'marketHistory', label: t('marketHistory'), icon: History },
     { id: 'calc', label: t('calculators'), icon: Calculator },
   ];
 
@@ -1432,7 +1823,7 @@ const Audit: React.FC = () => {
               <label className="text-xs text-gray-400 font-bold uppercase mb-2 block">{t('selectSection')}</label>
               <CustomSelect 
                 value={activeTab}
-                onChange={(val) => setActiveTab(val)}
+                onChange={(val) => setActiveTab(val as any)}
                 options={TABS.map(t => ({ value: t.id, label: t.label }))}
               />
           </div>
@@ -1457,6 +1848,7 @@ const Audit: React.FC = () => {
       <div className="flex-1 overflow-hidden relative">
           {activeTab === 'automated' && <AutomatedAudit data={data} />}
           {activeTab === 'manual' && <ManualAudit />}
+          {activeTab === 'marketHistory' && <MarketHistoryAudit data={data} />}
           {activeTab === 'calc' && <Calculation />}
       </div>
     </div>
