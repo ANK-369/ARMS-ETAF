@@ -157,6 +157,8 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
   const gfList: Manpower[] = [];
   const navyList: Manpower[] = [];
   const sfList: Manpower[] = [];
+  const commandoList: Manpower[] = [];
+  const civilList: Manpower[] = [];
   const fullCashList: Manpower[] = [];
   const halfCashList: Manpower[] = [];
   const transientList: Manpower[] = [];
@@ -184,6 +186,8 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
           else if (m.command === Command.GF) gfList.push(m);
           else if (m.command === Command.NV) navyList.push(m);
           else if (m.command === Command.SF) sfList.push(m);
+          else if (m.command === Command.COMMANDO) commandoList.push(m);
+          else if (m.command === Command.CIVIL) civilList.push(m);
           else fullCashList.push(m);
       }
   });
@@ -201,6 +205,8 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
   const gfTotal = getCategoryTotal(gfList);
   const navyTotal = getCategoryTotal(navyList);
   const sfTotal = getCategoryTotal(sfList);
+  const commandoTotal = getCategoryTotal(commandoList);
+  const civilTotal = getCategoryTotal(civilList);
   const fullCashTotal = getCategoryTotal(fullCashList);
   
   const halfCashTotal = halfCashList.reduce((acc, m) => acc + (Number(m.amount) || 0), 0);
@@ -248,7 +254,7 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
   const refundTotal = refundsInMonth.reduce((acc, r) => Number(acc) + Number(r.amount), 0);
   const refundCount = refundsInMonth.length;
 
-  const totalIncomeCalc = payrollTotal + gfTotal + navyTotal + sfTotal + fullCashTotal + (useStandardRate ? totalOverpaid : 0) + halfCashTotal + transientTotal + itemsTotal + subsidyFinancial + transferTotal;
+  const totalIncomeCalc = payrollTotal + gfTotal + navyTotal + sfTotal + commandoTotal + civilTotal + fullCashTotal + (useStandardRate ? totalOverpaid : 0) + halfCashTotal + transientTotal + itemsTotal + subsidyFinancial + transferTotal;
   const totalExpenseCalc = marketTotal + wageTotal + refundTotal + otherTotal;
   const netResult = totalIncomeCalc - totalExpenseCalc;
 
@@ -371,6 +377,8 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
                             {gfList.length > 0 && <tr className="border-b border-gray-300"><td className="p-2">{getLabel('groundForce', gfList.length)}</td><td className="p-2 text-right font-mono">{fmt(gfTotal)}</td></tr>}
                             {navyList.length > 0 && <tr className="border-b border-gray-300"><td className="p-2">{getLabel('Navy', navyList.length)}</td><td className="p-2 text-right font-mono">{fmt(navyTotal)}</td></tr>}
                             {sfList.length > 0 && <tr className="border-b border-gray-300"><td className="p-2">{getLabel('Special Force', sfList.length)}</td><td className="p-2 text-right font-mono">{fmt(sfTotal)}</td></tr>}
+                            {commandoList.length > 0 && <tr className="border-b border-gray-300"><td className="p-2">{getLabel('Commando', commandoList.length)}</td><td className="p-2 text-right font-mono">{fmt(commandoTotal)}</td></tr>}
+                            {civilList.length > 0 && <tr className="border-b border-gray-300"><td className="p-2">{getLabel('Civil', civilList.length)}</td><td className="p-2 text-right font-mono">{fmt(civilTotal)}</td></tr>}
                             <tr className="border-b border-gray-300"><td className="p-2">{getLabel('fullCash', fullCashList.length)}</td><td className="p-2 text-right font-mono">{fmt(fullCashTotal)}</td></tr>
                             {useStandardRate && totalOverpaid > 0 && <tr className="border-b border-gray-300"><td className="p-2">{t('overpaidAmount')} ({overpaidString})</td><td className="p-2 text-right font-mono">{fmt(totalOverpaid)}</td></tr>}
                             <tr className="border-b border-gray-300"><td className="p-2">{t('halfCash')} ({halfCashList.length} {t('people')})</td><td className="p-2 text-right font-mono">{fmt(halfCashTotal)}</td></tr>
