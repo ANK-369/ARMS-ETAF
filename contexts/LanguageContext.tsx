@@ -299,6 +299,8 @@ export const dictionary: Translations = {
   noPendingOrders: { en: "No pending orders found.", am: "ምንም ያልተጠናቀቀ ትዕዛዝ የለም።" },
   completed: { en: "Completed", am: "ተጠናቀቀ" },
   transferInfo: { en: "Transfer Info", am: "የዝውውር መረጃ" },
+  transferFromLabel: { en: "From", am: "ከ" },
+  transferToLabel: { en: "To", am: "ወደ" },
   requiredWk: { en: "Required (Wk)", am: "ፍላጎት (ሳምንት)" },
   estDaysLeft: { en: "Est. Days Left", am: "የቀረው ቀን" },
   printMode: { en: "Print Mode", am: "ፕሪንት" },

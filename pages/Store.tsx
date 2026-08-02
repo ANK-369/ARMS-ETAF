@@ -5,7 +5,7 @@ import { addItem, getDB, updateItem, saveDB, deleteItem, smartUpsertItem, proces
 import { getCurrentEthiopianDate, ETHIOPIAN_MONTHS, ETHIOPIAN_MONTHS_AMHARIC, isActiveDate, formatEthiopianDate } from '../services/ethiopianDate';
 import { Package, ShoppingBag, ArrowRightLeft, List, CheckCircle, Plus, Archive, Edit, Save, Trash2, ShoppingCart, Printer, History, ChevronDown, ChevronUp, ChevronRight, AlertCircle, CheckSquare, X, Download, Cpu, Zap, ShoppingBasket, BarChart3, RefreshCw, ChefHat, Info, Utensils, ClipboardCheck, ArrowRight, Eye, Sparkles, AlertTriangle, Calendar } from 'lucide-react';
 import DataTools from '../components/DataTools';
-import { AppData, FoodProgramEntry, ProgramSettings, StoreOrder, LogisticsAnalysis, MealIngredient, MealIngredientsMap, RationLog, MEASUREMENT_OPTIONS } from '../types';
+import { AppData, FoodProgramEntry, ProgramSettings, StoreItem, StoreOrder, LogisticsAnalysis, MealIngredient, MealIngredientsMap, RationLog, MEASUREMENT_OPTIONS } from '../types';
 import CustomSelect from '../components/CustomSelect';
 import SmartInput from '../components/SmartInput';
 import ConfirmDialog from '../components/ConfirmDialog';
@@ -347,6 +347,28 @@ const Store: React.FC = () => {
       setTimeout(() => setMsg(''), 4000);
   };
 
+  const formatTransferInfo = (item: StoreItem) => {
+    if (item.fromMonth && item.toMonth) {
+      let fromIdx = ETHIOPIAN_MONTHS.indexOf(item.fromMonth);
+      if (fromIdx === -1) fromIdx = ETHIOPIAN_MONTHS_AMHARIC.indexOf(item.fromMonth);
+
+      let toIdx = ETHIOPIAN_MONTHS.indexOf(item.toMonth);
+      if (toIdx === -1) toIdx = ETHIOPIAN_MONTHS_AMHARIC.indexOf(item.toMonth);
+
+      const fromMonthText = fromIdx !== -1
+        ? (language === 'am' ? ETHIOPIAN_MONTHS_AMHARIC[fromIdx] : ETHIOPIAN_MONTHS[fromIdx])
+        : item.fromMonth;
+
+      const toMonthText = toIdx !== -1
+        ? (language === 'am' ? ETHIOPIAN_MONTHS_AMHARIC[toIdx] : ETHIOPIAN_MONTHS[toIdx])
+        : item.toMonth;
+
+      const prefix = `${t('transferFromLabel')} ${fromMonthText} ${t('transferToLabel')} ${toMonthText}.`;
+      return item.description ? `${prefix} ${item.description}` : prefix;
+    }
+    return item.description || '';
+  };
+
   const handleTransferSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if(!transferForm.amount || !transferForm.singlePrice || !transferForm.fromMonth || !transferForm.toMonth) return;
@@ -354,10 +376,17 @@ const Store: React.FC = () => {
     // UPDATED: Use the explicit date selected in the transfer form
     const dateRecord = `${transferForm.year}-${transferForm.month}-${transferForm.day}`;
     
-    const transferDesc = `From ${transferForm.fromMonth} To ${transferForm.toMonth}. ${transferForm.description}`;
     smartUpsertItem('storeItems', { 
-        id: Math.random().toString(36).substr(2, 9), category: 'transfer', name: transferForm.name, measurement: transferForm.measurement,
-        amount: Number(transferForm.amount), singlePrice: Number(transferForm.singlePrice), description: transferDesc, date: dateRecord
+        id: Math.random().toString(36).substr(2, 9),
+        category: 'transfer',
+        name: transferForm.name,
+        measurement: transferForm.measurement,
+        amount: Number(transferForm.amount),
+        singlePrice: Number(transferForm.singlePrice),
+        description: transferForm.description,
+        date: dateRecord,
+        fromMonth: transferForm.fromMonth,
+        toMonth: transferForm.toMonth
     });
     setMsg(t('transferSavedMsg'));
     // Reset but keep date/months for rapid entry
@@ -897,8 +926,8 @@ const Store: React.FC = () => {
                       <label className={LabelClass}>{t('estimatedValue')}</label><input required type="number" className={InputClass} value={transferForm.singlePrice} onChange={e => setTransferForm({...transferForm, singlePrice: e.target.value})} placeholder="0.00" />
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
-                          <div><label className={LabelClass}>{t('fromMonth')}</label><CustomSelect value={transferForm.fromMonth} onChange={(val) => setTransferForm({...transferForm, fromMonth: val})} options={ETHIOPIAN_MONTHS.map((m, i) => ({value: m, label: language === 'am' ? ETHIOPIAN_MONTHS_AMHARIC[i] : m }))} /></div>
-                          <div><label className={LabelClass}>{t('toMonth')}</label><CustomSelect value={transferForm.toMonth} onChange={(val) => setTransferForm({...transferForm, toMonth: val})} options={ETHIOPIAN_MONTHS.map((m, i) => ({value: m, label: language === 'am' ? ETHIOPIAN_MONTHS_AMHARIC[i] : m }))} /></div>
+                          <div><label className={LabelClass}>{t('fromMonth')}</label><CustomSelect value={transferForm.fromMonth} onChange={(val) => setTransferForm({...transferForm, fromMonth: val})} options={ETHIOPIAN_MONTHS.map((m, i) => ({value: m, label: language === 'am' ? ETHIOPIAN_MONTHS_AMHARIC[i] : m }))} placeholder={t('selectMonth')} /></div>
+                          <div><label className={LabelClass}>{t('toMonth')}</label><CustomSelect value={transferForm.toMonth} onChange={(val) => setTransferForm({...transferForm, toMonth: val})} options={ETHIOPIAN_MONTHS.map((m, i) => ({value: m, label: language === 'am' ? ETHIOPIAN_MONTHS_AMHARIC[i] : m }))} placeholder={t('selectMonth')} /></div>
                       </div>
                       
                       <label className={LabelClass}>{t('description')}</label><textarea className={InputClass} value={transferForm.description} onChange={e => setTransferForm({...transferForm, description: e.target.value})} rows={2} />
@@ -927,7 +956,7 @@ const Store: React.FC = () => {
                                                   <td className="p-3 font-mono text-xs text-gold-500">{item.date}</td>
                                                   <td className="p-3 text-white font-bold">{item.name}</td>
                                                   <td className="p-3">{item.amount} {t(item.measurement)}</td>
-                                                  <td className="p-3 text-xs max-w-[200px] truncate" title={item.description}>{item.description}</td>
+                                                  <td className="p-3 text-xs max-w-[200px] truncate" title={formatTransferInfo(item)}>{formatTransferInfo(item)}</td>
                                                   <td className="p-3 text-right font-mono text-gray-300">{(item.amount * item.singlePrice).toLocaleString()}</td>
                                               </tr>
                                           ))}
@@ -967,7 +996,7 @@ const Store: React.FC = () => {
                                                             <td className="p-3 font-mono text-xs text-gold-500">{item.date}</td>
                                                             <td className="p-3 text-white font-bold">{item.name}</td>
                                                             <td className="p-3">{item.amount} {t(item.measurement)}</td>
-                                                            <td className="p-3 text-xs max-w-[200px] truncate" title={item.description}>{item.description}</td>
+                                                            <td className="p-3 text-xs max-w-[200px] truncate" title={formatTransferInfo(item)}>{formatTransferInfo(item)}</td>
                                                             <td className="p-3 text-right font-mono text-gray-300">{(item.amount * item.singlePrice).toLocaleString()}</td>
                                                         </tr>
                                                     ))}
@@ -1007,7 +1036,7 @@ const Store: React.FC = () => {
                           <input className="bg-black/20 border border-gray-700 rounded p-2 text-white text-sm" value={programSettings.footerRight} onChange={e => setProgramSettings({...programSettings, footerRight: e.target.value})} placeholder={t('footerRightPlaceholder')} />
                       </div>
                   )}
-                  <div className="flex-1 overflow-auto bg-gray-100 relative">
+                  <div className="flex-1 overflow-auto bg-gray-100 relative no-print">
                        <div className="min-h-full min-w-full w-fit flex items-center justify-center p-4 md:p-8">
                            <ProgramPaper settings={programSettings} program={foodProgram} isEditing={isEditingProgram} onEdit={handleProgramCellEdit} onRecipe={openRecipeEditor} onRation={openRationModal} />
                       </div>

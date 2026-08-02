@@ -192,6 +192,8 @@ export interface StoreItem {
   description: string;
   date: string;
   category: 'inventory' | 'transfer'; // inventory = Item List, transfer = To Next Month
+  fromMonth?: string;
+  toMonth?: string;
 }
 
 export interface StoreOrder {
