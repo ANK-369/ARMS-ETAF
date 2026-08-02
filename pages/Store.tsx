@@ -265,7 +265,9 @@ const Store: React.FC = () => {
   // Sync internal forms with selected global date for convenience
   useEffect(() => {
       if (selectedYear && selectedMonth) {
-          const defaultDay = '01';
+          const currentEth = getCurrentEthiopianDate();
+          const [currY, currM, currD] = currentEth.split('-');
+          const defaultDay = (selectedYear === currY && selectedMonth === currM) ? currD : '01';
           setItemForm(p => ({ ...p, year: selectedYear, month: selectedMonth, day: defaultDay }));
           setOrderForm(p => ({ ...p, year: selectedYear, month: selectedMonth, day: defaultDay }));
           setTransferForm(p => ({ ...p, year: selectedYear, month: selectedMonth, day: defaultDay }));
@@ -559,7 +561,7 @@ const Store: React.FC = () => {
       if (month === 13) { maxDays = (year % 4 === 3) ? 6 : 5; }
       const days = Array.from({length: maxDays}, (_, i) => (i+1).toString().padStart(2, '0'));
       const monthOptions = ETHIOPIAN_MONTHS.map((m, i) => ({ value: (i+1).toString().padStart(2,'0'), label: language === 'am' ? ETHIOPIAN_MONTHS_AMHARIC[i] : m }));
-      const years = Array.from({length: 51}, (_, i) => (2000 + i).toString());
+      const years = Array.from({length: 63}, (_, i) => (2018 + i).toString());
       const handleMonthChange = (val: string) => {
           const newM = parseInt(val);
           let newMax = 30;

@@ -16,8 +16,8 @@ const EthiopianDatePicker: React.FC<Props> = ({ value, onChange, className }) =>
   // Parse existing value or default
   const [year, month, day] = value ? value.split('-') : ["2016", "01", "01"];
 
-  // Years range: 2000 to 2050 (Ethiopian) - Expanded range
-  const years = Array.from({ length: 51 }, (_, i) => (2000 + i).toString());
+  // Years range: 2018 to 2080 (Ethiopian)
+  const years = Array.from({ length: 63 }, (_, i) => (2018 + i).toString());
   
   // Calculate Max Days for current selection
   const maxDays = useMemo(() => {

@@ -280,7 +280,7 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
     }, 1000);
   };
 
-  const yearsOptions = Array.from({length: 51}, (_, i) => (2000 + i).toString());
+  const yearsOptions = Array.from({length: 63}, (_, i) => (2018 + i).toString());
   const monthOptions = ETHIOPIAN_MONTHS.map((m, i) => ({
       value: (i + 1).toString().padStart(2, '0'),
       label: language === 'am' ? ETHIOPIAN_MONTHS_AMHARIC[i] : m
