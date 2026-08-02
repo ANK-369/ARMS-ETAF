@@ -690,13 +690,15 @@ const DbAdministration: React.FC = () => {
                     <Settings size={14}/> {language === 'am' ? 'የዳታቤዝ አስተዳደር ክፍል ይምረጡ' : 'Select Database Administration Section'}
                 </label>
                 
-                {/* Dropdown Select */}
-                <CustomSelect 
-                    value={activeSection}
-                    onChange={(val) => setActiveSection(val as any)}
-                    options={sectionOptions}
-                    className="w-full font-bold text-sm md:text-base"
-                />
+                {/* Dropdown Select - Mobile Only */}
+                <div className="md:hidden">
+                    <CustomSelect 
+                        value={activeSection}
+                        onChange={(val) => setActiveSection(val as any)}
+                        options={sectionOptions}
+                        className="w-full font-bold text-sm md:text-base"
+                    />
+                </div>
 
                 {/* Quick Tab Buttons */}
                 <div className="hidden md:flex space-x-2 border-t border-gray-800 pt-3 mt-1">
