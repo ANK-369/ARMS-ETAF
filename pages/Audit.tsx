@@ -1432,10 +1432,32 @@ const MarketHistoryAudit = ({ data }: { data: AppData }) => {
 
   const handlePrint = () => {
     const originalTitle = document.title;
-    const formattedDate = selectedDate ? formatEthiopianDate(selectedDate, language) : '';
-    const printTitle = language === 'am'
-      ? `የ${formattedDate} ገበያ ታሪክ`
-      : `Market History ${formattedDate}`;
+    let printTitle = '';
+
+    if (selectedDate) {
+      const parts = selectedDate.split('-');
+      if (parts.length === 3) {
+        const year = parts[0];
+        const monthIndex = parseInt(parts[1], 10) - 1;
+        const day = parseInt(parts[2], 10);
+
+        const monthNameAm = ETHIOPIAN_MONTHS_AMHARIC[monthIndex] || '';
+        const monthNameEn = ETHIOPIAN_MONTHS[monthIndex] || '';
+
+        if (language === 'am') {
+          printTitle = `የቀን (${day}) ${monthNameAm} ወር ${year} ገዥዎች`;
+        } else {
+          printTitle = `Day (${day}) ${monthNameEn} ${year} Purchases`;
+        }
+      }
+    }
+
+    if (!printTitle) {
+      const formattedDate = selectedDate ? formatEthiopianDate(selectedDate, language) : '';
+      printTitle = language === 'am'
+        ? `የ${formattedDate} ገበያ ታሪክ`
+        : `Market History ${formattedDate}`;
+    }
 
     document.title = printTitle;
     window.print();
@@ -1454,7 +1476,7 @@ const MarketHistoryAudit = ({ data }: { data: AppData }) => {
     e => e.category === 'Wage' || e.category === 'Other' || (e.category !== 'Market' && !e.measurement && !e.singlePrice)
   );
 
-  const PrintableContent = () => {
+  const PrintableContent = ({ isPrintTarget = false }: { isPrintTarget?: boolean }) => {
     const chunkArray = <T,>(arr: T[], size: number): T[][] => {
       if (!arr || arr.length === 0) return [[]];
       const chunks: T[][] = [];
@@ -1675,13 +1697,20 @@ const MarketHistoryAudit = ({ data }: { data: AppData }) => {
     const totalSections = sectionsToRender.length;
 
     return (
-      <div className="print-modal-content text-black relative flex flex-col xl:flex-row xl:flex-wrap xl:justify-center gap-8 print:gap-0 bg-transparent shadow-none w-full max-w-[210mm] xl:max-w-none mx-auto">
+      <div
+        id={isPrintTarget ? "printable-audit-report" : undefined}
+        className="print-modal-content text-black relative flex flex-col xl:flex-row xl:flex-wrap xl:justify-center gap-8 print:gap-0 bg-transparent shadow-none w-full max-w-[210mm] xl:max-w-none mx-auto"
+      >
         {sectionsToRender.map((sec, idx) => {
           const currentPage = idx + 1;
           return (
             <React.Fragment key={sec.id}>
-              {idx > 0 && <PageBreak />}
-              <div className="audit-section p-[20mm] bg-white w-[210mm] min-h-[297mm] print:w-full print:h-auto print:min-h-0 print:shadow-none shadow-2xl flex flex-col justify-between relative print:bg-white text-black">
+              {idx > 0 && isPrintTarget && <PageBreak />}
+              <div
+                className={`${
+                  isPrintTarget ? "audit-section" : "print:hidden"
+                } p-[20mm] bg-white w-[210mm] min-h-[297mm] print:w-full print:h-auto print:min-h-0 print:shadow-none shadow-2xl flex flex-col justify-between relative print:bg-white text-black`}
+              >
                 <div className="flex-grow">
                   {sec.render()}
                 </div>
@@ -1766,7 +1795,7 @@ const MarketHistoryAudit = ({ data }: { data: AppData }) => {
             </div>
           </div>
           <div className="flex-1 w-full overflow-auto bg-gray-800 p-8 flex justify-center print-hide-scroll">
-            <PrintableContent />
+            <PrintableContent isPrintTarget={true} />
           </div>
         </div>,
         document.body
@@ -1782,7 +1811,7 @@ const MarketHistoryAudit = ({ data }: { data: AppData }) => {
               </div>
             </div>
             <div className="pointer-events-none">
-              <PrintableContent />
+              <PrintableContent isPrintTarget={false} />
             </div>
           </div>
         </div>
