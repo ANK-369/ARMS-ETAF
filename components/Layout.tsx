@@ -427,7 +427,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activePage, onNavigate, onLog
                          <div>
                             <h2 className="text-white font-bold text-xl tracking-wider font-serif">ARMS</h2>
                             <p className="text-[10px] text-gray-400 uppercase tracking-widest">Ethiopian Air Force</p>
-                            <p className="text-[10px] text-gray-400 tracking-widest">የኢትዮጵያ አይር ሀይል</p>
+                            <p className="text-[10px] text-gray-400 tracking-widest">የኢትዮጵያ አየር ሀይል</p>
                          </div>
                     </div>
                     <button onClick={() => setMobileMenuOpen(false)} className="text-gray-400 hover:text-white bg-white/5 p-2 rounded-full">
