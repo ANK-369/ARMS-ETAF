@@ -166,6 +166,17 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     setPassword('');
   };
 
+  const sanitizeInput = (str: string): string => {
+    if (!str) return '';
+    return str
+      .normalize('NFKC')
+      .replace(/[\u2010-\u2015\u2212]/g, '-')
+      .replace(/[\u2018\u2019\u201A\u201B]/g, "'")
+      .replace(/[\u201C\u201D\u201E\u201F]/g, '"')
+      .replace(/[^\x00-\xFF]/g, '')
+      .trim();
+  };
+
   // Cloud Remote Link Sync: Fetches DB from remote GitHub and overrides local storage before evaluating login!
   const handleCloudGatewaySync = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -176,7 +187,12 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
     setLoading(true);
 
     try {
-      if (!ghToken || !ghOwner || !ghRepo) {
+      const cleanToken = sanitizeInput(ghToken);
+      const cleanOwner = sanitizeInput(ghOwner);
+      const cleanRepo = sanitizeInput(ghRepo);
+      const cleanPath = sanitizeInput(ghPath) || "arms_db.json";
+
+      if (!cleanToken || !cleanOwner || !cleanRepo) {
         setSyncMessage({ 
           text: language === 'en' ? "Missing required GitHub API parameters." : "አስፈላጊው የ GitHub API መረጃ አልተሟላም።", 
           type: "error" 
@@ -187,10 +203,10 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
 
       // Temporarily save GitHub configuration
       const tempConfig = {
-        token: ghToken.trim(),
-        owner: ghOwner.trim(),
-        repo: ghRepo.trim(),
-        path: ghPath.trim(),
+        token: cleanToken,
+        owner: cleanOwner,
+        repo: cleanRepo,
+        path: cleanPath,
         enabled: true
       };
       saveGitHubConfig(tempConfig);

@@ -15,6 +15,20 @@ import {
 const DbAdministration: React.FC = () => {
     // ... Database manage code identical to before ...
     const { t, language } = useLanguage();
+    
+    const dbKeys: {key: keyof AppData, label: string}[] = [
+        { key: 'manpower', label: t('db_manpower') },
+        { key: 'incomeItems', label: t('db_incomeItems') },
+        { key: 'subsidies', label: t('db_subsidies') },
+        { key: 'transfers', label: t('db_transfers') },
+        { key: 'expenses', label: t('db_expenses') },
+        { key: 'refunds', label: t('db_refunds') },
+        { key: 'storeItems', label: t('db_storeItems') },
+        { key: 'storeOrders', label: t('db_storeOrders') },
+        { key: 'notes', label: t('db_notes') },
+        { key: 'foodProgramArchive', label: t('db_foodProgramArchive') }
+    ];
+
     const [activeSection, setActiveSection] = useState<'sync_backup' | 'access_ai' | 'fresh_danger'>('sync_backup');
     const [msg, setMsg] = useState('');
     const [error, setError] = useState(false);
@@ -73,14 +87,17 @@ const DbAdministration: React.FC = () => {
         
         try {
             const currentDb = getDB();
-            // Force save currentDb locally to this new path
+            const freshDb = { ...currentDb };
+            dbKeys.forEach(({ key }) => { (freshDb as any)[key] = []; });
+
+            // Force save config locally to this new path
             const updated = { ...ghConfig, path: tPath, enabled: true };
             saveGitHubConfig(updated);
             setGhConfig(updated);
             setInitialConfig(updated);
             
-            // Backup current data to this path
-            const res = await pushToGitHub(currentDb, tPath, true);
+            // Push empty database to this path
+            const res = await pushToGitHub(freshDb, tPath, true);
             if (res.success) {
                 setMsg(language === 'en' ? "Custom file path saved successfully!" : "የመረጡት የፋይል መንገድ በተሳካ ሁኔታ ተቀምጧል!");
                 setError(false);
@@ -695,19 +712,6 @@ const DbAdministration: React.FC = () => {
             setSelectedToDelete([...selectedToDelete, key]);
         }
     };
-
-    const dbKeys: {key: keyof AppData, label: string}[] = [
-        { key: 'manpower', label: t('db_manpower') },
-        { key: 'incomeItems', label: t('db_incomeItems') },
-        { key: 'subsidies', label: t('db_subsidies') },
-        { key: 'transfers', label: t('db_transfers') },
-        { key: 'expenses', label: t('db_expenses') },
-        { key: 'refunds', label: t('db_refunds') },
-        { key: 'storeItems', label: t('db_storeItems') },
-        { key: 'storeOrders', label: t('db_storeOrders') },
-        { key: 'notes', label: t('db_notes') },
-        { key: 'foodProgramArchive', label: t('db_foodProgramArchive') }
-    ];
 
     const sectionOptions = [
         { 
@@ -1341,8 +1345,8 @@ const DbAdministration: React.FC = () => {
                         </p>
                         <p className="text-gray-300 text-xs leading-relaxed">
                             {language === 'en'
-                                ? "Do you want to use this custom path anyway? (You can upload your current local data as a backup to this path)"
-                                : "ይህንን ብጁ የፋይል መንገድ መጠቀም ይፈልጋሉ? (የአሁኑን ዳታቤዝዎን ወደዚህ ፋይል መስቀል ይችላሉ)"}
+                                ? "Do you want to create and connect to this custom path? (A new, empty database file will be created on GitHub)"
+                                : "ይህንን ብጁ የፋይል መንገድ ፈጥረው ማገናኘት ይፈልጋሉ? (አዲስ ባዶ የዳታቤዝ ፋይል በGitHub ላይ ይፈጠራል)"}
                         </p>
                     </div>
                 }
