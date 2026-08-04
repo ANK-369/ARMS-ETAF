@@ -395,6 +395,69 @@ export const pushToGitHub = async (data: AppData, customPath?: string, force: bo
   }
 };
 
+export const deleteFromGitHub = async (customPath?: string, force: boolean = false): Promise<{ success: boolean, error: string | null }> => {
+  const config = getGitHubConfig();
+  if ((!config.enabled && !force) || !config.token || !config.owner || !config.repo) {
+    return { success: false, error: 'GitHub Sync not configured' };
+  }
+
+  let targetPath = customPath || config.path;
+  if (!targetPath || targetPath === 'arms_db.json') {
+    const { folder, filename } = await getActiveFolderAndFile();
+    targetPath = `${folder}/${filename}`;
+  }
+
+  const url = `https://api.github.com/repos/${config.owner}/${config.repo}/contents/${targetPath}`;
+
+  try {
+    const checkRes = await fetch(url, {
+      headers: {
+        'Authorization': `token ${config.token}`,
+        'Accept': 'application/vnd.github.v3+json'
+      }
+    });
+
+    if (!checkRes.ok) {
+      if (checkRes.status === 404) {
+        return { success: true, error: null };
+      }
+      throw new Error(`GitHub API Error: ${checkRes.statusText}`);
+    }
+
+    const checkJson = await checkRes.json();
+    const sha = checkJson.sha;
+
+    const response = await fetch(url, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `token ${config.token}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/vnd.github.v3+json'
+      },
+      body: JSON.stringify({
+        message: `ARMS Factory Reset Delete [${targetPath}]: ${new Date().toISOString()}`,
+        sha: sha
+      })
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      let errMsg = `GitHub Error ${response.status}: `;
+      try {
+        const parsed = JSON.parse(errText);
+        errMsg += parsed.message || errText;
+      } catch {
+        errMsg += errText || response.statusText;
+      }
+      throw new Error(errMsg);
+    }
+
+    return { success: true, error: null };
+  } catch (error) {
+    return { success: false, error: error instanceof Error ? error.message : String(error) };
+  }
+};
+
 export interface GitHubUserBackup {
   filename: string;
   folder: string;

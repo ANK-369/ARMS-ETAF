@@ -401,7 +401,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activePage, onNavigate, onLog
                 <div className="flex flex-col">
                     <span className="font-bold tracking-[0.2em] text-white text-base sm:text-lg leading-none font-serif">ARMS</span>
                     <span className="text-[10px] text-gold-500 font-bold uppercase tracking-wider">Ethiopian Air Force</span>
-                    <span className="text-[10px] text-gold-500 font-bold tracking-wider">የኢትዮጵያ አየር ሀይል</span>
+                    <span className="text-[10px] text-gold-500 font-bold tracking-wider">የኢትዮጵያ አይር ሀይል</span>
                 </div>
             </div>
             <div className="flex items-center gap-1.5 sm:gap-2">
@@ -427,7 +427,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activePage, onNavigate, onLog
                          <div>
                             <h2 className="text-white font-bold text-xl tracking-wider font-serif">ARMS</h2>
                             <p className="text-[10px] text-gray-400 uppercase tracking-widest">Ethiopian Air Force</p>
-                            <p className="text-[10px] text-gray-400 tracking-widest">የኢትዮጵያ አየር ሀይል</p>
+                            <p className="text-[10px] text-gray-400 tracking-widest">የኢትዮጵያ አይር ሀይል</p>
                          </div>
                     </div>
                     <button onClick={() => setMobileMenuOpen(false)} className="text-gray-400 hover:text-white bg-white/5 p-2 rounded-full">

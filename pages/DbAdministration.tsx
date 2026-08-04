@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getDB, saveDB, getStoredUsername, updateStoredCredentials, getStoredSecurityQuestion, updateSecurityQuestion, isNewUser, sha256 } from '../services/db';
-import { getGitHubConfig, saveGitHubConfig, fetchFromGitHub, pushToGitHub, autoDetectGitHubPath } from '../services/githubService';
+import { getGitHubConfig, saveGitHubConfig, fetchFromGitHub, pushToGitHub, autoDetectGitHubPath, deleteFromGitHub } from '../services/githubService';
 import { downloadFile, parseImportFile } from '../services/dataTransfer';
 import { AppData, GitHubConfig } from '../types';
 import ConfirmDialog from '../components/ConfirmDialog';
@@ -548,14 +548,12 @@ const DbAdministration: React.FC = () => {
 
     const handleBackupNow = async () => {
         setGhLoading(true);
-        const db = getDB();
-        
-        let targetPath = pathInput;
         if (pathInput !== ghConfig.path) {
-            const updated = { ...ghConfig, path: pathInput };
-            saveGitHubConfig(updated);
-            setGhConfig(updated);
+            await handleVerifyAndConnectPath(pathInput);
+            return;
         }
+        const db = getDB();
+        let targetPath = pathInput;
         
         const res = await pushToGitHub(db, targetPath, true);
         if (res.success) {
@@ -623,7 +621,7 @@ const DbAdministration: React.FC = () => {
         });
     };
 
-    const handleWipe = () => {
+    const handleWipe = async () => {
         if (selectedToDelete.length === 0) return;
         
         const db = getDB();
@@ -633,9 +631,61 @@ const DbAdministration: React.FC = () => {
         saveDB(db);
         setSelectedToDelete([]);
         setShowWipeConfirm(false);
-        setMsg(t('recordDeleted'));
-        setError(false);
+
+        const currentPath = ghConfig.path || pathInput;
+        if (ghConfig.enabled && ghConfig.owner && ghConfig.repo && ghConfig.token) {
+            setGhLoading(true);
+            const res = await pushToGitHub(db, currentPath, true);
+            setGhLoading(false);
+            if (res.success) {
+                setMsg(t('recordDeleted'));
+                setError(false);
+            } else {
+                setMsg(res.error || "Local wipe complete, but GitHub update failed.");
+                setError(true);
+            }
+        } else {
+            setMsg(t('recordDeleted'));
+            setError(false);
+        }
+
         setTimeout(() => window.location.reload(), 1500);
+    };
+
+    const executeFactoryReset = async () => {
+        setShowFactoryResetConfirm(false);
+        setGhLoading(true);
+
+        if (ghConfig.enabled && ghConfig.owner && ghConfig.repo && ghConfig.token && ghConfig.path) {
+            setMsg(language === 'en' ? "Deleting remote database file from GitHub..." : "የክላውድ ፋይል ከGitHub ላይ በመሰረዝ ላይ...");
+            const delRes = await deleteFromGitHub(ghConfig.path, true);
+            if (!delRes.success) {
+                setMsg(delRes.error || (language === 'en' ? "Failed to delete file from GitHub." : "ፋይሉን ከGitHub ላይ መሰረዝ አልተሳካም።"));
+                setError(true);
+                setGhLoading(false);
+                return;
+            }
+        }
+
+        try {
+            localStorage.clear();
+            sessionStorage.clear();
+
+            setMsg(language === 'en' 
+                ? "Factory reset complete! Redirecting to login..." 
+                : "የዳታቤዝ መጥረግ በተሳካ ሁኔታ ተጠናቋል! ወደ መግቢያ ገጽ በመቀየር ላይ..."
+            );
+            setError(false);
+
+            setTimeout(() => {
+                window.location.href = '/#/login';
+                window.location.reload();
+            }, 1500);
+        } catch (err: any) {
+            setMsg(err.message || String(err));
+            setError(true);
+            setGhLoading(false);
+        }
     };
 
     const toggleDeleteSelection = (key: string) => {
@@ -1189,10 +1239,7 @@ const DbAdministration: React.FC = () => {
                         </p>
                     </div>
                 }
-                onConfirm={() => {
-                    localStorage.removeItem('arms_database');
-                    window.location.reload();
-                }}
+                onConfirm={executeFactoryReset}
                 onCancel={() => setShowFactoryResetConfirm(false)}
                 isDanger={true}
                 confirmText={language === 'en' ? "Reset Database" : "ዳታቤዝ አጥፋ"}
