@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getDB, saveDB, getStoredUsername, updateStoredCredentials, getStoredSecurityQuestion, updateSecurityQuestion, isNewUser, sha256 } from '../services/db';
+import { getDB, saveDB, getStoredUsername, updateStoredCredentials, getStoredSecurityQuestion, updateSecurityQuestion, isNewUser, sha256, createEmptyDatabase } from '../services/db';
 import { getGitHubConfig, saveGitHubConfig, fetchFromGitHub, pushToGitHub, autoDetectGitHubPath, deleteFromGitHub } from '../services/githubService';
 import { downloadFile, parseImportFile } from '../services/dataTransfer';
 import { AppData, GitHubConfig } from '../types';
@@ -86,9 +86,7 @@ const DbAdministration: React.FC = () => {
         setMsg(language === 'en' ? "Creating new custom path on GitHub..." : "አዲስ የፋይል መንገድ GitHub ላይ በመፍጠር ላይ...");
         
         try {
-            const currentDb = getDB();
-            const freshDb = { ...currentDb };
-            dbKeys.forEach(({ key }) => { (freshDb as any)[key] = []; });
+            const freshDb = createEmptyDatabase();
 
             // Force save config locally to this new path
             const updated = { ...ghConfig, path: tPath, enabled: true };
@@ -96,6 +94,9 @@ const DbAdministration: React.FC = () => {
             setGhConfig(updated);
             setInitialConfig(updated);
             
+            // Save empty database state locally
+            saveDB(freshDb, true);
+
             // Push empty database to this path
             const res = await pushToGitHub(freshDb, tPath, true);
             if (res.success) {

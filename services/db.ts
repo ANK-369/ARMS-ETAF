@@ -35,6 +35,8 @@ const initialData: AppData = {
   rationHistory: []    // CRITICAL: Ensures deduction logs are saved
 };
 
+export const createEmptyDatabase = (): AppData => JSON.parse(JSON.stringify(initialData));
+
 export const clearStoredCredentials = () => {
   localStorage.removeItem('arms_admin_username');
   localStorage.removeItem('arms_admin_password_hash');
