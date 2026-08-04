@@ -106,10 +106,12 @@ const DbAdministration: React.FC = () => {
             } else {
                 setMsg(res.error || "Failed to push initial backup.");
                 setError(true);
+                setTimeout(() => setMsg(''), 4000);
             }
         } catch (err: any) {
             setMsg(err.message || "Failed to create path.");
             setError(true);
+            setTimeout(() => setMsg(''), 4000);
         } finally {
             setGhLoading(false);
         }
@@ -447,6 +449,7 @@ const DbAdministration: React.FC = () => {
                 // If there's an error (connection or repository level), display it
                 setMsg(language === 'en' ? `Connection failed: ${error}` : `መገናኘት አልተሳካም፦ ${error}`);
                 setError(true);
+                setTimeout(() => setMsg(''), 4000);
                 return;
             }
             
@@ -482,6 +485,7 @@ const DbAdministration: React.FC = () => {
         } catch (err: any) {
             setMsg(language === 'en' ? `Connection failed: ${err.message || err}` : `መገናኘት አልተሳካም፦ ${err.message || err}`);
             setError(true);
+            setTimeout(() => setMsg(''), 4000);
         } finally {
             setGhLoading(false);
         }
@@ -560,6 +564,7 @@ const DbAdministration: React.FC = () => {
         } else {
             setMsg(error || t('githubError'));
             setError(true);
+            setTimeout(() => setMsg(''), 4000);
         }
         setGhLoading(false);
     };
@@ -635,6 +640,7 @@ const DbAdministration: React.FC = () => {
             } else {
                 setMsg(t('invalidBackup'));
                 setError(true);
+                setTimeout(() => setMsg(''), 4000);
             }
         });
     };
