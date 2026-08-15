@@ -44,7 +44,7 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
   const [subjectPrefix, setSubjectPrefix] = useState("ጉዳዩ");
   const [pageCount, setPageCount] = useState("");
   const [leaderName, setLeaderName] = useState("ሻ/ል ጌታሰው");
-  const [diningName, setDiningName] = useState("የሜድሮክ ግብር ቤት ቦርድ ሰብሳቢ");
+  const [diningName, setDiningName] = useState("የሜድሮክ ግብር ቤት ኮሚቴ ሰብሳቢ");
   const [auditorName, setAuditorName] = useState("፲/አለቃ አንዱዓለም ኮሪያ");
   
   // Settings: Standard Monthly Rate (Allow string for empty input)
