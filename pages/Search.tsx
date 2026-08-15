@@ -644,7 +644,7 @@ const Search: React.FC = () => {
 
       {/* --- CONTENT: AI CHAT ASSISTANT --- */}
       {activeTab === 'chat' && (
-          <div className="fixed inset-0 z-[200] w-full h-[100dvh] bg-slate-950 flex flex-col md:relative md:h-[calc(100vh-200px)] md:w-full md:max-w-5xl md:mx-auto md:bg-transparent md:z-auto animate-in fade-in slide-in-from-right">
+          <div className="fixed inset-0 z-[200] w-full h-[100dvh] bg-slate-950 flex flex-col md:relative md:h-[calc(100vh-200px)] md:w-full md:max-w-5xl md:mx-auto md:bg-transparent md:z-auto lg:h-[calc(100vh-140px)] animate-in fade-in slide-in-from-right">
               <div className="flex items-center justify-between bg-slate-900 border border-gold-500/30 p-4 rounded-none md:rounded-t-2xl">
                   <div className="flex items-center gap-3">
                       <button onClick={() => setActiveTab('search')} className="md:hidden p-2 -ml-2 text-gray-400 hover:text-white rounded-full active:bg-white/10">

@@ -246,7 +246,10 @@ const DataEditor: React.FC = () => {
       }
 
       if (key === 'measurement') {
-          return t(strVal);
+          if (strVal.toLowerCase() === 'birr') return t('birr');
+          const translated = t(strVal);
+          if (translated !== strVal) return translated;
+          return t(strVal.toLowerCase());
       }
 
       if (key === 'dateFrom' || key === 'dateTo') {
@@ -338,6 +341,7 @@ const DataEditor: React.FC = () => {
                   value={editForm[key] || ''}
                   onChange={val => handleInputChange(key, val, false)}
                   options={Object.values(Command).map(c => ({ value: c, label: t(c) }))}
+                  placeholder={t('select')}
               />
           );
       }
@@ -363,6 +367,7 @@ const DataEditor: React.FC = () => {
                       options={Object.values(ManpowerType)
                           .filter(v => v !== ManpowerType.PENSION || editForm[key] === ManpowerType.PENSION)
                           .map(v => ({ value: v, label: t(v) }))}
+                      placeholder={t('select')}
                   />
               );
           }
@@ -375,6 +380,7 @@ const DataEditor: React.FC = () => {
                           { value: 'Financial', label: t('subsidyFinancial') },
                           { value: 'Food', label: t('subsidyFood') }
                       ]}
+                      placeholder={t('select')}
                   />
               );
           }
@@ -387,6 +393,7 @@ const DataEditor: React.FC = () => {
                   value={editForm[key] || ''}
                   onChange={val => handleInputChange(key, val, false)}
                   options={MEASUREMENT_OPTIONS.map(opt => ({ value: opt, label: t(opt) }))}
+                  placeholder={t('select')}
               />
           );
       }
@@ -401,6 +408,7 @@ const DataEditor: React.FC = () => {
                       value: m,
                       label: language === 'am' ? ETHIOPIAN_MONTHS_AMHARIC[idx] : m
                   }))}
+                  placeholder={t('select')}
               />
           );
       }
@@ -427,6 +435,7 @@ const DataEditor: React.FC = () => {
                           { value: 'Wage', label: t('wage') },
                           { value: 'Other', label: t('operationalExpense') || t('other') }
                       ]}
+                      placeholder={t('select')}
                   />
               );
           }
@@ -439,6 +448,7 @@ const DataEditor: React.FC = () => {
                           { value: 'inventory', label: t('itemList') },
                           { value: 'transfer', label: t('transfers') }
                       ]}
+                      placeholder={t('select')}
                   />
               );
           }
@@ -452,6 +462,7 @@ const DataEditor: React.FC = () => {
                           { value: 'Plan', label: t('Plan') },
                           { value: 'General', label: t('General') }
                       ]}
+                      placeholder={t('select')}
                   />
               );
           }
@@ -467,6 +478,7 @@ const DataEditor: React.FC = () => {
                       { value: 'Pending', label: t('pending') },
                       { value: 'Completed', label: t('completed') }
                   ]}
+                  placeholder={t('select')}
               />
           );
       }
@@ -503,6 +515,25 @@ const DataEditor: React.FC = () => {
               }}
           />
       );
+  };
+
+  const getDisplayFields = (item: any) => {
+      const validEntries = Object.entries(item).filter(([k, v]) => {
+          if (k === 'id') return false;
+          const valStr = getFieldValue(k, v, item, activeCollection);
+          return valStr !== '' && valStr !== null && valStr !== undefined;
+      });
+
+      const dateKeys = ['date', 'startDate', 'stopDate', 'archivedDate', 'dateFrom', 'dateTo'];
+      const dateEntryIndex = validEntries.findIndex(([k]) => dateKeys.includes(k));
+
+      if (dateEntryIndex === -1 || dateEntryIndex < 5) {
+          return validEntries.slice(0, 5);
+      }
+
+      const dateEntry = validEntries[dateEntryIndex];
+      const withoutDate = validEntries.filter((_, idx) => idx !== dateEntryIndex);
+      return [...withoutDate.slice(0, 4), dateEntry];
   };
 
   return (
@@ -598,6 +629,11 @@ const DataEditor: React.FC = () => {
                        <h2 className="text-white font-bold text-lg flex items-center justify-between sm:justify-start gap-2">
                            <span>{activeCollectionLabel}</span>
                            <span className="bg-military-900 text-gray-400 text-xs px-2 py-0.5 rounded-full border border-gray-700 ml-auto sm:ml-0">{items.length} {t('records')}</span>
+                           {query.trim() !== '' && (
+                               <span className="bg-military-900 text-gold-400 text-xs px-2 py-0.5 rounded-full border border-gold-500/40 font-medium">
+                                   {filteredItems.length} {t('found')}
+                               </span>
+                           )}
                        </h2>
                   </div>
               </div>
@@ -633,7 +669,7 @@ const DataEditor: React.FC = () => {
                                </div>
                                
                                <div className="flex-1 space-y-1.5 mb-2 overflow-hidden">
-                                   {Object.entries(item).filter(([k]) => k !== 'id').slice(0, 5).map(([key, val]) => (
+                                   {getDisplayFields(item).map(([key, val]) => (
                                        <div key={key} className="grid grid-cols-3 gap-2 text-xs">
                                            <span className="text-gray-500 font-bold uppercase truncate text-[10px] pt-0.5">
                                                {getFieldLabel(key, activeCollection)}

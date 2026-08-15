@@ -9,7 +9,8 @@ import {
   Calculator, Plus, X, RotateCcw, Download, Upload, 
   Database, Book, AlertTriangle, CheckCircle, Save, Type, ArrowLeftRight, Hash, DollarSign,
   Maximize2, Minimize2, History, CheckSquare, Square, Delete, Edit, Monitor, Eye, Github, Cloud, RefreshCw, Link,
-  AlignLeft, AlignCenter, AlignRight, Table as TableIcon, Eraser, Delete as DeleteIcon, Lock, EyeOff, KeyRound, Cpu, Copy, PlusSquare, Calendar
+  AlignLeft, AlignCenter, AlignRight, Table as TableIcon, Eraser, Delete as DeleteIcon, Lock, EyeOff, KeyRound, Cpu, Copy, PlusSquare, Calendar,
+  Undo, Redo, Unlock
 } from 'lucide-react';
 import { ETHIOPIAN_MONTHS, ETHIOPIAN_MONTHS_AMHARIC, getCurrentEthiopianDate, isActiveDate, formatEthiopianDate } from '../services/ethiopianDate';
 import { downloadFile, generateHTMLDoc, parseImportFile } from '../services/dataTransfer';
@@ -44,7 +45,7 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
   const [subjectPrefix, setSubjectPrefix] = useState("ጉዳዩ");
   const [pageCount, setPageCount] = useState("");
   const [leaderName, setLeaderName] = useState("ሻ/ል ጌታሰው");
-  const [diningName, setDiningName] = useState("የሜድሮክ ግብር ቤት ኮሚቴ ሰብሳቢ");
+  const [diningName, setDiningName] = useState("የሜድሮክ ግብር ቤት ቦርድ ሰብሳቢ");
   const [auditorName, setAuditorName] = useState("፲/አለቃ አንዱዓለም ኮሪያ");
   
   // Settings: Standard Monthly Rate (Allow string for empty input)
@@ -373,19 +374,19 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
                     <h3 className="font-bold text-lg mb-4 text-black border-b-2 border-black pb-1">{t('incomeTitle')}</h3>
                     <table className="w-full text-sm text-black border-collapse">
                         <tbody>
-                            <tr className="border-b border-gray-300"><td className="p-2">{getLabel('payrollCount', payrollList.length)}</td><td className="p-2 text-right font-mono">{fmt(payrollTotal)}</td></tr>
+                            {payrollList.length > 0 && <tr className="border-b border-gray-300"><td className="p-2">{getLabel('payrollCount', payrollList.length)}</td><td className="p-2 text-right font-mono">{fmt(payrollTotal)}</td></tr>}
                             {gfList.length > 0 && <tr className="border-b border-gray-300"><td className="p-2">{getLabel('groundForce', gfList.length)}</td><td className="p-2 text-right font-mono">{fmt(gfTotal)}</td></tr>}
                             {navyList.length > 0 && <tr className="border-b border-gray-300"><td className="p-2">{getLabel('Navy', navyList.length)}</td><td className="p-2 text-right font-mono">{fmt(navyTotal)}</td></tr>}
                             {sfList.length > 0 && <tr className="border-b border-gray-300"><td className="p-2">{getLabel('Special Force', sfList.length)}</td><td className="p-2 text-right font-mono">{fmt(sfTotal)}</td></tr>}
                             {commandoList.length > 0 && <tr className="border-b border-gray-300"><td className="p-2">{getLabel('Commando', commandoList.length)}</td><td className="p-2 text-right font-mono">{fmt(commandoTotal)}</td></tr>}
                             {civilList.length > 0 && <tr className="border-b border-gray-300"><td className="p-2">{getLabel('Civil', civilList.length)}</td><td className="p-2 text-right font-mono">{fmt(civilTotal)}</td></tr>}
-                            <tr className="border-b border-gray-300"><td className="p-2">{getLabel('fullCash', fullCashList.length)}</td><td className="p-2 text-right font-mono">{fmt(fullCashTotal)}</td></tr>
+                            {fullCashList.length > 0 && <tr className="border-b border-gray-300"><td className="p-2">{getLabel('fullCash', fullCashList.length)}</td><td className="p-2 text-right font-mono">{fmt(fullCashTotal)}</td></tr>}
                             {useStandardRate && totalOverpaid > 0 && <tr className="border-b border-gray-300"><td className="p-2">{t('overpaidAmount')} ({overpaidString})</td><td className="p-2 text-right font-mono">{fmt(totalOverpaid)}</td></tr>}
-                            <tr className="border-b border-gray-300"><td className="p-2">{t('halfCash')} ({halfCashList.length} {t('people')})</td><td className="p-2 text-right font-mono">{fmt(halfCashTotal)}</td></tr>
-                            <tr className="border-b border-gray-300"><td className="p-2">{t('transient')} ({transientList.length} {t('people')})</td><td className="p-2 text-right font-mono">{fmt(transientTotal)}</td></tr>
+                            {halfCashList.length > 0 && <tr className="border-b border-gray-300"><td className="p-2">{t('halfCash')} ({halfCashList.length} {t('people')})</td><td className="p-2 text-right font-mono">{fmt(halfCashTotal)}</td></tr>}
+                            {transientList.length > 0 && <tr className="border-b border-gray-300"><td className="p-2">{t('transient')} ({transientList.length} {t('people')})</td><td className="p-2 text-right font-mono">{fmt(transientTotal)}</td></tr>}
                             {subsidyFinancial > 0 && <tr className="border-b border-gray-300"><td className="p-2">{t('subsidy')}</td><td className="p-2 text-right font-mono">{fmt(subsidyFinancial)}</td></tr>}
-                            <tr className="border-b border-gray-300"><td className="p-2">{t('miscIncome')}</td><td className="p-2 text-right font-mono">{fmt(itemsTotal)}</td></tr>
-                            <tr className="border-b border-gray-300"><td className="p-2">{t('transferFromPrev')}</td><td className="p-2 text-right font-mono">{fmt(transferTotal)}</td></tr>
+                            {itemsTotal > 0 && <tr className="border-b border-gray-300"><td className="p-2">{t('miscIncome')}</td><td className="p-2 text-right font-mono">{fmt(itemsTotal)}</td></tr>}
+                            {transferTotal > 0 && <tr className="border-b border-gray-300"><td className="p-2">{t('transferFromPrev')}</td><td className="p-2 text-right font-mono">{fmt(transferTotal)}</td></tr>}
                             <tr className="font-bold bg-gray-100 border-t-2 border-black text-base"><td className="p-3">{t('totalIncome')}</td><td className="p-3 text-right font-mono">{fmt(totalIncomeCalc)}</td></tr>
                         </tbody>
                     </table>
@@ -395,10 +396,10 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
                     <h3 className="font-bold text-lg mb-4 text-black border-b-2 border-black pb-1">{t('expenditureTitle')}</h3>
                     <table className="w-full text-sm text-black border-collapse">
                         <tbody>
-                            <tr className="border-b border-gray-300"><td className="p-2">{t('market')}</td><td className="p-2 text-right font-mono">{fmt(marketTotal)}</td></tr>
-                            <tr className="border-b border-gray-300"><td className="p-2">{t('wage')}</td><td className="p-2 text-right font-mono">{fmt(wageTotal)}</td></tr>
-                            <tr className="border-b border-gray-300"><td className="p-2">{t('refund')} ({refundCount} {t('people')})</td><td className="p-2 text-right font-mono">{fmt(refundTotal)}</td></tr>
-                            <tr className="border-b border-gray-300"><td className="p-2">{t('otherCosts')}</td><td className="p-2 text-right font-mono">{fmt(otherTotal)}</td></tr>
+                            {marketTotal > 0 && <tr className="border-b border-gray-300"><td className="p-2">{t('market')}</td><td className="p-2 text-right font-mono">{fmt(marketTotal)}</td></tr>}
+                            {wageTotal > 0 && <tr className="border-b border-gray-300"><td className="p-2">{t('wage')}</td><td className="p-2 text-right font-mono">{fmt(wageTotal)}</td></tr>}
+                            {refundCount > 0 && <tr className="border-b border-gray-300"><td className="p-2">{t('refund')} ({refundCount} {t('people')})</td><td className="p-2 text-right font-mono">{fmt(refundTotal)}</td></tr>}
+                            {otherTotal > 0 && <tr className="border-b border-gray-300"><td className="p-2">{t('otherCosts')}</td><td className="p-2 text-right font-mono">{fmt(otherTotal)}</td></tr>}
                             <tr className="font-bold bg-gray-100 border-t-2 border-black text-base"><td className="p-3">{t('totalExpense')}</td><td className="p-3 text-right font-mono">{fmt(totalExpenseCalc)}</td></tr>
                         </tbody>
                     </table>
@@ -779,9 +780,102 @@ const ManualAudit = () => {
     const [showSyncConfirm, setShowSyncConfirm] = useState(false);
     const [showNoAuditAlert, setShowNoAuditAlert] = useState(false);
 
+    // History (Undo / Redo) and Freeze States
+    const historyRef = useRef<string[]>([]);
+    const historyIndexRef = useRef<number>(-1);
+    const [canUndo, setCanUndo] = useState(false);
+    const [canRedo, setCanRedo] = useState(false);
+    const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+    const [isFrozen, setIsFrozen] = useState<boolean>(() => {
+        return localStorage.getItem('arms_manual_audit_frozen') === 'true';
+    });
+
+    const updateHistoryButtons = () => {
+        setCanUndo(historyIndexRef.current > 0);
+        setCanRedo(historyIndexRef.current < historyRef.current.length - 1);
+    };
+
+    const initHistory = (initialHtml: string) => {
+        historyRef.current = [initialHtml];
+        historyIndexRef.current = 0;
+        updateHistoryButtons();
+    };
+
+    const pushSnapshot = (html: string) => {
+        if (!html) return;
+        const currentSnap = historyRef.current[historyIndexRef.current];
+        if (currentSnap === html) return;
+
+        const newHistory = historyRef.current.slice(0, historyIndexRef.current + 1);
+        newHistory.push(html);
+        if (newHistory.length > 50) {
+            newHistory.shift();
+        }
+        historyRef.current = newHistory;
+        historyIndexRef.current = newHistory.length - 1;
+        updateHistoryButtons();
+    };
+
+    const handleUndo = () => {
+        if (historyIndexRef.current > 0 && editorRef.current) {
+            historyIndexRef.current -= 1;
+            const targetHtml = historyRef.current[historyIndexRef.current];
+            editorRef.current.innerHTML = targetHtml;
+            updateEditorPageFooters();
+            updateHistoryButtons();
+            if (localStorage.getItem('arms_manual_audit_frozen') === 'true') {
+                localStorage.setItem('arms_manual_audit_frozen_html', targetHtml);
+            }
+        }
+    };
+
+    const handleRedo = () => {
+        if (historyIndexRef.current < historyRef.current.length - 1 && editorRef.current) {
+            historyIndexRef.current += 1;
+            const targetHtml = historyRef.current[historyIndexRef.current];
+            editorRef.current.innerHTML = targetHtml;
+            updateEditorPageFooters();
+            updateHistoryButtons();
+            if (localStorage.getItem('arms_manual_audit_frozen') === 'true') {
+                localStorage.setItem('arms_manual_audit_frozen_html', targetHtml);
+            }
+        }
+    };
+
+    const handleToggleFreeze = () => {
+        const nextFrozen = !isFrozen;
+        setIsFrozen(nextFrozen);
+        localStorage.setItem('arms_manual_audit_frozen', String(nextFrozen));
+        if (nextFrozen && editorRef.current) {
+            localStorage.setItem('arms_manual_audit_frozen_html', editorRef.current.innerHTML);
+        }
+    };
+
+    const handleEditorInput = () => {
+        updateEditorPageFooters();
+        if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+        debounceTimerRef.current = setTimeout(() => {
+            if (editorRef.current) {
+                const currentHtml = editorRef.current.innerHTML;
+                pushSnapshot(currentHtml);
+                if (localStorage.getItem('arms_manual_audit_frozen') === 'true') {
+                    localStorage.setItem('arms_manual_audit_frozen_html', currentHtml);
+                }
+            }
+        }, 400);
+    };
+
     const execCmd = (command: string, value: string | undefined = undefined) => {
         document.execCommand(command, false, value);
-        if (editorRef.current) editorRef.current.focus();
+        if (editorRef.current) {
+            editorRef.current.focus();
+            updateEditorPageFooters();
+            pushSnapshot(editorRef.current.innerHTML);
+            if (localStorage.getItem('arms_manual_audit_frozen') === 'true') {
+                localStorage.setItem('arms_manual_audit_frozen_html', editorRef.current.innerHTML);
+            }
+        }
     };
 
     const AUDIT_PAGE_CLASS = "audit-section p-[20mm] bg-white w-[210mm] min-h-[297mm] shadow-2xl flex flex-col justify-between relative text-black outline-none";
@@ -894,8 +988,13 @@ const ManualAudit = () => {
         setShowSyncConfirm(false);
         const stored = localStorage.getItem('arms_automated_audit_html');
         if (stored && editorRef.current) {
-            editorRef.current.innerHTML = cleanSyncedAuditHtml(stored);
+            const cleaned = cleanSyncedAuditHtml(stored);
+            editorRef.current.innerHTML = cleaned;
             updateEditorPageFooters();
+            pushSnapshot(cleaned);
+            if (localStorage.getItem('arms_manual_audit_frozen') === 'true') {
+                localStorage.setItem('arms_manual_audit_frozen_html', cleaned);
+            }
         } else {
             setShowNoAuditAlert(true);
         }
@@ -925,9 +1024,23 @@ const ManualAudit = () => {
     };
 
     useEffect(() => {
+        const frozenFlag = localStorage.getItem('arms_manual_audit_frozen') === 'true';
+        if (frozenFlag) {
+            const frozenHtml = localStorage.getItem('arms_manual_audit_frozen_html');
+            if (frozenHtml && editorRef.current) {
+                editorRef.current.innerHTML = frozenHtml;
+                initHistory(frozenHtml);
+                updateEditorPageFooters();
+                return;
+            }
+        }
         const stored = localStorage.getItem('arms_automated_audit_html');
         if (stored && editorRef.current) {
-            editorRef.current.innerHTML = cleanSyncedAuditHtml(stored);
+            const cleaned = cleanSyncedAuditHtml(stored);
+            editorRef.current.innerHTML = cleaned;
+            initHistory(cleaned);
+        } else if (editorRef.current) {
+            initHistory(editorRef.current.innerHTML);
         }
         updateEditorPageFooters();
     }, [language, updateEditorPageFooters]);
@@ -938,6 +1051,24 @@ const ManualAudit = () => {
                 <div className="flex gap-2 items-center flex-wrap">
                     {/* Font Style */}
                     <div className="flex bg-slate-900 rounded p-1 space-x-1 border border-gray-700">
+                        <button 
+                            type="button"
+                            onClick={handleUndo} 
+                            disabled={!canUndo} 
+                            className={`p-2 rounded transition ${canUndo ? 'text-gray-300 hover:bg-gold-500 hover:text-black cursor-pointer' : 'text-gray-600 cursor-not-allowed opacity-40'}`} 
+                            title={t('editorUndo')}
+                        >
+                            <Undo size={16}/>
+                        </button>
+                        <button 
+                            type="button"
+                            onClick={handleRedo} 
+                            disabled={!canRedo} 
+                            className={`p-2 rounded transition ${canRedo ? 'text-gray-300 hover:bg-gold-500 hover:text-black cursor-pointer' : 'text-gray-600 cursor-not-allowed opacity-40'}`} 
+                            title={t('editorRedo')}
+                        >
+                            <Redo size={16}/>
+                        </button>
                         <button onClick={() => execCmd('bold')} className="p-2 text-gray-300 hover:bg-gold-500 hover:text-black rounded transition" title={t('editorBold')}><Bold size={16}/></button>
                         <button onClick={() => execCmd('italic')} className="p-2 text-gray-300 hover:bg-gold-500 hover:text-black rounded transition" title={t('editorItalic')}><Italic size={16}/></button>
                         <button onClick={() => execCmd('underline')} className="p-2 text-gray-300 hover:bg-gold-500 hover:text-black rounded transition" title={t('editorUnderline')}><Underline size={16}/></button>
@@ -996,9 +1127,18 @@ const ManualAudit = () => {
                          <button onClick={() => { execCmd('insertHTML', renderPageWrapper('<p><br></p>')); setTimeout(() => updateEditorPageFooters(), 50); }} className="p-2 text-gray-300 hover:bg-gold-500 hover:text-black rounded transition" title={language === 'am' ? 'አዲስ ገጽ ጨምር' : 'Add New Page'}><PlusSquare size={16}/></button>
                     </div>
 
-                    {/* Sync from Automated */}
-                    <div className="flex bg-slate-900 rounded p-1 space-x-1 border border-gray-700">
+                    {/* Sync from Automated & Freeze */}
+                    <div className="flex bg-slate-900 rounded p-1 space-x-1 border border-gray-700 items-center">
                          <button onClick={handleSyncFromAutomated} className="p-2 text-gold-500 hover:bg-gold-500 hover:text-black rounded transition flex items-center gap-1 text-xs font-bold" title={t('syncFromAutomatedTooltip')}><RefreshCw size={14}/> {t('syncAutomatedBtn')}</button>
+                         <button 
+                             type="button" 
+                             onClick={handleToggleFreeze} 
+                             className={`p-2 rounded transition flex items-center gap-1 text-xs font-bold ${isFrozen ? 'bg-amber-500/20 text-amber-400 border border-amber-500/40 hover:bg-amber-500 hover:text-black' : 'text-gray-300 hover:bg-gold-500 hover:text-black'}`} 
+                             title={isFrozen ? t('freezeActiveTooltip') : t('freezeInactiveTooltip')}
+                         >
+                             {isFrozen ? <Lock size={14}/> : <Unlock size={14}/>} 
+                             <span>{isFrozen ? t('frozenBtn') : t('freezeBtn')}</span>
+                         </button>
                     </div>
                 </div>
                 <div className="flex gap-2 items-center">
@@ -1014,7 +1154,7 @@ const ManualAudit = () => {
                         className="w-[210mm] flex flex-col gap-8 text-black outline-none leading-relaxed overflow-y-visible bg-transparent shadow-none" 
                         contentEditable 
                         suppressContentEditableWarning={true}
-                        onInput={() => updateEditorPageFooters()}
+                        onInput={handleEditorInput}
                     >
                         <div className="audit-section p-[20mm] bg-white w-[210mm] min-h-[297mm] shadow-2xl flex flex-col justify-between relative text-black outline-none">
                             <div className="flex-grow">
@@ -1253,6 +1393,7 @@ const Calculation = () => {
                 }
             } else {
                 if (['/','*','-','+'].includes(val) && ['/','*','-','+'].includes(calcDisplay.slice(-1))) {
+                    setCalcDisplay(prev => prev.slice(0, -1) + val);
                     return;
                 }
                 setCalcDisplay(prev => prev === '0' && !['/','*','-','+'].includes(val) ? val : prev + val);
