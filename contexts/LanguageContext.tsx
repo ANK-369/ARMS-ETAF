@@ -463,7 +463,7 @@ export const dictionary: Translations = {
   
   // --- AUDIT REPORT BODY STRINGS (MODIFIED FOR TARGETED REPLACEMENT) ---
   auditReportFor: { en: "Audit Report for", am: "የ" },
-  auditSubjectSuffix: { en: "Logistics Audit", am: "ወር ሪፖርት ስለማቅረብ ይመለከታል" },
+  auditSubjectSuffix: { en: "Logistics Audit", am: "ወር የግብር ቤት ኦዲት ሪፖርት ስለማቅረብ ይመለከታል" },
   auditBodyIntro: { en: "This audit report covers the month of", am: "በጉዳዩ ለመግለጽ እንደተሞከረው የ" },
   auditBodyMid: { en: "in the year", am: "ወር" },
   auditBodyEnd: { en: "listing all incomes and expenditures. Total pages:", am: "ዓ/ም የግብር ቤት ኦዲት" },
@@ -479,7 +479,7 @@ export const dictionary: Translations = {
   halfCash: { en: "Half Cash", am: "ተቆራራጭ ከፋይ" },
   people: { en: "people", am: "ሰው" },
   transient: { en: "Transient", am: "ትራንዚንት" },
-  miscIncome: { en: "Misc. Sales/Income", am: "የተለያየ ሽያጭ/ገቢ" },
+  miscIncome: { en: "Misc. Sales/Income", am: "የተለያዩ ሽያጭ/ገቢ" },
   transferFromPrev: { en: "Transfer (Prev Month)", am: "የወር ዝውውር" },
   totalIncome: { en: "TOTAL INCOME", am: "ጠቅላላ ገቢ" },
   expenditureTitle: { en: "EXPENDITURE", am: "ወጪ" },
