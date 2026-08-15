@@ -81,8 +81,8 @@ You can use the fully functional system deployed live on Vercel right now:
 #### 1. Setup & Installation
 ```bash
 # Clone the repository
-git clone https://github.com/ANK-369/ARMS.git
-cd ARMS
+git clone https://github.com/ANK-369/ARMS-ETAF.git
+cd ARMS-ETAF
 
 # Install dependencies
 npm install
