@@ -14,43 +14,46 @@
 ---
 
 ## 📋 Overview
-**ARMS** is a modern, high-performance, and secure management dashboard designed explicitly for tracking logistics, inventory metrics, and financial workflows. Integrated with cutting-edge client-side automated cloud sync capabilities and an intelligence-driven AI companion, ARMS delivers high-efficiency localized enterprise management out of the box.
+**ARMS (Auditing & Ration Management System)** is a modern, high-performance, and secure logistics, financial, and auditing platform developed for the **Ethiopian Air Force**. ARMS combines offline-first client architecture with decentralized cloud data synchronization and a serverless Google Gemini AI engine to deliver mission-ready operational efficiency.
+
+> 📖 **Comprehensive Developer Documentation:** For in-depth architectural details, data flow diagrams, API schemas, and calendar mathematics, see [`docs/PROJECT_DOCUMENTATION.md`](docs/PROJECT_DOCUMENTATION.md).
 
 ---
 
 ## ✨ Key Features
 
 ### 💵 Financials & Auditing
-* **Income & Expenditure Tracking:** Log financial transactions with precision tools.
-* **Audit Center:** In-depth balance calculations and financial health scoring systems.
+* **Income & Expenditure Tracking:** Log financial transactions, sales of store items, subsidies, and personnel refunds.
+* **Automated Audit Center:** Multi-ledger reconciliation, debit/credit balancing, and automated client-side PDF military audit generation via `html2pdf.js`.
 
 ### 📦 Logistics & Inventory
-* **Store & Supply Management:** Track physical assets, equipment updates, and stock levels seamlessly.
-* **Live Ethiopian Date & Time Engine:** Fully customized localized calendar matrix (`EthiopianDate.ts`) baked directly into the system state.
+* **Store & Supply Management:** Track physical inventory with automated **Weighted Average Cost (WAC)** price recalculation upon receiving orders.
+* **Daily Ration Deduction & Food Scheduling:** Computes ingredient requirements dynamically scaled to active manpower counts and daily recipes.
+* **Astronomical Ethiopian Calendar Engine:** Native Julian Day Number (JDN) date calculations supporting 13 Ethiopian months, leap years, and Amharic pickers.
 
-### ☁️ Serverless Git-DB Sync (Decentralized Database)
-* **Zero-Backend Infrastructure:** Works entirely client-side using regular GitHub repositories as secure, dynamic databases.
-* **Autonomous Versioning:** Instantly backs up and pulls changes globally via encrypted API handling.
+### ☁️ Decentralized Data Persistence (Git-as-a-Database)
+* **Decentralized Storage:** Users sync their complete data state as structured JSON files directly to their own GitHub or Gitea repositories using Personal Access Tokens (PAT).
+* **Automated Sequence & Month Folder Allocation:** Automatically organizes monthly backups into structured directory sequences (e.g. `november2018/arms001.json`).
 
-### 🧠 Advanced AI Studio Integration
-* **Gemini AI Core:** Built-in generative artificial intelligence for logic processing, semantic search, and autonomous data parsing.
+### 🧠 Serverless Gemini AI Integration
+* **AI Auditing & Logistics Forecasting:** Serverless Express proxy (`/api/gemini/*`) keeps API keys secure while powering natural language auditing, recipe optimization, and logistics chat assistants with multi-model fallback resiliency.
 
 ---
 
 ## ⚡ Quick Start: Instant Online Usage
 
-No installation required! If you do not want to set up a local development server, you can use the fully functional system deployed live on the cloud right now.
+You can use the fully functional system deployed live on Vercel right now:
 
 > 🌐 **Live Web Application URL:** [https://arms-sandy.vercel.app/](https://arms-sandy.vercel.app/)
 
 ### How to use the live version:
 1. Open the **Live Link** above.
-2. Bypass the gateway login using the default trial admin credentials:
-   * **Username:** `admin`
-   * **Password:** `admin`
-3. Go directly to **Database Administration (ዳታቤዝ አስተዳደር)** from the menu sidebar.
-4. Input your own GitHub Parameters (**Username, Repo Name, Target JSON file, and PAT Key**).
-5. The cloud application will instantly bind itself to your personal repository, allowing you to use it as a persistent production system immediately!
+2. Sign in using the default credentials:
+   * **Username:** `admin` (or `etaf` for System Administrator)
+   * **Password:** `admin` (or `etaf` for Admin)
+3. Navigate to **Database Administration (ዳታቤዝ አስተዳደር)** from the menu sidebar.
+4. Input your GitHub parameters (**Owner, Repo Name, and Personal Access Token**).
+5. The application will bind to your repository, providing persistent decentralized cloud storage across sessions!
 
 ---
 
@@ -69,130 +72,78 @@ No installation required! If you do not want to set up a local development serve
 ## 🚀 Getting Started (Run Locally)
 
 ### Prerequisites
-* **Node.js** (LTS version 24 recommended)
-* **Git** installed on your client terminal (or Termux)
+* **Node.js** (v18.0.0 or higher; LTS v20/v22/v24 recommended)
+* **npm** or **pnpm**
+* **Git** (or Termux on Android)
 
 ### 🛠️ Execution Roadmap
 
-#### 1. Quick Setup (Automated Environment-Aware Script)
-The project includes an intelligent `install.sh` script that automatically detects your platform (Native Termux, PRoot Distro Kali Linux, or Desktop Linux) and shell environment (`bash` or `zsh`), and provisions the correct environment along with Node.js and dependencies:
-
+#### 1. Setup & Installation
 ```bash
-chmod +x install.sh
-./install.sh
-```
+# Clone the repository
+git clone https://github.com/ANK-369/ARMS.git
+cd ARMS
 
-> 💡 **What the script does behind the scenes:**
-> * **Native Termux:** Uses `pkg` package manager to clean and deploy Node.js instantly.
-> * **PRoot Distro Kali Linux:** Cleans old broken apt-node structures, installs **NVM (Node Version Manager)**, configures environment paths for either `~/.bashrc` or `~/.zshrc` dynamically, upgrades environment runtime to Node.js v24, and runs dependency mapping.
-> 
-> 
-
-*Alternatively, if you prefer manual environment configuration, run:*
-
-```bash
+# Install dependencies
 npm install
-
 ```
 
 #### 2. Configure Environment Variables
-
-To unlock the intelligent search and cognitive features of the built-in AI companion, create a `.env.local` file in your root folder and append your unique Gemini token:
+Create a `.env.local` or `.env` file in the project root to configure the Gemini AI key for server-side endpoints:
 
 ```ini
-VITE_GEMINI_API_KEY=your_actual_gemini_api_key_here
-
+GEMINI_API_KEY=your_actual_gemini_api_key_here
 ```
+
+*(Note: Users can also enter custom Gemini API keys at runtime via the Database Administration UI).*
 
 #### 3. Launch Development Server
-
-Boot up the fast local runtime server:
-
 ```bash
 npm run dev
+```
+Open your browser at `http://localhost:3000`.
 
+#### 4. Build for Production
+```bash
+npm run build
+npm start
 ```
 
 ---
 
-## 🔄 How to Change the Admin Username and Password
+## 🔐 Credentials & Security Management
 
-Because the system operates entirely client-side without relying on an external SQL backend database, the security gate check is handled right within the primary application routing. You can change these default credentials to your own custom values by editing the source code directly:
+Authentication is managed via the **Web Crypto API (SHA-256 hashing)** with credentials stored locally and synced into the encrypted database state:
 
-1. Open the file: **`App.tsx`**
-2. Locate the verification block on **line 51**:
-```typescript
-if (username === 'admin' && password === 'admin') {
-
-```
-
-
-3. Swap out the default `'admin'` strings with your new preferred credentials:
-```typescript
-if (username === 'your_custom_user' && password === 'your_secure_password') {
-
-```
-
-
-4. Save the file.
-5. **Apply Changes:**
-* **Locally:** The development server will auto-reload with your new password.
-* **Production/Web:** Commit and push the update to GitHub (`git add App.tsx && git commit -m "Update admin credentials" && git push`), and Vercel will automatically rebuild your live deployment instantly.
-
-
+* **Standard User:** Default username `admin`, default password `admin`.
+* **System Administrator:** Default username `etaf`, default password `etaf`.
+* **Updating Credentials:** You do **not** need to modify source code. Log in as an administrator to change usernames and passwords directly via the **Admin Dashboard** or **System Access Settings**.
+* **Password Recovery:** If credentials are lost, click **Forgot Password?** on the login terminal and provide the answer to your security challenge question (Default answer: `"air force"`).
 
 ---
 
-## 🗄️ Production Deployment & Cloud Database Configuration
+## 🗄️ Cloud Synchronization (GitHub / Gitea)
 
-The system is fully independent and production-ready with zero traditional server maintenance costs. To link the operational ledger data to your permanent persistent cloud storage, navigate directly to **Database Administration (ዳታቤዝ አስተዳደር)** inside the application and provide your parameters:
-
-1. **GitHub Owner:** Input your unique GitHub account username (e.g., `ANK-369`).
-2. **Repository Target:** Give it the target storage container repo name (e.g., `ARMS`).
-3. **Data File Identifier:** Set your preferred JSON filename endpoint (e.g., `arms_db.json`).
-4. **Personal Access Token (PAT):** Pass your secure GitHub token (`ghp_...`).
-
-> ⚠️ **Security Warning:** Keep your Personal Access Token strictly private. The dashboard handles these queries directly via client-side API loops ensuring data remains isolated inside your authorized network boundaries.
+To connect your operational data to your personal Git repository:
+1. Navigate to **Database Administration (ዳታቤዝ አስተዳደር)**.
+2. Enter your **GitHub Account Username** (e.g. `ANK-369`).
+3. Enter your **Target Repository** (e.g. `ARMS`).
+4. Enter your **Personal Access Token (PAT)** with repository read/write permissions.
+5. Toggle **Enable GitHub Cloud Sync**. Every data modification will automatically persist and version-control to your repository.
 
 ---
 
 ## 📌 Project Status, Scope & Operational Disclaimer
 
-> ⚠️ **Important Classification Note:** **ARMS** is currently an independent, grassroots software initiative. It is **not** an officially mandated, force-wide enterprise deployment across the entire Ethiopian Air Force infrastructure, nor has it received formal institutional acknowledgment at the command level yet.
+> ⚠️ **Important Classification Note:** **ARMS** is an independent software initiative designed for the Ethiopian Air Force logistics workflows. It is currently utilized for localized daily operations and field auditing.
 
-### ⚡ Current Operational Impact
+---
 
-While the project is currently in its active development phase with many features yet to be integrated, it is fully functional and completely optimized for specific localized use cases. Currently, a small subset of personnel (the creator and close operational colleagues) utilize this system daily to:
+## 📚 Technical Documentation
 
-* 📉 **Minimize Operational Risk:** Replaces disjointed manual file tracking with a centralized database structure.
-* ⏱️ **Optimize Time Management:** Dramatically shortens data retrieval and log updates from hours to seconds.
-* 🎯 **Eliminate Human Error:** Automated accounting metrics drastically reduce input discrepancies.
-* ⚖️ **Heighten Accountability:** Creates an immutable client-side record of adjustments, bringing high transparency to logistics management.
-
-### 🗺️ Future Roadmap & Upcoming Features
-
-The system is designed to scale into a robust, multi-role enterprise ecosystem. Future development phases will implement granular Role-Based Access Control (RBAC) to deploy specialized dashboards tailored for specific logistics and monitoring tasks:
-
-* **📦 Storekeeper (Store Man) Dashboard:** Tailored interface for physical asset tracking, real-time stock allocation checks, and warehouse intake logs.
-* **🛒 Procurement (Buyers) Hub:** Streamlined workspace for managing supplier data, incoming purchase requests, and budget tracking.
-* **📊 Financial Audit Interface:** Advanced analytical data views for internal auditors to track fiscal discrepancies and run balance scorecards.
-* **👥 Review Committee Leadership Portal:** A high-level decision-making dashboard allowing committee chairs to review system recommendations, approve or reject log adjustments, and sign off on audit completions.
-* **🛡️ Higher Command Controller & Admin Console:** A specialized dashboard designed strictly for senior security controllers and system administrators. This view focuses exclusively on:
-* **Immutable Log Reviews:** Comprehensive, real-time security tracking of all user interactions.
-* **Administrative Actions Only:** Isolated override controls and system-wide security auditing to ensure absolute accountability without exposing tactical data unnecessarily.
-
-
-
-### 🔒 Architectural & Approval Milestones
-
-Before presenting a formal case study to leadership for official institutional deployment, the system will undergo:
-
-1. **Security Hardening:** Implementing standard cryptographic safeguards to protect local storage structures.
-2. **Offline Optimization:** Enhancing client-side synchronization pipelines to maintain smooth performance in low-bandwidth or isolated mobile environments (such as Termux deployments).
-3. **AI Search Refinement:** Expanding the embedded Gemini AI Core to handle semantic searching across the multi-role logs.
-
-Once these rigorous security and performance metrics are fully satisfied, a formal case study and live demonstration will be presented to leadership to obtain official institutional approval and broader deployment authorization.
-
-```
-
-```
+For complete technical specifications, review [`docs/PROJECT_DOCUMENTATION.md`](docs/PROJECT_DOCUMENTATION.md) for details on:
+* Complete file-by-file directory index
+* Exact mathematical formulations for the Ethiopian Julian Day Number date converter
+* Weighted Average Cost (WAC) formula and inventory replenishment flows
+* Serverless Express architecture & Gemini multi-model fallback mechanics
+* Data migration schemas and conflict resolution algorithms
