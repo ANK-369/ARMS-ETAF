@@ -376,6 +376,7 @@ export const dictionary: Translations = {
   "እን/ር": { en: "Engineer", am: "እን/ር" },
   "ጠበቃ": { en: "Attorney", am: "ጠበቃ" },
   "መምህር/ሪት": { en: "Teacher", am: "መምህር/ሪት" },
+  "ሹፌር": { en: "Driver", am: "ሹፌር" },
   "ሌሎች": { en: "Others", am: "ሌሎች" },
   "Enlisted": { en: "Enlisted", am: "የበታች ሹም" },
   "Recruit": { en: "Recruit", am: "ምልምል" },
@@ -463,7 +464,7 @@ export const dictionary: Translations = {
   
   // --- AUDIT REPORT BODY STRINGS (MODIFIED FOR TARGETED REPLACEMENT) ---
   auditReportFor: { en: "Audit Report for", am: "የ" },
-  auditSubjectSuffix: { en: "Logistics Audit", am: "ወር ሪፖርት ስለማቅረብ ይመለከታል" },
+  auditSubjectSuffix: { en: "Logistics Audit", am: "ወር የግብር ቤት ኦዲት ሪፖርት ስለማቅረብ ይመለከታል" },
   auditBodyIntro: { en: "This audit report covers the month of", am: "በጉዳዩ ለመግለጽ እንደተሞከረው የ" },
   auditBodyMid: { en: "in the year", am: "ወር" },
   auditBodyEnd: { en: "listing all incomes and expenditures. Total pages:", am: "ዓ/ም የግብር ቤት ኦዲት" },
