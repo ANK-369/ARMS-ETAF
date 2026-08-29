@@ -657,15 +657,15 @@ export const dictionary: Translations = {
   transfer: { en: "Transfer", am: "ዝውውር" },
 
   // --- ABOUT PAGE ---
-  name_andualem: { en: "Andualem Koriya", am: "አንዱዓለም ኮሪያ" },
+  name_andualem: { en: "ANdualem Koriya", am: "አንዱዓለም ኮሪያ" },
   developer_bio: { en: "Developer Bio", am: "ስለ አዘጋጁ" },
   tech_portfolio: { en: "Technical Portfolio & Ambitions", am: "ቴክኒካል ልምድ እና ራዕይ" },
-  past_projects: { en: "Past Projects", am: "የተሰሩ ፕሮጀክቶች" },
+  past_projects: { en: "Complete Projects", am: "የተሰሩ ፕሮጀክቶች" },
   adv_interests: { en: "Advanced Interests", am: "ልዩ ፍላጎቶች" },
   
   bio_p1: { 
-    en: "I am a passionate Solution Architect and AI Engineer. Currently, I am a 2nd-year degree student in Cybersecurity, while actively advancing my skills in AI Engineering and Full Stack Development.", 
-    am: "እኔ በሶሉሽን አርክቴክቸር እና AI ምህንድስና ላይ ከፍተኛ ፍላጎት ያለኝ ባለሙያ ነኝ። በአሁኑ ወቅት በሳይበር ደህንነት የ2ኛ ዓመት የዲግሪ ተማሪ ስሆን፣ ጎን ለጎን በAI እና ፉል ስታክ ዴቨሎፕመንት ክህሎቴን እያሳደግኩ እገኛለሁ።" 
+    en: "I am a passionate Solution Architect, Cybersecurity related Tool Developer and AI Prompt Engineer. Currently, I am a 2nd-year degree student in Cybersecurity(2018 E.C.), while actively advancing my skills in AI Prompt Engineering and Full Stack Development.", 
+    am: "እኔ በሶሉሽን አርክቴክቸር፣ የሳይበርሴኪሪቲ ሶፍትወር ብልፀጋ  እና AI ፕሮምት ምህንድስና ላይ ከፍተኛ ፍላጎት ያለኝ ባለሙያ ነኝ። በአሁኑ ወቅት በሳይበር ደህንነት የ2ኛ ዓመት የዲግሪ ተማሪ ስሆን(2018)፣ ጎን ለጎን በAI እና ፉል ስታክ ዴቨሎፕመንት ክህሎቴን እያሳደግኩ እገኛለሁ።" 
   },
   bio_p2: { 
     en: "My journey began as a soldier where I was assigned duties as an Auditor, Store Man, and Buyer. While logistics wasn't my chosen profession, I adapted to the mission. I combined this hands-on field experience with my technical expertise to create ARMS (Auditing and Ration Management System).", 
