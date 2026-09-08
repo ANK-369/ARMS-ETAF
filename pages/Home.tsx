@@ -816,7 +816,7 @@ const Home: React.FC = () => {
                           <Scale size={14}/> {t('dailyAvg')}
                       </h4>
                       <div className="flex justify-between items-end mb-1">
-                          <span className="text-gray-400 text-xs">{t('income')} / {language === 'am' ? '30 ቀን' : '30 Days'}</span>
+                          <span className="text-gray-400 text-xs">{t('income')} / {dayDivisor} {t('day')}</span>
                           <span className="text-green-400 font-mono text-sm">+{dailyIncomeAvg.toLocaleString(undefined, {maximumFractionDigits:0})}</span>
                       </div>
                       <div className="flex justify-between items-end mb-3">
