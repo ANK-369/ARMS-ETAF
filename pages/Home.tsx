@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { getDB, saveDB } from '../services/db';
 import { findFilesBySecretKey, fetchFromGitHub, getFolderName, listUserBackups, getGitHubConfig, isGitHubConfigured } from '../services/githubService';
 import { AppData, Manpower, ManpowerType } from '../types';
-import { formatEthiopianDate, getCurrentEthiopianDate, isSameMonth, ETHIOPIAN_MONTHS, ETHIOPIAN_MONTHS_AMHARIC } from '../services/ethiopianDate';
+import { formatEthiopianDate, getCurrentEthiopianDate, isSameMonth, ETHIOPIAN_MONTHS, ETHIOPIAN_MONTHS_AMHARIC, getDaysInEthiopianMonth } from '../services/ethiopianDate';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area
 } from 'recharts';
