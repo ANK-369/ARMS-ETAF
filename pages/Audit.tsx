@@ -12,7 +12,7 @@ import {
   AlignLeft, AlignCenter, AlignRight, Table as TableIcon, Eraser, Delete as DeleteIcon, Lock, EyeOff, KeyRound, Cpu, Copy, PlusSquare, Calendar,
   Undo, Redo, Unlock
 } from 'lucide-react';
-import { ETHIOPIAN_MONTHS, ETHIOPIAN_MONTHS_AMHARIC, getCurrentEthiopianDate, isActiveDate, formatEthiopianDate } from '../services/ethiopianDate';
+import { ETHIOPIAN_MONTHS, ETHIOPIAN_MONTHS_AMHARIC, getCurrentEthiopianDate, isActiveDate, formatEthiopianDate, getDaysInEthiopianMonth } from '../services/ethiopianDate';
 import { downloadFile, generateHTMLDoc, parseImportFile } from '../services/dataTransfer';
 import CustomSelect from '../components/CustomSelect';
 import ConfirmDialog from '../components/ConfirmDialog';
