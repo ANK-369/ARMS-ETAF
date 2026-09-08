@@ -56,11 +56,12 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
     const mName = language === 'am' 
       ? (ETHIOPIAN_MONTHS_AMHARIC[parseInt(filterMonth) - 1] || "")
       : (ETHIOPIAN_MONTHS[parseInt(filterMonth) - 1] || "");
+    const daysInSelectedMonth = getDaysInEthiopianMonth(filterYear, filterMonth);
       
     if (language === 'am') {
-        setDate(`${mName} 30 ቀን ${filterYear} ዓ/ም`);
+        setDate(`${mName} ${daysInSelectedMonth} ቀን ${filterYear} ዓ/ም`);
     } else {
-        setDate(`${mName} 30, ${filterYear}`);
+        setDate(`${mName} ${daysInSelectedMonth}, ${filterYear}`);
     }
   }, [filterMonth, filterYear, language, t]);
 
