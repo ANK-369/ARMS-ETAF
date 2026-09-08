@@ -83,3 +83,16 @@ export const isActiveDate = (currentDate: string, startDate: string, endDate: st
     if (!startDate || !endDate || !currentDate) return false;
     return currentDate >= startDate && currentDate <= endDate;
 };
+
+export const isEthiopianLeapYear = (year: number | string): boolean => {
+  const y = typeof year === 'string' ? parseInt(year) : year;
+  return y % 4 === 3;
+};
+
+export const getDaysInEthiopianMonth = (year: number | string, month: number | string): number => {
+  const m = typeof month === 'string' ? parseInt(month) : month;
+  if (m === 13) {
+    return isEthiopianLeapYear(year) ? 6 : 5;
+  }
+  return 30;
+};
