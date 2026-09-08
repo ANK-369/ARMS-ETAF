@@ -437,12 +437,13 @@ const Home: React.FC = () => {
 
   // --- DAILY AVG ---
   const [currY, currM] = getCurrentEthiopianDate().split('-');
+  const incomeDaysDivisor = getDaysInEthiopianMonth(selectedYear, selectedMonth);  // Income avg always uses full month length, never the elapsed-day override
   let dayDivisor = getDaysInEthiopianMonth(selectedYear, selectedMonth);  // 30, or 5/6 for Pagume
       if (selectedYear === currY && selectedMonth === currM) {
           dayDivisor = parseInt(getCurrentEthiopianDate().split('-')[2]) || 1;
       }
 
-  const dailyIncomeAvg = totalIncome / dayDivisor;
+  const dailyIncomeAvg = totalIncome / incomeDaysDivisor;
   const dailyBurnRate = totalExpense / Math.max(1, dayDivisor); 
   const netDaily = dailyIncomeAvg - dailyBurnRate;
   
@@ -816,7 +817,7 @@ const Home: React.FC = () => {
                           <Scale size={14}/> {t('dailyAvg')}
                       </h4>
                       <div className="flex justify-between items-end mb-1">
-                          <span className="text-gray-400 text-xs">{t('income')} / {dayDivisor} {t('day')}</span>
+                          <span className="text-gray-400 text-xs">{t('income')} / {incomeDaysDivisor} {t('day')}</span>
                           <span className="text-green-400 font-mono text-sm">+{dailyIncomeAvg.toLocaleString(undefined, {maximumFractionDigits:0})}</span>
                       </div>
                       <div className="flex justify-between items-end mb-3">
