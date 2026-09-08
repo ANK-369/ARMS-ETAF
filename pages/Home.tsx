@@ -437,12 +437,12 @@ const Home: React.FC = () => {
 
   // --- DAILY AVG ---
   const [currY, currM] = getCurrentEthiopianDate().split('-');
-  let dayDivisor = 30;
-  if (selectedYear === currY && selectedMonth === currM) {
-      dayDivisor = parseInt(getCurrentEthiopianDate().split('-')[2]) || 1;
-  }
+  let dayDivisor = getDaysInEthiopianMonth(selectedYear, selectedMonth);  // 30, or 5/6 for Pagume
+      if (selectedYear === currY && selectedMonth === currM) {
+          dayDivisor = parseInt(getCurrentEthiopianDate().split('-')[2]) || 1;
+      }
 
-  const dailyIncomeAvg = totalIncome / 30; 
+  const dailyIncomeAvg = totalIncome / dayDivisor;
   const dailyBurnRate = totalExpense / Math.max(1, dayDivisor); 
   const netDaily = dailyIncomeAvg - dailyBurnRate;
   
