@@ -114,7 +114,6 @@ ARMS uses a **hybrid client-first architecture**:
 │   ├── Audit.tsx               # Automated Audit, Manual Audit, and Reconciliation calculation tabs
 │   ├── DataEditor.tsx          # Direct multi-table database records editor and data cleaner
 │   ├── DbAdministration.tsx    # GitHub synchronization settings, manual backup, and API keys
-│   ├── EthiopianDatePicker.tsx # (Legacy/Unused) Early prototype picker
 │   ├── Expenditure.tsx         # Market purchases, wage payments, and other expenses
 │   ├── Home.tsx                # Central dashboard overview, KPI metric cards, and charts
 │   ├── Income.tsx              # Manpower roster, items sold, subsidies, and refunds
@@ -338,8 +337,8 @@ The following files exist in the repository as legacy artifacts from previous de
    * *Status:* Deprecated / Superseded.
    * *Reason:* An early rough date converter. Fully replaced by the mathematically rigorous Julian Day Number algorithm in `services/ethiopianDate.ts`.
 2. **`pages/EthiopianDatePicker.tsx`:**
-   * *Status:* Deprecated / Unused.
-   * *Reason:* Early prototype date picker component. Fully replaced by `components/EthiopianDatePicker.tsx`, which integrates `CustomSelect` and responsive Pagume leap year calculation.
+   * *Status:* Removed / Cleaned up.
+   * *Reason:* Early prototype date picker component. Replaced by `components/EthiopianDatePicker.tsx`, which integrates `CustomSelect` and responsive Pagume leap year calculation.
 3. **`arms` (Root directory):**
    * *Status:* Termux Launcher Script.
    * *Reason:* Bash launch script for running ARMS locally on Android smartphones via the Termux terminal environment (`com.termux`).

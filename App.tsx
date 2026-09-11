@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, PropsWithChildren } from 'react';
+import React, { useState, PropsWithChildren } from 'react';
 import { HashRouter as Router, Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import Layout from './components/Layout';
 import Home from './pages/Home';
@@ -12,12 +12,9 @@ import DataEditor from './pages/DataEditor';
 import Notebook from './pages/Notebook';
 import Store from './pages/Store';
 import DbAdministration from './pages/DbAdministration';
-import { ShieldCheck, Plane, Lock, User, Cpu, Globe, Cloud, RefreshCw, CheckCircle } from 'lucide-react';
-import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
+import { LanguageProvider } from './contexts/LanguageContext';
 import { DateProvider } from './contexts/DateContext';
 import { SidebarProvider } from './contexts/SidebarContext';
-import { getGitHubConfig, fetchFromGitHub } from './services/githubService';
-import { saveDB, getStoredUsername, verifyPassword, getStoredSecurityQuestion, verifySecurityAnswer, resetPasswordDirectly } from './services/db';
 import { Login } from './pages/Login';
 import { AdminDashboard } from './pages/AdminDashboard';
 

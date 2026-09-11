@@ -37,19 +37,6 @@ const initialData: AppData = {
 
 export const createEmptyDatabase = (): AppData => JSON.parse(JSON.stringify(initialData));
 
-export const clearStoredCredentials = () => {
-  localStorage.removeItem('arms_admin_username');
-  localStorage.removeItem('arms_admin_password_hash');
-  localStorage.removeItem('arms_user_username');
-  localStorage.removeItem('arms_user_password_hash');
-  localStorage.removeItem('arms_security_question');
-  localStorage.removeItem('arms_security_answer_hash');
-  localStorage.removeItem('arms_admin_customized');
-  localStorage.removeItem('arms_user_customized');
-  localStorage.removeItem('arms_username');
-  localStorage.removeItem('arms_password_hash');
-};
-
 export const getDB = (): AppData => {
   const isReadOnly = localStorage.getItem('arms_readonly_mode') === 'true';
   const sharedData = localStorage.getItem('arms_shared_database');
@@ -254,13 +241,6 @@ export const deleteItem = (collection: keyof AppData, id: string) => {
   if (Array.isArray(db[collection])) {
     db[collection] = (db[collection] as any[]).filter((i: any) => String(i.id) !== String(id)) as any;
     saveDB(db);
-  }
-};
-
-export const resetDB = () => {
-  if (window.confirm("Are you sure you want to completely wipe the database? This does NOT affect your login.")) {
-      localStorage.removeItem(DB_KEY);
-      window.location.reload();
   }
 };
 

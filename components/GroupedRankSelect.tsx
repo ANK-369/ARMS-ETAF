@@ -3,32 +3,32 @@ import { ChevronDown, ChevronRight, Check } from 'lucide-react';
 import { Command } from '../types';
 import { useLanguage } from '../contexts/LanguageContext';
 
-export const AIR_FORCE_RANKS = [
+const AIR_FORCE_RANKS = [
   "ጁ/ኤክ", "ሲ/ኤክ", "ሊ/ኤክ", "ጁ/ቴክ", "ሲ/ቴክ", "ሊ/ቴክ", "ማ/ቴክ", "ጁ/ዋ/ኦ", "ሲ/ዋ/ኦ", "ቺ/ዋ/ኦ"
 ];
 
-export const GROUND_FORCE_RANKS = [
+const GROUND_FORCE_RANKS = [
   "ምልምል", "መሰ/ወ/ር", "ም/፲/አለቃ", "፲/አለቃ", "፶/አለቃ", "ም/መ/አለቃ", "መቶ አለቃ", "ሻ/ል", "ሻ/ቃ", "ሌ/ኮ", "ኮሎነል"
 ];
 
-export const NCO_RANKS = [
+const NCO_RANKS = [
   "መ/፶/አለቃ", "ሻምል ባሻ", "ሻለቃ መ/ባሻ", "ሻለቃ ባሻ", "ጁ/ዋ/ኦ", "ሲ/ዋ/ኦ", "ቺ/ዋ/ኦ"
 ];
 
-export const NAVY_RANKS = [
+const NAVY_RANKS = [
   "ምል/መርከበኛ", "መርከበኛ", "መሪ መርከበኛ", "ፒቲ ኦፊሰር", "ቺፍ ፒቲ ኦፊሰር"
 ];
 
-export const CIVIL_RANKS = [
+const CIVIL_RANKS = [
   "ወጣት", "ወ/ሪት", "ወ/ሮ", "አቶ", "ዶ/ር", "ፕሮፌሰር", "እን/ር", "ጠበቃ", "መምህር/ሪት", "ሹፌር", "ሌሎች"
 ];
 
-export interface RankGroup {
+interface RankGroup {
   title: string;
   ranks: string[];
 }
 
-export function getRankGroupsForCommand(command: Command | string | undefined | null): RankGroup[] | null {
+function getRankGroupsForCommand(command: Command | string | undefined | null): RankGroup[] | null {
   if (!command) return null;
 
   switch (command) {
