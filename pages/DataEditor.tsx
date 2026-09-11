@@ -538,7 +538,7 @@ const DataEditor: React.FC = () => {
   };
 
   return (
-    <div className="flex h-full bg-slate-900 overflow-hidden relative">
+    <div className="flex h-full min-h-[calc(100vh-160px)] md:min-h-0 bg-slate-900 overflow-hidden relative">
       
       <ConfirmDialog 
         isOpen={confirmDialog.isOpen}
@@ -591,13 +591,13 @@ const DataEditor: React.FC = () => {
       )}
 
       <aside 
-        className={`absolute top-0 left-0 z-50 bg-military-900 border-r border-b border-military-700 shadow-2xl transition-all duration-300 transform rounded-br-xl h-fit max-h-[calc(100vh-40px)] md:relative md:top-auto md:left-auto md:translate-x-0 md:h-fit md:max-h-[calc(100vh-140px)] md:rounded-br-xl ${isSidebarOpen ? 'translate-x-0 w-64' : '-translate-x-full w-0 md:w-0 overflow-hidden'}`}
+        className={`absolute top-0 left-0 z-50 bg-military-900 border-r border-b border-military-700 shadow-2xl transition-all duration-300 transform rounded-br-xl flex flex-col max-h-[calc(100vh-160px)] md:relative md:top-auto md:left-auto md:translate-x-0 md:h-fit md:max-h-[calc(100vh-140px)] md:rounded-br-xl ${isSidebarOpen ? 'translate-x-0 w-64' : '-translate-x-full w-0 md:w-0 overflow-hidden'}`}
       >
-         <div className="p-4 border-b border-military-800 flex justify-between items-center">
+         <div className="p-4 border-b border-military-800 flex justify-between items-center shrink-0">
              <h3 className="text-white font-bold uppercase tracking-wider flex items-center gap-2 text-sm"><Database size={16} className="text-gold-500"/> {t('collections')}</h3>
              <button onClick={() => setIsSidebarOpen(false)} className="md:hidden text-gray-400"><X size={20}/></button>
          </div>
-         <div className="overflow-y-auto scroll-smooth h-fit max-h-[calc(100vh-160px)] md:h-auto md:max-h-[calc(100vh-210px)] p-3 space-y-4 pb-6 custom-scrollbar">
+         <div className="flex-1 min-h-0 overflow-y-auto scroll-smooth p-3 space-y-4 pb-8 custom-scrollbar">
              {Object.entries(groupedCollections).map(([cat, cols]) => (
                  <div key={cat}>
                      <h4 className="px-3 mb-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest">{cat}</h4>
