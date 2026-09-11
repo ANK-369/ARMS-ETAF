@@ -6,7 +6,11 @@ export const getGeminiApiKey = (customApiKey?: string): string => {
   if (customApiKey && customApiKey.trim() !== "" && customApiKey.trim() !== "undefined" && customApiKey.trim() !== "null") {
     key = customApiKey.trim();
   } else {
-    key = process.env.GEMINI_API_KEY || process.env.API_KEY || '';
+    const envKey = process.env.GEMINI_API_KEY || process.env.API_KEY || '';
+    // If the environment key is an unsupported token format (e.g. AQ. which fails direct generative language calls), ignore it
+    if (envKey && !envKey.startsWith('AQ.')) {
+      key = envKey;
+    }
   }
   if (key) {
     key = key.replace(/^['"`]+|['"`]+$/g, '').trim();
@@ -14,13 +18,82 @@ export const getGeminiApiKey = (customApiKey?: string): string => {
   return key;
 };
 
+// Formats API errors into clear, actionable, user-friendly messages in Amharic or English
+export function formatFriendlyGeminiError(error: any, language: 'en' | 'am' = 'en'): Error {
+  const rawMsg = String(error?.message || error || "");
+  const lower = rawMsg.toLowerCase();
+
+  const isAuthError = 
+    lower.includes("401") ||
+    lower.includes("unauthenticated") ||
+    lower.includes("access_token_type_unsupported") ||
+    lower.includes("invalid authentication credentials") ||
+    lower.includes("api_key_invalid") ||
+    lower.includes("key not valid") ||
+    lower.includes("invalid api key") ||
+    lower.includes("unauthorized") ||
+    lower.includes("api key not valid");
+
+  const isQuotaError =
+    lower.includes("quota") ||
+    lower.includes("exhausted") ||
+    lower.includes("429") ||
+    lower.includes("resource_exhausted") ||
+    lower.includes("rate limit") ||
+    lower.includes("limit");
+
+  const isHighDemandError =
+    lower.includes("503") ||
+    lower.includes("high demand") ||
+    lower.includes("unavailable") ||
+    lower.includes("temporarily unavailable") ||
+    lower.includes("service unavailable");
+
+  if (isAuthError) {
+    return new Error(language === 'am'
+      ? "የጌሚኒ ኤፒአይ ቁልፍ (Gemini API Key) አልተዋቀረም ወይም ትክክለኛ አይደለም/ጊዜው አልፎበታል (401 Unauthenticated)። እባክዎ በዳታቤዝ አስተዳደር (DB Administration) ገጽ ውስጥ ትክክለኛውን የጌሚኒ ኤፒአይ ቁልፍ ያስገቡ እና 'ቁልፉን አስቀምጥ' የሚለውን ይጫኑ።"
+      : "The Gemini API key is missing, invalid, or expired (401 Unauthenticated). Please configure a valid Gemini API key in Database Administration > Gemini AI Configuration and click 'Save API Key'.");
+  }
+
+  if (isQuotaError) {
+    return new Error(language === 'am'
+      ? "የጌሚኒ ኤፒአይ የጥሪ ገደብ (Quota/Rate Limit) አልቋል። እባክዎ ጥቂት ደቂቃዎች ጠብቀው እንደገና ይሞክሩ።"
+      : "Gemini API quota or rate limit exceeded. Please wait a few moments and try again.");
+  }
+
+  if (isHighDemandError) {
+    return new Error(language === 'am'
+      ? "የጌሚኒ አገልጋዮች በአሁኑ ወቅት ከፍተኛ የጥሪ ጫና (High Demand 503) እያስተናገዱ ነው። እባክዎ ጥቂት ሰከንዶች ጠብቀው እንደገና ይሞክሩ።"
+      : "Gemini AI models are temporarily experiencing high demand (503 Service Unavailable). Please try again in a few moments.");
+  }
+
+  // Extract clean text if the message is wrapped in JSON
+  let displayMsg = rawMsg;
+  try {
+    const jsonStart = rawMsg.indexOf('{');
+    if (jsonStart !== -1) {
+      const parsed = JSON.parse(rawMsg.slice(jsonStart));
+      if (parsed?.error?.message) {
+        displayMsg = parsed.error.message;
+      }
+    }
+  } catch (e) {
+    // Keep rawMsg
+  }
+
+  return new Error(language === 'am'
+    ? `ከአይ አገልግሎት ጋር መገናኘት አልተሳካም። ዝርዝር፦ ${displayMsg}`
+    : `Error connecting to AI service. Detail: ${displayMsg}`);
+}
+
 // Resilient fallback runner to bypass temporary API limits and model quota failures
 async function runWithModelFallback<T>(
     apiKey: string,
     runner: (ai: GoogleGenAI, modelName: string) => Promise<T>,
     language: 'en' | 'am' = 'en'
 ): Promise<T> {
-    const models = ['gemini-3.5-flash', 'gemini-3.1-flash-lite', 'gemini-flash-latest'];
+    // Prioritize high-availability, low-latency models to ensure resilience against high-demand spikes
+    const models = ['gemini-2.5-flash', 'gemini-3.1-flash-lite', 'gemini-flash-latest', 'gemini-3.8-flash'];
     let lastError: any = null;
     
     for (const model of models) {
@@ -35,24 +108,46 @@ async function runWithModelFallback<T>(
             });
             return await runner(ai, model);
         } catch (err: any) {
-            console.warn(`Model ${model} failed, trying next fallback. Error:`, err);
             lastError = err;
-            // If it is a critical credentials error, stop right away to avoid endless retries
             const errMsg = String(err?.message || err).toLowerCase();
-            if (errMsg.includes("key not valid") || errMsg.includes("invalid api key") || errMsg.includes("unauthorized") || errMsg.includes("api_key_invalid")) {
-                throw err;
+            const isAuthError = 
+                errMsg.includes("401") ||
+                errMsg.includes("unauthenticated") ||
+                errMsg.includes("access_token_type_unsupported") ||
+                errMsg.includes("invalid authentication credentials") ||
+                errMsg.includes("api_key_invalid") ||
+                errMsg.includes("key not valid") ||
+                errMsg.includes("invalid api key") ||
+                errMsg.includes("unauthorized") ||
+                errMsg.includes("api key not valid");
+
+            // If it is an authentication error, stop immediately rather than failing all models
+            if (isAuthError) {
+                throw formatFriendlyGeminiError(err, language);
+            }
+
+            // High demand (503) or rate limit (429) should switch gracefully to next model
+            const isHighDemand = 
+                errMsg.includes("503") || 
+                errMsg.includes("high demand") || 
+                errMsg.includes("unavailable");
+
+            if (isHighDemand) {
+                console.log(`[Gemini Fallback] Model ${model} is experiencing temporary high demand (503). Smoothly switching to next model.`);
+            } else {
+                console.log(`[Gemini Fallback] Model ${model} request paused; switching to next fallback model.`);
             }
         }
     }
-    throw lastError || new Error("All fallback models failed.");
+    throw formatFriendlyGeminiError(lastError || new Error("All fallback models failed."), language);
 }
 
 export const analyzeDataServer = async (query: string, contextData: string, language: 'en' | 'am' = 'en', customApiKey?: string, isTestPing?: boolean) => {
   const apiKey = getGeminiApiKey(customApiKey);
   if (!apiKey) {
     throw new Error(language === 'am' 
-        ? "የጌሚኒ ኤፒአይ ቁልፍ አልተዋቀረም ወይም አልተገኘም። እባክዎ በዳታቤዝ አስተዳደር ክፍል ውስጥ ያስቀምጡት።" 
-        : "Gemini API Key is not configured or saved. Please configure it in the database administration section.");
+        ? "የጌሚኒ ኤፒአይ ቁልፍ (Gemini API Key) አልተዋቀረም ወይም አልተገኘም። እባክዎ በዳታቤዝ አስተዳደር (DB Administration) ገጽ ውስጥ ያስገቡት እና 'ቁልፉን አስቀምጥ' የሚለውን ይጫኑ።" 
+        : "Gemini API Key is not configured or saved. Please configure your Gemini API key in Database Administration > Gemini AI Configuration and click 'Save API Key'.");
   }
 
   if (isTestPing) {
@@ -66,17 +161,7 @@ export const analyzeDataServer = async (query: string, contextData: string, lang
         return response.text;
       }, language);
     } catch (error: any) {
-      const errMsg = error?.message || String(error);
-      const isQuota = errMsg.toLowerCase().includes("quota") || 
-                      errMsg.toLowerCase().includes("exhausted") || 
-                      errMsg.toLowerCase().includes("429") ||
-                      errMsg.toLowerCase().includes("limit");
-      if (isQuota) {
-        throw error;
-      }
-      throw new Error(language === 'am'
-          ? `ከአይ አገልግሎት ጋር መገናኘት አልተሳካም። ዝርዝር፦ ${errMsg}`
-          : `Error connecting to AI service. Detail: ${errMsg}`);
+      throw formatFriendlyGeminiError(error, language);
     }
   }
 
@@ -126,17 +211,7 @@ export const analyzeDataServer = async (query: string, contextData: string, lang
       return response.text;
     }, language);
   } catch (error: any) {
-    const errMsg = error?.message || String(error);
-    const isQuota = errMsg.toLowerCase().includes("quota") || 
-                    errMsg.toLowerCase().includes("exhausted") || 
-                    errMsg.toLowerCase().includes("429") ||
-                    errMsg.toLowerCase().includes("limit");
-    if (isQuota) {
-      throw error;
-    }
-    throw new Error(language === 'am'
-        ? `ከአይ አገልግሎት ጋር መገናኘት አልተሳካም። ዝርዝር፦ ${errMsg}`
-        : `Error connecting to AI service. Detail: ${errMsg}`);
+    throw formatFriendlyGeminiError(error, language);
   }
 };
 
@@ -204,17 +279,7 @@ export const chatWithAIServer = async (
             return response.text || "No response generated.";
         }, language);
     } catch (error: any) {
-        const errMsg = error?.message || String(error);
-        const isQuota = errMsg.toLowerCase().includes("quota") || 
-                        errMsg.toLowerCase().includes("exhausted") || 
-                        errMsg.toLowerCase().includes("429") ||
-                        errMsg.toLowerCase().includes("limit");
-        if (isQuota) {
-            throw error;
-        }
-        throw new Error(language === 'am'
-            ? `የቻት ረዳት ስህተት፦ ከአይ አውታረ መረብ ጋር መገናኘት አልተሳካም። ዝርዝር፦ ${errMsg}`
-            : `Chat Assistant Error: Unable to reach the AI Core. Detail: ${errMsg}`);
+        throw formatFriendlyGeminiError(error, language);
     }
 };
 
@@ -229,7 +294,9 @@ export const performLogisticsAnalysisServer = async (
 ): Promise<LogisticsAnalysis | null> => {
     const apiKey = getGeminiApiKey(customApiKey);
     if (!apiKey) {
-      throw new Error("Gemini API Key is not configured or saved.");
+      throw new Error(language === 'am'
+        ? "የጌሚኒ ኤፒአይ ቁልፍ አልተዋቀረም ወይም አልተገኘም። እባክዎ በዳታቤዝ አስተዳደር (DB Administration) ገጽ ውስጥ ያስገቡት እና 'ቁልፉን አስቀምጥ' የሚለውን ይጫኑ።"
+        : "Gemini API Key is not configured or saved. Please configure your Gemini API key in Database Administration > Gemini AI Configuration and click 'Save API Key'.");
     }
     
     let ingredientContext = "No daily recipes provided. Estimate based on menu names.";
@@ -349,7 +416,7 @@ export const performLogisticsAnalysisServer = async (
             return JSON.parse(text) as LogisticsAnalysis;
         });
     } catch (error: any) {
-        console.error("Logistics AI Error in fallback chain:", error);
-        throw new Error(error?.message || String(error));
+        console.error("Logistics AI Error in fallback chain:", error?.message || error);
+        throw formatFriendlyGeminiError(error, language);
     }
 };

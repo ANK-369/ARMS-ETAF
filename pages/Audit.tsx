@@ -19,6 +19,7 @@ import ConfirmDialog from '../components/ConfirmDialog';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useDate } from '../contexts/DateContext';
 import { getGitHubConfig, saveGitHubConfig, fetchFromGitHub, pushToGitHub, autoDetectGitHubPath } from '../services/githubService';
+import DOMPurify from 'dompurify';
 
 // --- SUB-COMPONENT: PAGEBREAK ---
 const PageBreak: React.FC = () => {
@@ -1214,7 +1215,7 @@ const ManualAudit = () => {
                                         {idx > 0 && <PageBreak />}
                                         <div className="audit-section p-[20mm] bg-white w-[210mm] min-h-[297mm] print:w-full print:h-auto print:min-h-0 print:shadow-none shadow-2xl flex flex-col justify-between relative print:bg-white text-black">
                                             <div className="flex-grow">
-                                                <div dangerouslySetInnerHTML={{ __html: pageContent }} />
+                                                <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(pageContent) }} />
                                             </div>
                                             <div className="border-t border-black/20 pt-2 flex justify-between text-[10px] text-slate-700 font-sans mt-4">
                                                 <span>

@@ -515,7 +515,7 @@ const Store: React.FC = () => {
               setTimeout(() => setMsg(''), 3000);
           }
       } catch (err: any) {
-          console.error("Logistics AI error:", err);
+          console.warn("Logistics AI notice:", err?.message || err);
           const errMsg = err?.message || String(err);
           const localizedPrefix = language === 'am' 
               ? "የሎጅስቲክስ ትንተና አልተሳካም፦ " 

@@ -55,7 +55,7 @@ async function startServer() {
       const result = await analyzeDataServer(query, contextData, language, customKey, isTestPing);
       res.json({ result });
     } catch (err: any) {
-      console.error("Express Error /api/gemini/analyze:", err);
+      console.warn("Express /api/gemini/analyze:", err.message || err);
       res.status(500).json({ error: err.message || "Failed to analyze data" });
     }
   });
@@ -67,7 +67,7 @@ async function startServer() {
       const result = await chatWithAIServer(history, userMessage, dbData, language, customKey);
       res.json({ result });
     } catch (err: any) {
-      console.error("Express Error /api/gemini/chat:", err);
+      console.warn("Express /api/gemini/chat:", err.message || err);
       res.status(500).json({ error: err.message || "Failed to process chat" });
     }
   });
@@ -79,7 +79,7 @@ async function startServer() {
       const result = await performLogisticsAnalysisServer(menu, inventory, manpowerCount, mealIngredients, generateMenu, customKey, language);
       res.json({ result });
     } catch (err: any) {
-      console.error("Express Error /api/gemini/logistics-analysis:", err);
+      console.warn("Express /api/gemini/logistics-analysis:", err.message || err);
       res.status(500).json({ error: err.message || "Failed to perform logistics analysis" });
     }
   });

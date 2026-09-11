@@ -9,6 +9,19 @@ export const getGeminiApiKey = (): string => {
   return '';
 };
 
+export const hasGeminiApiKey = (): boolean => {
+  return !!getGeminiApiKey();
+};
+
+export const saveGeminiApiKey = (key: string): void => {
+  const trimmed = key.trim().replace(/^['"`]+|['"`]+$/g, '').trim();
+  if (trimmed) {
+    localStorage.setItem('arms_gemini_api_key', trimmed);
+  } else {
+    localStorage.removeItem('arms_gemini_api_key');
+  }
+};
+
 const getHeaders = (customApiKey?: string) => {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json'

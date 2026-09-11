@@ -3,12 +3,12 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getDB } from '../services/db';
 import { AppData, ManpowerType } from '../types';
-import { analyzeData, chatWithAI, stripMarkdown } from '../services/geminiService';
+import { analyzeData, chatWithAI, stripMarkdown, hasGeminiApiKey, saveGeminiApiKey, getGeminiApiKey } from '../services/geminiService';
 import { 
   Search as SearchIcon, Cpu, User, ShoppingCart, TrendingUp, 
   Gift, ArrowRightLeft, ChevronLeft, ChevronRight, AlertCircle,
   Filter, Copy, Sparkles, LineChart as LineChartIcon, BarChart2,
-  MessageSquare, Send, Bot, User as UserIcon, RefreshCcw
+  MessageSquare, Send, Bot, User as UserIcon, RefreshCcw, Key
 } from 'lucide-react';
 import { formatEthiopianDate, ETHIOPIAN_MONTHS, getDaysInEthiopianMonth } from '../services/ethiopianDate';
 import { 
@@ -17,6 +17,7 @@ import {
 import CustomSelect from '../components/CustomSelect';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useDate } from '../contexts/DateContext';
+import DOMPurify from 'dompurify';
 
 const ITEMS_PER_PAGE = 24; // Increased slightly for grid layout
 
@@ -67,6 +68,11 @@ const Search: React.FC = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [aiResponse, setAiResponse] = useState('');
   const [loadingAi, setLoadingAi] = useState(false);
+
+  // Gemini API Key Modal State
+  const [showKeyModal, setShowKeyModal] = useState(false);
+  const [apiKeyInput, setApiKeyInput] = useState('');
+  const [keySavedMessage, setKeySavedMessage] = useState('');
 
   // Market Trends State
   const [trendItem, setTrendItem] = useState('');
@@ -259,6 +265,12 @@ const Search: React.FC = () => {
       if (e) e.preventDefault();
       if (!chatInput.trim() || !data) return;
 
+      if (!hasGeminiApiKey()) {
+          setApiKeyInput(getGeminiApiKey());
+          setShowKeyModal(true);
+          return;
+      }
+
       const userMsg = chatInput.trim();
       setChatInput('');
       setIsTyping(true);
@@ -284,10 +296,10 @@ const Search: React.FC = () => {
               language
           );
       } catch (err: any) {
-          console.error("Chat AI error:", err);
+          console.warn("Chat AI notice:", err?.message || err);
           aiText = language === 'am'
-              ? `የቻት ረዳት ስህተት፦ ${err?.message || "ወደ AI አውታረ መረብ መድረስ አልተቻለም። እባክዎ የቁልፍ ማዋቀሪያዎን ወይም ኢንተርኔትዎን ያረጋግጡ።"}`
-              : `Chat Assistant Error: ${err?.message || "Unable to reach the AI Core. Please verify your API Key and connection."}`;
+              ? `የቻት ረዳት ማስታወሻ፦ ${err?.message || "ወደ AI አውታረ መረብ መድረስ አልተቻለም። እባክዎ የቁልፍ ማዋቀሪያዎን ያረጋግጡ።"}`
+              : `Chat Assistant Notice: ${err?.message || "Unable to reach the AI Core. Please verify your API Key."}`;
       }
 
       setChatHistory(prev => [...prev, { role: 'model', content: stripMarkdown(aiText), timestamp: new Date() }]);
@@ -301,6 +313,13 @@ const Search: React.FC = () => {
   // --- AI HANDLER (OLD SINGLE SEARCH) ---
   const handleAISearch = async () => {
     if (!data) return;
+
+    if (!hasGeminiApiKey()) {
+        setApiKeyInput(getGeminiApiKey());
+        setShowKeyModal(true);
+        return;
+    }
+
     setLoadingAi(true);
     
     const manpowerContext = data.manpower.map(m => {
@@ -350,10 +369,10 @@ const Search: React.FC = () => {
         const res = await analyzeData(finalQuery, richContext, language);
         setAiResponse(stripMarkdown(res));
     } catch (err: any) {
-        console.error("AI Search Error:", err);
+        console.warn("AI Search notice:", err?.message || err);
         const localizedError = language === 'am'
-            ? `የትንተና ስህተት ተከስቷል፦ ${err?.message || "ወደ AI ማገናኘት አልተሳካም። እባክዎ የ API ቁልፍዎን ያረጋግጡ።"}`
-            : `Analysis Error: ${err?.message || "Failed to connect to AI service. Please verify your API Key and connection."}`;
+            ? `የትንተና ማስታወሻ፦ ${err?.message || "ወደ AI ማገናኘት አልተሳካም። እባክዎ የ API ቁልፍዎን ያረጋግጡ።"}`
+            : `Analysis Notice: ${err?.message || "Failed to connect to AI service. Please verify your API Key."}`;
         setAiResponse(localizedError);
     } finally {
         setLoadingAi(false);
@@ -476,6 +495,20 @@ const Search: React.FC = () => {
                           <button onClick={() => setAiResponse('')} className="text-xs text-gray-500 hover:text-white px-2 py-1 rounded bg-black/20 hover:bg-red-900/50 transition">{t('dismiss')}</button>
                       </div>
                       <div className="text-gray-200 prose prose-invert max-w-none whitespace-pre-wrap font-mono text-sm leading-relaxed relative z-10 break-words">{aiResponse}</div>
+                      {(aiResponse.includes("API") || aiResponse.includes("ቁልፍ") || !hasGeminiApiKey()) && (
+                          <div className="mt-4 pt-3 border-t border-gold-900/50 flex items-center gap-3 relative z-10">
+                              <button
+                                  onClick={() => {
+                                      setApiKeyInput(getGeminiApiKey());
+                                      setShowKeyModal(true);
+                                  }}
+                                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gold-500 hover:bg-gold-600 text-black text-xs font-bold transition shadow-md"
+                              >
+                                  <Key size={14} />
+                                  {language === 'am' ? 'የጌሚኒ ኤፒአይ ቁልፍ ያስገቡ / ያዋቅሩ' : 'Configure Gemini API Key'}
+                              </button>
+                          </div>
+                      )}
                   </div>
               )}
 
@@ -689,7 +722,7 @@ const Search: React.FC = () => {
                                   {msg.role === 'model' ? (
                                       <div 
                                         className="prose prose-invert prose-sm max-w-none"
-                                        dangerouslySetInnerHTML={{ __html: msg.content }} 
+                                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(msg.content) }} 
                                       />
                                   ) : (
                                       msg.content
@@ -733,6 +766,81 @@ const Search: React.FC = () => {
                           <Send size={20} />
                       </button>
                   </form>
+              </div>
+          </div>
+      )}
+
+      {/* --- GEMINI API KEY MODAL --- */}
+      {showKeyModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in">
+              <div className="bg-slate-900 border border-gold-500/50 rounded-2xl max-w-md w-full p-6 shadow-2xl relative text-white">
+                  <div className="flex items-center gap-3 mb-4 text-gold-400 border-b border-gold-500/20 pb-3">
+                      <Key size={24} className="text-gold-500" />
+                      <h3 className="text-lg font-bold">
+                          {language === 'am' ? 'የጌሚኒ AI ቁልፍ ማዋቀር' : 'Gemini AI Key Configuration'}
+                      </h3>
+                  </div>
+                  <p className="text-xs text-gray-300 mb-4 leading-relaxed">
+                      {language === 'am'
+                          ? 'የ AI ጥልቅ ፍለጋና ትንታኔ ባህሪያትን ለመጠቀም የራስዎን Google Gemini API Key ያስገቡ። ቁልፉ በኮምፒውተርዎ ላይ ብቻ (localStorage) ይቀመጣል።'
+                          : 'To enable AI Deep Search, Anomaly Detection, and the Chat Assistant, please provide your Google Gemini API Key. The key is securely stored in your local browser only.'}
+                  </p>
+                  <div className="space-y-3">
+                      <input
+                          type="password"
+                          placeholder="AIzaSy... or AQ..."
+                          value={apiKeyInput}
+                          onChange={(e) => setApiKeyInput(e.target.value)}
+                          className="w-full bg-slate-950 border border-slate-700 focus:border-gold-500 rounded-lg p-3 text-sm text-white font-mono outline-none"
+                          autoFocus
+                      />
+                      {keySavedMessage && (
+                          <p className="text-xs text-green-400 font-bold animate-pulse">{keySavedMessage}</p>
+                      )}
+                      <div className="flex justify-between items-center text-[11px] text-gray-400 pt-1">
+                          <a
+                              href="https://aistudio.google.com/app/apikey"
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-gold-400 hover:underline flex items-center gap-1"
+                          >
+                              <span>{language === 'am' ? 'ነፃ ቁልፍ ከ Google AI Studio ያግኙ ↗' : 'Get a free key at Google AI Studio ↗'}</span>
+                          </a>
+                      </div>
+                  </div>
+                  <div className="flex justify-end gap-2 mt-6 pt-3 border-t border-slate-800">
+                      <button
+                          type="button"
+                          onClick={() => setShowKeyModal(false)}
+                          className="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-gray-300 text-xs font-semibold transition"
+                      >
+                          {language === 'am' ? 'ይቅር' : 'Cancel'}
+                      </button>
+                      <button
+                          type="button"
+                          onClick={() => {
+                              const trimmed = apiKeyInput.trim();
+                              if (trimmed) {
+                                  saveGeminiApiKey(trimmed);
+                                  setKeySavedMessage(language === 'am' ? 'ቁልፉ ተቀምጧል!' : 'Key saved successfully!');
+                                  setTimeout(() => {
+                                      setShowKeyModal(false);
+                                      setKeySavedMessage('');
+                                      if (activeTab === 'chat') {
+                                          handleChatSubmit();
+                                      } else {
+                                          handleAISearch();
+                                      }
+                                  }, 500);
+                              }
+                          }}
+                          disabled={!apiKeyInput.trim()}
+                          className="px-5 py-2 rounded-lg bg-gold-500 hover:bg-gold-600 disabled:opacity-50 text-black text-xs font-bold transition shadow-lg flex items-center gap-2"
+                      >
+                          <Sparkles size={14} />
+                          {language === 'am' ? 'አስቀምጥና ፈልግ' : 'Save & Analyze'}
+                      </button>
+                  </div>
               </div>
           </div>
       )}
