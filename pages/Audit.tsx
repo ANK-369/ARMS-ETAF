@@ -345,10 +345,10 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
                         }
                     </p>
                 </div>
-                <div className="mt-32 text-black">
-                    <div className="flex flex-col items-end pr-8 mb-24">
+                <div className="mt-16 text-black">
+                    <div className="flex flex-col items-end pr-8 mb-16">
                         <div className="flex flex-col items-center w-64">
-                            <p className="font-bold mb-20">{t('withRegards')}</p>
+                            <p className="font-bold mb-12">{t('withRegards')}</p>
                             <div className="h-0.5 bg-black w-48 mb-2"></div> 
                             <p className="font-bold text-lg">{leaderName}</p>
                             <p className="text-xs uppercase font-bold text-black text-center">{diningName}</p>

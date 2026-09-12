@@ -69,11 +69,15 @@
           margin: 20mm 15mm 20mm 15mm;
         }
 
-        html, body, #root, [data-reactroot] {
+        html, body, [data-reactroot] {
           height: auto !important;
           min-height: 0 !important;
           overflow: visible !important;
           display: block !important;
+        }
+
+        #root {
+          display: none !important;
         }
 
         body * {
