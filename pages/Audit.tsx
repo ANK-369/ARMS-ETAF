@@ -1984,7 +1984,7 @@ const Audit: React.FC = () => {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex-col px-6 md:px-12 pt-6 border-b border-military-700 mb-4 pb-4">
+      <div className="flex-col px-6 md:px-12 pt-6 border-b border-military-700 mb-4 pb-4 no-print">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-6">
               <div>
                   <h2 className="text-3xl text-gold-500 font-bold font-serif tracking-wide">{t('auditCenter')}</h2>
