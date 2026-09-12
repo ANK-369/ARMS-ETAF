@@ -639,18 +639,18 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
     const totalSections = sectionsToRender.length;
 
     return (
-      <div ref={auditRef} id="printable-audit-report" className="print-modal-content text-black relative flex flex-col items-center gap-8 pb-8 print:pb-0 print:gap-0 bg-transparent shadow-none w-full max-w-[210mm] mx-auto">
+      <div ref={auditRef} id="printable-audit-report" className="print-modal-content text-black relative w-fit min-w-full flex flex-col items-center p-8 print:p-0 print:m-0 print:block print:w-full bg-transparent shadow-none mx-auto">
         {sectionsToRender.map((sec, idx) => {
           const currentPage = idx + 1;
           return (
             <React.Fragment key={sec.id}>
               {idx > 0 && <PageBreak />}
-              <div className="audit-section p-[20mm] bg-white w-[210mm] min-h-[297mm] print:w-full print:h-auto print:min-h-0 print:shadow-none shadow-2xl flex flex-col justify-between relative print:bg-white text-black mx-auto">
+              <div className="audit-section p-[20mm] bg-white w-[210mm] min-h-[297mm] print:w-full print:h-auto print:min-h-0 print:shadow-none shadow-2xl flex flex-col justify-between relative print:bg-white text-black mx-auto mb-8 last:mb-0 print:mb-0">
                 <div className="flex-grow pt-6">
                   {sec.render()}
                 </div>
                 {/* Localized Footer for Both On-screen and Printed Pages */}
-                <div className="border-t border-black/20 pt-2 flex justify-between text-[10px] text-slate-700 font-sans mt-4">
+                <div className="border-t border-black/20 pt-2 flex justify-between text-[10px] text-slate-700 font-sans mt-4 shrink-0">
                   <span>
                     {t('generatedOn')} {formatEthiopianDate(getCurrentEthiopianDate(), language)}, {new Date().toLocaleTimeString()}
                   </span>
@@ -741,7 +741,7 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
                       </button>
                   </div>
               </div>
-              <div className="flex-1 w-full overflow-auto bg-gray-800 p-8 flex justify-center print-hide-scroll">
+              <div className="flex-1 w-full overflow-auto bg-gray-800 print-hide-scroll">
                   <PrintableContent />
               </div>
           </div>,
@@ -1185,8 +1185,8 @@ const ManualAudit = () => {
                             </button>
                         </div>
                     </div>
-                    <div className="flex-1 w-full overflow-auto bg-gray-800 p-8 flex justify-center print-hide-scroll">
-                        <div id={showPrintModal ? "printable-audit-report" : undefined} className="print-modal-content text-black relative flex flex-col items-center gap-8 pb-8 print:pb-0 print:gap-0 bg-transparent shadow-none w-full max-w-[210mm] mx-auto">
+                    <div className="flex-1 w-full overflow-auto bg-gray-800 print-hide-scroll">
+                        <div id={showPrintModal ? "printable-audit-report" : undefined} className="print-modal-content text-black relative w-fit min-w-full flex flex-col items-center p-8 print:p-0 print:m-0 print:block print:w-full bg-transparent shadow-none mx-auto">
                             {(() => {
                                 const pages = (() => {
                                     if (!printHtml) return [];
@@ -1213,11 +1213,11 @@ const ManualAudit = () => {
                                 return pagesToRender.map((pageContent, idx) => (
                                     <React.Fragment key={idx}>
                                         {idx > 0 && <PageBreak />}
-                                        <div className="audit-section p-[20mm] bg-white w-[210mm] min-h-[297mm] print:w-full print:h-auto print:min-h-0 print:shadow-none shadow-2xl flex flex-col justify-between relative print:bg-white text-black mx-auto">
+                                        <div className="audit-section p-[20mm] bg-white w-[210mm] min-h-[297mm] print:w-full print:h-auto print:min-h-0 print:shadow-none shadow-2xl flex flex-col justify-between relative print:bg-white text-black mx-auto mb-8 last:mb-0 print:mb-0">
                                             <div className="flex-grow pt-6">
                                                 <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(pageContent) }} />
                                             </div>
-                                            <div className="border-t border-black/20 pt-2 flex justify-between text-[10px] text-slate-700 font-sans mt-4">
+                                            <div className="border-t border-black/20 pt-2 flex justify-between text-[10px] text-slate-700 font-sans mt-4 shrink-0">
                                                 <span>
                                                     {t('generatedOn')} {formatEthiopianDate(getCurrentEthiopianDate(), language)}, {new Date().toLocaleTimeString()}
                                                 </span>
@@ -1842,7 +1842,7 @@ const MarketHistoryAudit = ({ data }: { data: AppData }) => {
     return (
       <div
         id={isPrintTarget ? "printable-audit-report" : undefined}
-        className="print-modal-content text-black relative flex flex-col items-center gap-8 pb-8 print:pb-0 print:gap-0 bg-transparent shadow-none w-full max-w-[210mm] mx-auto"
+        className="print-modal-content text-black relative w-fit min-w-full flex flex-col items-center p-8 print:p-0 print:m-0 print:block print:w-full bg-transparent shadow-none mx-auto"
       >
         {sectionsToRender.map((sec, idx) => {
           const currentPage = idx + 1;
@@ -1852,12 +1852,12 @@ const MarketHistoryAudit = ({ data }: { data: AppData }) => {
               <div
                 className={`${
                   isPrintTarget ? "audit-section" : "print:hidden"
-                } p-[20mm] bg-white w-[210mm] min-h-[297mm] print:w-full print:h-auto print:min-h-0 print:shadow-none shadow-2xl flex flex-col justify-between relative print:bg-white text-black mx-auto`}
+                } p-[20mm] bg-white w-[210mm] min-h-[297mm] print:w-full print:h-auto print:min-h-0 print:shadow-none shadow-2xl flex flex-col justify-between relative print:bg-white text-black mx-auto mb-8 last:mb-0 print:mb-0`}
               >
                 <div className="flex-grow pt-6">
                   {sec.render()}
                 </div>
-                <div className="border-t border-black/20 pt-2 flex justify-between text-[10px] text-slate-700 font-sans mt-4">
+                <div className="border-t border-black/20 pt-2 flex justify-between text-[10px] text-slate-700 font-sans mt-4 shrink-0">
                   <span>
                     {t('generatedOn')} {formatEthiopianDate(getCurrentEthiopianDate(), language)}, {new Date().toLocaleTimeString()}
                   </span>
@@ -1937,7 +1937,7 @@ const MarketHistoryAudit = ({ data }: { data: AppData }) => {
               </button>
             </div>
           </div>
-          <div className="flex-1 w-full overflow-auto bg-gray-800 p-8 flex justify-center print-hide-scroll">
+          <div className="flex-1 w-full overflow-auto bg-gray-800 print-hide-scroll">
             <PrintableContent isPrintTarget={true} />
           </div>
         </div>,
