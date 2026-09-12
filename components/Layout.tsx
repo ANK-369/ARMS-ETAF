@@ -244,7 +244,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activePage, onNavigate, onLog
 
       {/* Sidebar - Desktop (Collapsible) */}
       <aside 
-        className={`hidden md:flex flex-col relative bg-slate-950 border-r border-b border-slate-800 h-fit max-h-screen rounded-br-2xl shadow-[5px_5px_30px_rgba(0,0,0,0.5)] z-20 transition-all duration-500 ease-[cubic-bezier(0.25,0.8,0.25,1)]
+        className={`hidden md:flex flex-col relative bg-slate-950 border-r border-b border-slate-800 h-fit max-h-screen rounded-br-2xl shadow-[5px_5px_30px_rgba(0,0,0,0.5)] z-20 transition-all duration-500 ease-[cubic-bezier(0.25,0.8,0.25,1)] no-print
         ${isSidebarOpen ? 'w-72' : 'w-20'}
         `}
       >
@@ -358,7 +358,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activePage, onNavigate, onLog
       <main className="flex-1 flex flex-col h-full relative overflow-hidden bg-slate-900 transition-all duration-300">
         
         {/* Desktop Top Toolbar (Global Toggler) */}
-        <div className="hidden md:flex items-center justify-between bg-military-900 border-b border-military-700 px-6 py-3 shadow-md shrink-0 z-10">
+        <div className="hidden md:flex items-center justify-between bg-military-900 border-b border-military-700 px-6 py-3 shadow-md shrink-0 z-10 no-print">
              <div className="flex items-center gap-4">
                  <button 
                     onClick={() => setIsSidebarOpen(!isSidebarOpen)} 
@@ -393,7 +393,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activePage, onNavigate, onLog
         </div>
 
         {/* Mobile Header */}
-        <header className="md:hidden bg-military-900 border-b border-military-700 p-3 sm:p-4 flex justify-between items-center z-30 shadow-md">
+        <header className="md:hidden bg-military-900 border-b border-military-700 p-3 sm:p-4 flex justify-between items-center z-30 shadow-md no-print">
             <div className="flex items-center gap-3">
                 <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-full overflow-hidden flex items-center justify-center shrink-0 border border-gold-500/30 drop-shadow">
                   <img src={etafLogo} alt="Ethiopian Air Force Logo" className="w-full h-full object-cover scale-108" />
@@ -494,7 +494,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activePage, onNavigate, onLog
                  {children}
              </div>
              
-             <footer className="mt-8 pt-6 border-t border-military-700 text-center text-xs text-gray-500 pb-2">
+             <footer className="mt-8 pt-6 border-t border-military-700 text-center text-xs text-gray-500 pb-2 no-print">
                 <p className="font-mono">2018 • ARMS • By CPL Andualem Koriya</p>
              </footer>
         </div>
