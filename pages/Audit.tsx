@@ -748,7 +748,7 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
           document.body
       )}
 
-      <div className="flex-1 overflow-auto bg-[url('https://www.transparenttextures.com/patterns/dark-leather.png')] bg-fixed relative">
+      <div className="flex-1 overflow-auto bg-[url('https://www.transparenttextures.com/patterns/dark-leather.png')] bg-fixed relative no-print">
           <div className="min-w-fit p-4 md:p-8 flex justify-center pb-20 opacity-80 hover:opacity-100 transition duration-500">
              <div className="relative group cursor-pointer" onClick={() => setShowPrintModal(true)}>
                  <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition z-10 rounded-sm">
@@ -1148,7 +1148,7 @@ const ManualAudit = () => {
                 </div>
             </div>
 
-            <div className="flex-1 overflow-auto bg-[url('https://www.transparenttextures.com/patterns/dark-leather.png')] bg-fixed relative">
+            <div className="flex-1 overflow-auto bg-[url('https://www.transparenttextures.com/patterns/dark-leather.png')] bg-fixed relative no-print">
                 <div className="min-w-fit p-4 md:p-8 flex justify-center pb-20">
                     <div 
                         ref={editorRef} 
@@ -1945,7 +1945,7 @@ const MarketHistoryAudit = ({ data }: { data: AppData }) => {
       )}
 
       {/* Printable Report Preview Canvas */}
-      <div className="flex-1 overflow-auto bg-[url('https://www.transparenttextures.com/patterns/dark-leather.png')] bg-fixed relative">
+      <div className="flex-1 overflow-auto bg-[url('https://www.transparenttextures.com/patterns/dark-leather.png')] bg-fixed relative no-print">
         <div className="min-w-fit p-4 md:p-8 flex justify-center pb-20 opacity-80 hover:opacity-100 transition duration-500">
           <div className="relative group cursor-pointer" onClick={() => setShowPrintModal(true)}>
             <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition z-10 rounded-sm">
