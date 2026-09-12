@@ -639,14 +639,14 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
     const totalSections = sectionsToRender.length;
 
     return (
-      <div ref={auditRef} id="printable-audit-report" className="print-modal-content text-black relative flex flex-col items-center gap-8 print:gap-0 bg-transparent shadow-none w-full max-w-[210mm] mx-auto">
+      <div ref={auditRef} id="printable-audit-report" className="print-modal-content text-black relative flex flex-col items-center gap-8 pb-16 print:pb-0 print:gap-0 bg-transparent shadow-none w-full max-w-[210mm] mx-auto">
         {sectionsToRender.map((sec, idx) => {
           const currentPage = idx + 1;
           return (
             <React.Fragment key={sec.id}>
               {idx > 0 && <PageBreak />}
               <div className="audit-section p-[20mm] bg-white w-[210mm] min-h-[297mm] print:w-full print:h-auto print:min-h-0 print:shadow-none shadow-2xl flex flex-col justify-between relative print:bg-white text-black mx-auto">
-                <div className="flex-grow">
+                <div className="flex-grow pt-6">
                   {sec.render()}
                 </div>
                 {/* Localized Footer for Both On-screen and Printed Pages */}
@@ -741,7 +741,7 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
                       </button>
                   </div>
               </div>
-              <div className="flex-1 w-full overflow-auto bg-gray-800 p-8 flex justify-center print-hide-scroll">
+              <div className="flex-1 w-full overflow-auto bg-gray-800 p-8 pb-16 flex justify-center print-hide-scroll">
                   <PrintableContent />
               </div>
           </div>,
@@ -891,7 +891,7 @@ const ManualAudit = () => {
     };
 
     const renderPageWrapper = (contentInner: string, currentPage = 1, totalPages = 1) => {
-        return `<div class="${AUDIT_PAGE_CLASS}"><div class="flex-grow">${contentInner}</div>${createPageFooterHtml(currentPage, totalPages)}</div>`;
+        return `<div class="${AUDIT_PAGE_CLASS}"><div class="flex-grow pt-6">${contentInner}</div>${createPageFooterHtml(currentPage, totalPages)}</div>`;
     };
 
     const updateEditorPageFooters = useCallback(() => {
@@ -1159,7 +1159,7 @@ const ManualAudit = () => {
                         onInput={handleEditorInput}
                     >
                         <div className="audit-section p-[20mm] bg-white w-[210mm] min-h-[297mm] shadow-2xl flex flex-col justify-between relative text-black outline-none">
-                            <div className="flex-grow">
+                            <div className="flex-grow pt-6">
                                 <h1 style={{textAlign: 'center', textDecoration: 'underline'}}>{t('manualReport')}</h1>
                                 <p>{t('startTyping')}</p>
                             </div>
@@ -1185,8 +1185,8 @@ const ManualAudit = () => {
                             </button>
                         </div>
                     </div>
-                    <div className="flex-1 w-full overflow-auto bg-gray-800 p-8 flex justify-center print-hide-scroll">
-                        <div id={showPrintModal ? "printable-audit-report" : undefined} className="print-modal-content text-black relative flex flex-col items-center gap-8 print:gap-0 bg-transparent shadow-none w-full max-w-[210mm] mx-auto">
+                    <div className="flex-1 w-full overflow-auto bg-gray-800 p-8 pb-16 flex justify-center print-hide-scroll">
+                        <div id={showPrintModal ? "printable-audit-report" : undefined} className="print-modal-content text-black relative flex flex-col items-center gap-8 pb-16 print:pb-0 print:gap-0 bg-transparent shadow-none w-full max-w-[210mm] mx-auto">
                             {(() => {
                                 const pages = (() => {
                                     if (!printHtml) return [];
@@ -1214,7 +1214,7 @@ const ManualAudit = () => {
                                     <React.Fragment key={idx}>
                                         {idx > 0 && <PageBreak />}
                                         <div className="audit-section p-[20mm] bg-white w-[210mm] min-h-[297mm] print:w-full print:h-auto print:min-h-0 print:shadow-none shadow-2xl flex flex-col justify-between relative print:bg-white text-black mx-auto">
-                                            <div className="flex-grow">
+                                            <div className="flex-grow pt-6">
                                                 <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(pageContent) }} />
                                             </div>
                                             <div className="border-t border-black/20 pt-2 flex justify-between text-[10px] text-slate-700 font-sans mt-4">
@@ -1842,7 +1842,7 @@ const MarketHistoryAudit = ({ data }: { data: AppData }) => {
     return (
       <div
         id={isPrintTarget ? "printable-audit-report" : undefined}
-        className="print-modal-content text-black relative flex flex-col items-center gap-8 print:gap-0 bg-transparent shadow-none w-full max-w-[210mm] mx-auto"
+        className="print-modal-content text-black relative flex flex-col items-center gap-8 pb-16 print:pb-0 print:gap-0 bg-transparent shadow-none w-full max-w-[210mm] mx-auto"
       >
         {sectionsToRender.map((sec, idx) => {
           const currentPage = idx + 1;
@@ -1854,7 +1854,7 @@ const MarketHistoryAudit = ({ data }: { data: AppData }) => {
                   isPrintTarget ? "audit-section" : "print:hidden"
                 } p-[20mm] bg-white w-[210mm] min-h-[297mm] print:w-full print:h-auto print:min-h-0 print:shadow-none shadow-2xl flex flex-col justify-between relative print:bg-white text-black mx-auto`}
               >
-                <div className="flex-grow">
+                <div className="flex-grow pt-6">
                   {sec.render()}
                 </div>
                 <div className="border-t border-black/20 pt-2 flex justify-between text-[10px] text-slate-700 font-sans mt-4">
