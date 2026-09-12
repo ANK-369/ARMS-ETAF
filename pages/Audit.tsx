@@ -305,7 +305,7 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
       return `${t(key)} (${count})`;
   };
 
-  const PrintableContent = () => {
+  const PrintableContent = ({ isPrintTarget = false }: { isPrintTarget?: boolean }) => {
     const chunkArray = <T,>(arr: T[], size: number): T[][] => {
       if (!arr || arr.length === 0) return [[]];
       const chunks: T[][] = [];
@@ -639,7 +639,7 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
     const totalSections = sectionsToRender.length;
 
     return (
-      <div ref={auditRef} id="printable-audit-report" className="print-modal-content text-black relative w-fit min-w-full flex flex-col items-center p-8 print:p-0 print:m-0 print:block print:w-full bg-transparent shadow-none mx-auto">
+      <div ref={auditRef} id={isPrintTarget ? "printable-audit-report" : undefined} className="print-modal-content text-black relative w-fit min-w-full flex flex-col items-center p-8 print:p-0 print:m-0 print:block print:w-full bg-transparent shadow-none mx-auto">
         {sectionsToRender.map((sec, idx) => {
           const currentPage = idx + 1;
           return (
@@ -742,7 +742,7 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
                   </div>
               </div>
               <div className="flex-1 w-full overflow-auto bg-gray-800 print-hide-scroll">
-                  <PrintableContent />
+                  <PrintableContent isPrintTarget={true} />
               </div>
           </div>,
           document.body
@@ -757,7 +757,7 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
                      </div>
                  </div>
                  <div className="pointer-events-none">
-                    <PrintableContent />
+                    <PrintableContent isPrintTarget={false} />
                  </div>
              </div>
           </div>
