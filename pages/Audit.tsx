@@ -24,7 +24,7 @@ import DOMPurify from 'dompurify';
 // --- SUB-COMPONENT: PAGEBREAK ---
 const PageBreak: React.FC = () => {
   return (
-    <div className="print-page-break" style={{ pageBreakBefore: 'always', breakBefore: 'page' }} />
+    <div className="print-page-break hidden print:block" style={{ pageBreakBefore: 'always', breakBefore: 'page' }} />
   );
 };
 
@@ -639,13 +639,13 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
     const totalSections = sectionsToRender.length;
 
     return (
-      <div ref={auditRef} id="printable-audit-report" className="print-modal-content text-black relative flex flex-col xl:flex-row xl:flex-wrap xl:justify-center gap-8 print:gap-0 bg-transparent shadow-none w-full max-w-[210mm] xl:max-w-none mx-auto">
+      <div ref={auditRef} id="printable-audit-report" className="print-modal-content text-black relative flex flex-col items-center gap-8 print:gap-0 bg-transparent shadow-none w-full max-w-[210mm] mx-auto">
         {sectionsToRender.map((sec, idx) => {
           const currentPage = idx + 1;
           return (
             <React.Fragment key={sec.id}>
               {idx > 0 && <PageBreak />}
-              <div className="audit-section p-[20mm] bg-white w-[210mm] min-h-[297mm] print:w-full print:h-auto print:min-h-0 print:shadow-none shadow-2xl flex flex-col justify-between relative print:bg-white text-black">
+              <div className="audit-section p-[20mm] bg-white w-[210mm] min-h-[297mm] print:w-full print:h-auto print:min-h-0 print:shadow-none shadow-2xl flex flex-col justify-between relative print:bg-white text-black mx-auto">
                 <div className="flex-grow">
                   {sec.render()}
                 </div>
@@ -1186,7 +1186,7 @@ const ManualAudit = () => {
                         </div>
                     </div>
                     <div className="flex-1 w-full overflow-auto bg-gray-800 p-8 flex justify-center print-hide-scroll">
-                        <div id={showPrintModal ? "printable-audit-report" : undefined} className="print-modal-content text-black relative flex flex-col xl:flex-row xl:flex-wrap xl:justify-center gap-8 print:gap-0 bg-transparent shadow-none w-full max-w-[210mm] xl:max-w-none mx-auto">
+                        <div id={showPrintModal ? "printable-audit-report" : undefined} className="print-modal-content text-black relative flex flex-col items-center gap-8 print:gap-0 bg-transparent shadow-none w-full max-w-[210mm] mx-auto">
                             {(() => {
                                 const pages = (() => {
                                     if (!printHtml) return [];
@@ -1213,7 +1213,7 @@ const ManualAudit = () => {
                                 return pagesToRender.map((pageContent, idx) => (
                                     <React.Fragment key={idx}>
                                         {idx > 0 && <PageBreak />}
-                                        <div className="audit-section p-[20mm] bg-white w-[210mm] min-h-[297mm] print:w-full print:h-auto print:min-h-0 print:shadow-none shadow-2xl flex flex-col justify-between relative print:bg-white text-black">
+                                        <div className="audit-section p-[20mm] bg-white w-[210mm] min-h-[297mm] print:w-full print:h-auto print:min-h-0 print:shadow-none shadow-2xl flex flex-col justify-between relative print:bg-white text-black mx-auto">
                                             <div className="flex-grow">
                                                 <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(pageContent) }} />
                                             </div>
@@ -1842,7 +1842,7 @@ const MarketHistoryAudit = ({ data }: { data: AppData }) => {
     return (
       <div
         id={isPrintTarget ? "printable-audit-report" : undefined}
-        className="print-modal-content text-black relative flex flex-col xl:flex-row xl:flex-wrap xl:justify-center gap-8 print:gap-0 bg-transparent shadow-none w-full max-w-[210mm] xl:max-w-none mx-auto"
+        className="print-modal-content text-black relative flex flex-col items-center gap-8 print:gap-0 bg-transparent shadow-none w-full max-w-[210mm] mx-auto"
       >
         {sectionsToRender.map((sec, idx) => {
           const currentPage = idx + 1;
@@ -1852,7 +1852,7 @@ const MarketHistoryAudit = ({ data }: { data: AppData }) => {
               <div
                 className={`${
                   isPrintTarget ? "audit-section" : "print:hidden"
-                } p-[20mm] bg-white w-[210mm] min-h-[297mm] print:w-full print:h-auto print:min-h-0 print:shadow-none shadow-2xl flex flex-col justify-between relative print:bg-white text-black`}
+                } p-[20mm] bg-white w-[210mm] min-h-[297mm] print:w-full print:h-auto print:min-h-0 print:shadow-none shadow-2xl flex flex-col justify-between relative print:bg-white text-black mx-auto`}
               >
                 <div className="flex-grow">
                   {sec.render()}
