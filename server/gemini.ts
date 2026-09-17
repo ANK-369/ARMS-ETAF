@@ -166,7 +166,7 @@ export const analyzeDataServer = async (query: string, contextData: string, lang
   }
 
   const langInstruction = language === 'am' 
-      ? "ANSWER IN AMHARIC LANGUAGE ONLY." 
+      ? "ANSWER IN AMHARIC LANGUAGE ONLY. NUMERAL RULE: You MUST write ALL numbers, counts, quantities, dates, and amounts using standard Arabic numerals (0, 1, 2, 3, 4, 5, 6, 7, 8, 9). NEVER use Ge'ez / Ethiopic numerals (e.g. ፩, ፪, ፲, ፲፮, ፻) for any number or count under any circumstances." 
       : "ANSWER IN ENGLISH LANGUAGE ONLY.";
 
   const prompt = `
@@ -251,7 +251,7 @@ export const chatWithAIServer = async (
            - **Bold**: Use <strong>text</strong> for emphasis.
            - **Lists**: Use <ul class="list-disc list-inside space-y-1 my-2"><li>...</li></ul>.
            - **Sections**: Use <h3 class="text-gold-500 font-bold text-lg mt-4 mb-2 border-b border-gray-700 pb-1">Title</h3>.
-        6. **Language**: Respond strictly in ${language === 'am' ? 'Amharic' : 'English'}. Respond strictly in grammatically correct, natural and fluent Amharic if the language is Amharic.
+        6. **Language & Numerals**: Respond strictly in ${language === 'am' ? 'Amharic' : 'English'}. Respond strictly in grammatically correct, natural and fluent Amharic if the language is Amharic. You MUST write ALL numbers, counts, quantities, dates, and currency amounts using standard Arabic numerals (0, 1, 2, 3, 4, 5, 6, 7, 8, 9). NEVER use Ge'ez / Ethiopic numerals (e.g. ፩, ፪, ፲, ፲፮, ፻) under any circumstances.
 
         GOAL: Provide accurate, actionable, and visually structured intelligence to the logistics officer.
     `;
@@ -305,7 +305,7 @@ export const performLogisticsAnalysisServer = async (
     }
 
     const langInstruction = language === 'am' 
-        ? "OUTPUT TRANSLATIONS CRITICAL: All textual output (such as names of days in optimizedMenu, descriptions/reasons under recommendedOrders, warnings or text under alerts, and names of foods in optimizedMenu breakfast/lunch/dinner fields) MUST BE TRANSLATED AND WRITTEN IN GRAMMATICALLY CORRECT, NATURAL AMHARIC LANGUAGE ONLY." 
+        ? "OUTPUT TRANSLATIONS CRITICAL: All textual output (such as names of days in optimizedMenu, descriptions/reasons under recommendedOrders, warnings or text under alerts, and names of foods in optimizedMenu breakfast/lunch/dinner fields) MUST BE TRANSLATED AND WRITTEN IN GRAMMATICALLY CORRECT, NATURAL AMHARIC LANGUAGE ONLY. NUMERAL RULE: ALL numbers, quantities, costs, and amounts MUST be standard Arabic numerals (0-9). NEVER use Ge'ez numerals." 
         : "All textual output must be in English.";
 
     const prompt = `
