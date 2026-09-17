@@ -282,7 +282,7 @@ const Layout: React.FC<LayoutProps> = ({ children, activePage, onNavigate, onLog
                 Ethiopian Air Force
             </p>
             <p className="text-[10px] text-gold-400 font-bold tracking-widest whitespace-nowrap">
-                የኢትዮጵያ አይር ሀይል
+                የኢትዮጵያ አየር ሀይል
             </p>
             <p className="text-[8px] text-gray-500 uppercase tracking-wide mt-1">
                 Logistics Command
