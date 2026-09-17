@@ -211,6 +211,7 @@ const DbAdministration: React.FC = () => {
                         token,
                         path: detectedPath,
                     };
+                    saveGitHubConfig(updated);
                     return updated;
                 });
                 

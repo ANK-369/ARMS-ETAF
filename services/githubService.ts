@@ -195,12 +195,7 @@ export const autoDetectGitHubPath = async (owner: string, repo: string, token: s
           }
         });
         
-        const isNew = checkIfNewUser();
-        if (isNew) {
-          filename = `arms${String(maxNum + 1).padStart(3, '0')}.json`;
-        } else {
-          filename = `arms${String(maxNum > 0 ? maxNum : 1).padStart(3, '0')}.json`;
-        }
+        filename = `arms${String(maxNum + 1).padStart(3, '0')}.json`;
       }
     }
     

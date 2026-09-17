@@ -10,11 +10,11 @@ import {
 import { 
   getDB, saveDB, getStoredUsername, getStoredAdminUsername, verifyPassword, resetPasswordDirectly,
   getStoredSecurityQuestion, updateStoredCredentials, updateSecurityQuestion, updateAdminCredentialsDirectly,
-  isNewUser, sha256, clearDatabaseDataForFreshStart
+  sha256, clearDatabaseDataForFreshStart
 } from '../services/db';
 import { getGitHubConfig, saveGitHubConfig, fetchFromGitHub, pushToGitHub, listUserBackups, getFolderName, autoDetectGitHubPath, listAllRepositoryBackups, RepoFileDetail } from '../services/githubService';
 import { analyzeData, chatWithAI, stripMarkdown } from '../services/geminiService';
-import { AppData, StoreItem, Manpower, Expense, IncomeItem, Subsidy, Transfer, Refund, RationLog } from '../types';
+import { AppData, StoreItem, Manpower, Expense, IncomeItem, Subsidy, Transfer, Refund, RationLog, GitHubConfig } from '../types';
 import { formatEthiopianDate, getCurrentEthiopianDate } from '../services/ethiopianDate';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useDate } from '../contexts/DateContext';
@@ -50,7 +50,8 @@ export const AdminDashboard: React.FC<{ onLogout: () => void }> = ({ onLogout })
   // Cloud backup sync state
   const [githubSyncing, setGithubSyncing] = useState<boolean>(false);
   const [githubMessage, setGithubMessage] = useState<string>('');
-  const [ghConfig, setGhConfig] = useState(() => getGitHubConfig());
+  const [ghConfig, setGhConfig] = useState<GitHubConfig>(() => getGitHubConfig());
+  const [initialConfig, setInitialConfig] = useState<GitHubConfig | null>(null);
   const [showGhConfigForm, setShowGhConfigForm] = useState<boolean>(true); // Set to true by default for easier visibility
 
   // Path Input Local State (prevents overwriting custom edits mid-typing)
@@ -296,6 +297,9 @@ export const AdminDashboard: React.FC<{ onLogout: () => void }> = ({ onLogout })
   };
 
   useEffect(() => {
+    const conf = getGitHubConfig();
+    setGhConfig(conf);
+    setInitialConfig(conf);
     refreshDatabase();
     setLoadedBackupPath('');
     
@@ -315,12 +319,19 @@ export const AdminDashboard: React.FC<{ onLogout: () => void }> = ({ onLogout })
 
   // Auto-detect and populate GitHub File Path when Owner, Repo, and Token are entered
   useEffect(() => {
-    if (!isNewUser()) return; // Skip automatic path generation for old users
+    if (!initialConfig) return; // Prevent overwriting on initial mount before config is set
 
     const { owner, repo, token } = ghConfig;
     if (!owner || !repo || !token) return;
 
-    // Skip if current path already matches the expected directory structure to prevent infinite loops or overwriting custom overrides
+    // Skip if credentials match the initially loaded config to avoid overwriting saved state on mount
+    if (initialConfig &&
+        owner === initialConfig.owner &&
+        repo === initialConfig.repo &&
+        token === initialConfig.token) {
+      return;
+    }
+
     const timer = setTimeout(async () => {
       setGithubSyncing(true);
       setGithubMessage(language === 'en' ? "Auto-detecting file path from GitHub..." : "የፋይል መንገዱን ከ GitHub ላይ በራስ-ሰር በመፈለግ ላይ...");
@@ -352,7 +363,7 @@ export const AdminDashboard: React.FC<{ onLogout: () => void }> = ({ onLogout })
     }, 1200); // Debounce to allow seamless typing
 
     return () => clearTimeout(timer);
-  }, [ghConfig.owner, ghConfig.repo, ghConfig.token]);
+  }, [ghConfig.owner, ghConfig.repo, ghConfig.token, initialConfig]);
 
   const handleVerifyAndConnectPath = async (targetPath: string) => {
     if (!targetPath.trim()) {
