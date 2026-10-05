@@ -1,5 +1,6 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { FoodProgramEntry, LogisticsAnalysis, StoreItem, MealIngredientsMap } from "../types";
+import { getSiteMapPromptText } from "../services/siteMap";
 
 export const getGeminiApiKey = (customApiKey?: string): string => {
   let key = '';
@@ -186,11 +187,14 @@ export const analyzeDataServer = async (query: string, contextData: string, lang
        - When asked "How many transient?" or "የTransient ብዛት" or similar, count all records where type matches 'Transient' (or Amharic 'ትራንዚንት').
        - If asked "Total contribution?", SUM the 'contribution_amount' or 'amount'.
     2. 'expenses': LIST OF COSTS.
-       - 'cost' is the Money spent.
+       - 'cost' or 'amount' * 'singlePrice' is the money spent.
        - 'name' is the item bought or person paid.
-    3. 'income_items_sold': Revenue from store sales.
-    4. 'subsidies': Financial aid received.
-    5. 'storeItems': Current inventory items with stock amounts and single prices.
+    3. 'income_items_sold' / 'incomeItems' / 'income': Revenue from store sales / items sold. Each item has 'amount' (quantity) and 'singlePrice' (price per unit). Total revenue = amount * singlePrice.
+    4. 'subsidies': Financial or Food aid received ('amount').
+    5. 'transfers': Budget transfers received from previous months ('amount').
+    6. 'storeItems': Current inventory items with stock amounts and single prices.
+    7. 'refunds': Personnel refunds ('amount').
+    8. TOTAL INCOME CALCULATION: Total income is the sum of all income streams: items sold ('incomeItems' / 'income_items_sold'), manpower contributions ('manpower' amounts), financial subsidies ('subsidies'), and budget transfers ('transfers'). Never state there is no income if any of these arrays contain records.
     
     DATABASE CONTEXT (JSON):
     ${contextData}
@@ -203,9 +207,10 @@ export const analyzeDataServer = async (query: string, contextData: string, lang
     2. ANTI-SYCOPHANCY RULE (STRICT TRUTHFULNESS): NEVER accept or confirm false user assertions, numbers, or assumptions. If the user asks a leading or false question (such as "Are there 80 transients?" or "Why are there 80 transients?"), you MUST check the real database data, reject the false premise, and provide the exact true count from the database. Do NOT agree with false numbers to please the user.
     3. EXHAUSTIVE STEP-BY-STEP COUNTING: When counting or summing (e.g. how many Transient personnel, how many Payroll, total expenses), perform an exact record-by-record tally of the JSON array. Do not estimate or guess. State the exact verified count found.
     4. Do NOT say "no information available" if the array is not empty.
-    5. If the array is empty, say "${language === 'am' ? 'በዳታቤዝ ውስጥ ምንም መረጃ አልተገኘም።' : 'No records found in the database.'}".
-    6. Format your answer as a concise professional report.
-    7. ${langInstruction}
+    5. Before stating there are "no records", "no income", or "no data found", you MUST inspect EVERY related collection in the database snapshot and explicitly name each collection that was checked (for example: "Checked collections: manpower, incomeItems, subsidies, transfers - 0 records found."). If any related collection contains records, you MUST calculate and report them.
+    6. If all related collections are genuinely empty, state the names of all checked collections and say "${language === 'am' ? 'በዳታቤዝ ውስጥ ምንም መረጃ አልተገኘም።' : 'No records found in the database.'}".
+    7. Format your answer as a concise professional report.
+    8. ${langInstruction}
   `;
 
   try {
@@ -238,10 +243,55 @@ export const chatWithAIServer = async (
           : "Gemini API Key is not configured or saved. Please configure it in the database administration section.");
     }
 
+    const siteMapText = getSiteMapPromptText();
+
     const systemInstruction = `
         SYSTEM IDENTITY:
         You are the ARMS (Auditing and Ration Management System) Advanced AI Assistant.
-        You are a highly intelligent, military-grade logistics bot capable of rigorous data analysis, calculation, and prediction.
+        You are a highly intelligent, military-grade logistics bot capable of rigorous data analysis, calculation, prediction, and complete system navigation assistance.
+
+        DUAL PURPOSE CAPABILITY:
+        You MUST seamlessly answer BOTH database/logistics questions (e.g., "what is our total income?", "list all expenses", "how many payroll soldiers?", "inventory balance") AND application location/navigation questions (e.g., "where do I add income", "where do I add expenditure", "where do I add store items", "where is Manual Audit", "where do I change my password", "where do I set the Gemini key", "I forgot my password") in the SAME conversation.
+
+        APPLICATION NAVIGATION & SITE MAP RULES:
+        1. When the user asks "where / how do I / where is" or requests navigation guidance:
+           - You MUST answer strictly from the REAL ARMS APPLICATION SITE MAP below. NEVER invent, guess, or hallucinate non-existent pages, tabs, or sections.
+           - Provide the exact path in words using the visible on-screen breadcrumbs in the user's language (${language === 'am' ? 'Amharic' : 'English'}), for example:
+             - English: Database Administration > System Access & AI Configuration > Change Administrative Credentials
+             - Amharic: ዳታቤዝ አስተዳደር > የስርዓት መግቢያ እና AI ማዋቀሪያ > የአስተዳዳሪ መግቢያ መረጃን ይቀይሩ
+           - AND you MUST output an actionable clickable HTML navigation link formatted EXACTLY as:
+             <a href="#/route?param=val" data-nav="/route?param=val">Visible Link Text</a>
+             (Use href="#/..." and data-nav="/...", with no other attributes).
+           - Examples of required navigation links:
+             - Income: <a href="#/income?tab=manpower" data-nav="/income?tab=manpower">Income > Manpower</a> or <a href="#/income?tab=item" data-nav="/income?tab=item">Income > Items Sold</a>
+             - Expenditure: <a href="#/expenditure?tab=market" data-nav="/expenditure?tab=market">Expenditure > Market Purchases</a>
+             - Store items: <a href="#/store?tab=items" data-nav="/store?tab=items">Store & Inventory > Item List</a>
+             - Manual Audit: <a href="#/audit?tab=manual" data-nav="/audit?tab=manual">Audit Center > Manual Audit</a>
+             - Change password: <a href="#/dbadmin?section=access_ai" data-nav="/dbadmin?section=access_ai">Database Administration > System Access & AI Configuration</a>
+             - Set Gemini key: <a href="#/dbadmin?section=access_ai" data-nav="/dbadmin?section=access_ai">Database Administration > System Access & AI Configuration</a>
+             - Forgot password: <a href="#/login" data-nav="/login">Login Screen</a> (explain to click 'Forgot Password?' to open the Account Recovery Terminal and answer the security question).
+           - Admin-only features MUST state they are on the Admin Dashboard (<a href="#/admin-dashboard" data-nav="/admin-dashboard">Admin Dashboard</a>) and require administrator login.
+           - If a requested feature does not exist in ARMS, clearly and politely say so.
+
+        ${siteMapText}
+
+        DATABASE STRUCTURE & DATA DICTIONARY:
+        - 'manpower': Personnel records. Types: 'Payroll', 'Full Cash', 'Half Cash', 'Transient', 'Pension'. 'contributionAmount' or 'amount' is their monthly contribution. IMPORTANT: Personnel contributions COUNT AS INCOME! If amount is missing or empty, standard rates are: Payroll/FullCash = 3000 Birr, HalfCash = 1500 Birr, any other type = 3000 Birr.
+        - 'incomeItems' (or 'income'): Store sales and items sold. Revenue for each item = amount * singlePrice.
+        - 'subsidies': Financial or food aid received ('amount'). Financial subsidies count as income.
+        - 'transfers': Budget transferred from previous periods ('amount'). Counts as income.
+        - 'expenses': Expenditures categorized as 'Market', 'Wage', or 'Other'. Cost = amount * (singlePrice || 1) for Market, or amount for Wage/Other.
+        - 'storeItems' (or 'store'): Current ration warehouse inventory with stock quantities and unit prices.
+        - 'refunds': Personnel refund records ('amount').
+        - 'rationHistory': Logs of past food distribution executions.
+        - **INCOME STREAMS RULE**: When asked about "income" (or in Amharic "ገቢ"), verify and calculate across all four income streams:
+          1. Manpower contributions ('manpower' contributionAmount)
+          2. Items sold / store revenue ('incomeItems' or 'income')
+          3. Financial subsidies received ('subsidies')
+          4. Budget transfers ('transfers')
+          NEVER claim there is "no income" if any of these categories contain records! Perform an exact step-by-step tally of amounts and revenues.
+        - **BEFORE SAYING 'NO RECORDS' RULE**:
+          Before stating there are "no records", "no income", or "no data found", you MUST inspect EVERY related collection in the database context and explicitly name each collection that was checked (for example: "Checked collections: manpower, incomeItems, subsidies, transfers - 0 records found."). If any related collection contains records, calculate and report them.
 
         DATABASE CONTEXT:
         ${JSON.stringify(dbData)}
@@ -264,6 +314,7 @@ export const chatWithAIServer = async (
            - **Bold**: Use <strong>text</strong> for emphasis.
            - **Lists**: Use <ul class="list-disc list-inside space-y-1 my-2"><li>...</li></ul>.
            - **Sections**: Use <h3 class="text-gold-500 font-bold text-lg mt-4 mb-2 border-b border-gray-700 pb-1">Title</h3>.
+           - **Navigation Links**: Use <a href="#/route?tab=..." data-nav="/route?tab=...">Text</a> with NO external domains or javascript.
         7. **Language & Numerals**: Respond strictly in ${language === 'am' ? 'Amharic' : 'English'}. Respond strictly in grammatically correct, natural and fluent Amharic if the language is Amharic. You MUST write ALL numbers, counts, quantities, dates, and currency amounts using standard Arabic numerals (0, 1, 2, 3, 4, 5, 6, 7, 8, 9). NEVER use Ge'ez / Ethiopic numerals (e.g. ፩, ፪, ፲, ፲፮, ፻) under any circumstances.
 
         GOAL: Provide accurate, actionable, mathematically verified, truthful, and visually structured intelligence to the logistics officer.

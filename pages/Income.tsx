@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { getDB, smartUpsertItem, findPotentialMatch } from '../services/db';
 import { Command, ManpowerType, RANK_OPTIONS, MEASUREMENT_OPTIONS } from '../types';
 import { ETHIOPIAN_MONTHS, ETHIOPIAN_MONTHS_AMHARIC, getCurrentEthiopianDate, getDaysInEthiopianMonth } from '../services/ethiopianDate';
@@ -14,11 +15,22 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { useDate } from '../contexts/DateContext';
 
 const Income: React.FC = () => {
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState<'manpower' | 'item' | 'subsidy' | 'transfer'>('manpower');
   const [msg, setMsg] = useState('');
   const [forceUpdate, setForceUpdate] = useState(0); 
   const { t, language } = useLanguage();
   const { month: selectedMonth, year: selectedYear } = useDate();
+
+  // Read deep link 'tab' query parameter (e.g. #/income?tab=manpower)
+  React.useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tabParam = params.get('tab');
+    const validTabs: Array<'manpower' | 'item' | 'subsidy' | 'transfer'> = ['manpower', 'item', 'subsidy', 'transfer'];
+    if (tabParam && validTabs.includes(tabParam as any)) {
+      setActiveTab(tabParam as any);
+    }
+  }, [location.search]);
 
   // Sync form dates with selected global date context
   React.useEffect(() => {

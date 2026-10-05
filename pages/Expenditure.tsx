@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { getDB, smartUpsertItem, findPotentialMatch } from '../services/db';
 import { Command, RANK_OPTIONS, MEASUREMENT_OPTIONS } from '../types';
 import { getCurrentEthiopianDate } from '../services/ethiopianDate';
@@ -14,11 +15,22 @@ import { useLanguage } from '../contexts/LanguageContext';
 import { useDate } from '../contexts/DateContext';
 
 const Expenditure: React.FC = () => {
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState<'market' | 'wage' | 'other' | 'refund'>('market');
   const [msg, setMsg] = useState('');
   const [forceUpdate, setForceUpdate] = useState(0);
   const { t } = useLanguage();
   const { month: selectedMonth, year: selectedYear } = useDate();
+
+  // Read deep link 'tab' query parameter (e.g. #/expenditure?tab=market)
+  React.useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tabParam = params.get('tab');
+    const validTabs: Array<'market' | 'wage' | 'other' | 'refund'> = ['market', 'wage', 'other', 'refund'];
+    if (tabParam && validTabs.includes(tabParam as any)) {
+      setActiveTab(tabParam as any);
+    }
+  }, [location.search]);
 
   // Sync form dates with selected global date context
   React.useEffect(() => {

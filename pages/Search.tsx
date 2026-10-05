@@ -18,6 +18,43 @@ import CustomSelect from '../components/CustomSelect';
 import { useLanguage } from '../contexts/LanguageContext';
 import { useDate } from '../contexts/DateContext';
 import DOMPurify from 'dompurify';
+import { buildAIContext } from '../services/aiContext';
+
+// Configure DOMPurify hook to allow <a> with only href and data-nav starting with "#/"
+if (typeof window !== 'undefined') {
+  DOMPurify.removeHook('afterSanitizeAttributes');
+  DOMPurify.addHook('afterSanitizeAttributes', (node) => {
+    if (node.tagName === 'A') {
+      const href = node.getAttribute('href') || '';
+      if (!href.startsWith('#/')) {
+        node.removeAttribute('href');
+        node.removeAttribute('data-nav');
+      } else {
+        for (let i = node.attributes.length - 1; i >= 0; i--) {
+          const attr = node.attributes[i].name;
+          if (attr !== 'href' && attr !== 'data-nav' && attr !== 'class') {
+            node.removeAttribute(attr);
+          }
+        }
+        const existingClass = node.getAttribute('class') || '';
+        if (!existingClass.includes('text-gold-500')) {
+          node.setAttribute('class', `text-gold-500 underline font-bold hover:text-gold-400 cursor-pointer ${existingClass}`.trim());
+        }
+      }
+    }
+  });
+}
+
+const sanitizeChatHtml = (content: string) => {
+  return DOMPurify.sanitize(content, {
+    ALLOWED_TAGS: [
+      'b', 'i', 'em', 'strong', 'a', 'p', 'br', 'ul', 'ol', 'li',
+      'h1', 'h2', 'h3', 'h4', 'table', 'thead', 'tbody', 'tr', 'th', 'td',
+      'span', 'code', 'pre'
+    ],
+    ALLOWED_ATTR: ['href', 'data-nav', 'class']
+  });
+};
 
 const ITEMS_PER_PAGE = 24; // Increased slightly for grid layout
 
@@ -82,12 +119,17 @@ const Search: React.FC = () => {
     setData(getDB());
   }, []);
 
-  // Handle Tab Switch from Navigation
+  // Handle Tab Switch from Navigation and Query Parameter (?tab=...)
   useEffect(() => {
-    if (location.state && (location.state as any).defaultTab) {
-        setActiveTab((location.state as any).defaultTab);
+    const params = new URLSearchParams(location.search);
+    const tabParam = params.get('tab');
+    const validTabs: Array<'search' | 'trends' | 'chat'> = ['search', 'trends', 'chat'];
+    if (tabParam && validTabs.includes(tabParam as any)) {
+      setActiveTab(tabParam as any);
+    } else if (location.state && (location.state as any).defaultTab) {
+      setActiveTab((location.state as any).defaultTab);
     }
-  }, [location]);
+  }, [location.search, location.state]);
 
   useEffect(() => {
       if (activeTab === 'chat' && chatEndRef.current) {
@@ -263,7 +305,7 @@ const Search: React.FC = () => {
   // --- TAB 3: CHAT LOGIC ---
   const handleChatSubmit = async (e?: React.FormEvent) => {
       if (e) e.preventDefault();
-      if (!chatInput.trim() || !data) return;
+      if (!chatInput.trim()) return;
 
       if (!hasGeminiApiKey()) {
           setApiKeyInput(getGeminiApiKey());
@@ -278,21 +320,24 @@ const Search: React.FC = () => {
       const newHistory = [...chatHistory, { role: 'user', content: userMsg, timestamp: new Date() } as ChatMessage];
       setChatHistory(newHistory);
 
-      // Prepare Context
-      const dbContext = {
-          manpower: data.manpower.map(m => ({ name: `${m.firstName} ${m.lastName}`, rank: m.rank, type: m.type, amount: m.amount, command: m.command, activeStart: m.startDate, activeEnd: m.endDate })),
-          expenses: data.expenses.map(e => ({ type: e.category, name: e.itemName || e.workerName, amount: e.amount, price: e.singlePrice, date: e.date, desc: e.description })),
-          income: data.incomeItems.map(i => ({ name: i.name, amount: i.amount, price: i.singlePrice, date: i.date })),
-          store: data.storeItems.map(s => ({ name: s.name, qty: s.amount, price: s.singlePrice, date: s.date })),
-          subsidies: data.subsidies
-      };
+      // Read FRESH getDB() at the moment the user sends a message
+      const freshDb = getDB();
+      const isReadOnly = localStorage.getItem('arms_readonly_mode') === 'true';
+      const filePath = localStorage.getItem('arms_readonly_file_path') || '';
+      const aiContext = buildAIContext(freshDb, {
+        selectedMonth,
+        selectedYear,
+        isReadOnly,
+        filePath,
+        language
+      });
 
       let aiText = "";
       try {
           aiText = await chatWithAI(
               newHistory.map(h => ({ role: h.role, content: h.content })), 
               userMsg, 
-              dbContext, 
+              aiContext, 
               language
           );
       } catch (err: any) {
@@ -312,8 +357,6 @@ const Search: React.FC = () => {
 
   // --- AI HANDLER (OLD SINGLE SEARCH) ---
   const handleAISearch = async () => {
-    if (!data) return;
-
     if (!hasGeminiApiKey()) {
         setApiKeyInput(getGeminiApiKey());
         setShowKeyModal(true);
@@ -322,48 +365,20 @@ const Search: React.FC = () => {
 
     setLoadingAi(true);
     
-    const manpowerContext = data.manpower.map(m => {
-        let calculatedAmount = m.amount;
-        if (!calculatedAmount) {
-            if (m.type === ManpowerType.PAYROLL || m.type === ManpowerType.FULL_CASH) calculatedAmount = 3000;
-            else if (m.type === ManpowerType.HALF_CASH) calculatedAmount = 1500;
-            else calculatedAmount = 0;
-        }
-        return {
-            name: `${m.firstName} ${m.lastName}`,
-            rank: m.rank,
-            type: m.type,
-            command: m.command,
-            contribution_amount: calculatedAmount 
-        };
+    // Read FRESH getDB() at the moment the user triggers AI Search
+    const freshDb = getDB();
+    const isReadOnly = localStorage.getItem('arms_readonly_mode') === 'true';
+    const filePath = localStorage.getItem('arms_readonly_file_path') || '';
+    const aiContext = buildAIContext(freshDb, {
+      selectedMonth,
+      selectedYear,
+      isReadOnly,
+      filePath,
+      language
     });
 
-    const incomeContext = data.incomeItems.map(i => ({
-        item_name: i.name,
-        qty: i.amount,
-        unit: i.measurement,
-        single_price: i.singlePrice,
-        total_value: i.amount * i.singlePrice 
-    }));
-
-    const expenseContext = data.expenses.map(e => ({
-        category: e.category,
-        name: e.itemName || e.workerName,
-        cost: e.category === 'Market' ? (e.amount * (e.singlePrice || 0)) : e.amount,
-        date: e.date,
-        description: e.description
-    }));
-
-    const richContext = JSON.stringify({
-        meta: "Currency: Birr. Dates: Ethiopian Calendar.",
-        manpower: manpowerContext,
-        expenses: expenseContext,
-        income_items_sold: incomeContext,
-        subsidies: data.subsidies,
-        refunds: data.refunds
-    });
-
-    const finalQuery = query || "Provide a summary of anomalies or potential duplicate data."; // Default prompt if query empty
+    const richContext = JSON.stringify(aiContext);
+    const finalQuery = query || "Provide a summary of anomalies or potential duplicate data.";
 
     try {
         const res = await analyzeData(finalQuery, richContext, language);
@@ -722,7 +737,17 @@ const Search: React.FC = () => {
                                   {msg.role === 'model' ? (
                                       <div 
                                         className="prose prose-invert prose-sm max-w-none"
-                                        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(msg.content) }} 
+                                        dangerouslySetInnerHTML={{ __html: sanitizeChatHtml(msg.content) }} 
+                                        onClick={(e) => {
+                                          const target = (e.target as HTMLElement).closest('a[data-nav]');
+                                          if (target) {
+                                            e.preventDefault();
+                                            const navPath = target.getAttribute('data-nav');
+                                            if (navPath) {
+                                              navigate(navPath);
+                                            }
+                                          }
+                                        }}
                                       />
                                   ) : (
                                       msg.content

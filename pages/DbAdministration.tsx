@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { getDB, saveDB, getStoredUsername, updateStoredCredentials, getStoredSecurityQuestion, updateSecurityQuestion, isNewUser, sha256, createEmptyDatabase } from '../services/db';
 import { getGitHubConfig, saveGitHubConfig, fetchFromGitHub, pushToGitHub, autoDetectGitHubPath, deleteFromGitHub } from '../services/githubService';
 import { downloadFile, parseImportFile } from '../services/dataTransfer';
@@ -29,10 +30,21 @@ const DbAdministration: React.FC = () => {
         { key: 'foodProgramArchive', label: t('db_foodProgramArchive') }
     ];
 
+    const location = useLocation();
     const [activeSection, setActiveSection] = useState<'sync_backup' | 'access_ai' | 'fresh_danger'>('sync_backup');
     const [msg, setMsg] = useState('');
     const [error, setError] = useState(false);
     const [selectedToDelete, setSelectedToDelete] = useState<string[]>([]);
+
+    // Read deep link 'section' query parameter (e.g. #/dbadmin?section=access_ai)
+    useEffect(() => {
+      const params = new URLSearchParams(location.search);
+      const secParam = params.get('section');
+      const validSections: Array<'sync_backup' | 'access_ai' | 'fresh_danger'> = ['sync_backup', 'access_ai', 'fresh_danger'];
+      if (secParam && validSections.includes(secParam as any)) {
+        setActiveSection(secParam as any);
+      }
+    }, [location.search]);
     const [showWipeConfirm, setShowWipeConfirm] = useState(false);
     
     // GitHub State

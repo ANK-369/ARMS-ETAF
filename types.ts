@@ -117,6 +117,7 @@ export interface Manpower {
   endDate: string;
   description: string;
   amount?: number; 
+  savedAsNew?: boolean;
 }
 
 export interface IncomeItem {
@@ -127,6 +128,7 @@ export interface IncomeItem {
   singlePrice: number;
   description: string;
   date: string;
+  savedAsNew?: boolean;
 }
 
 export interface Subsidy {
@@ -138,6 +140,7 @@ export interface Subsidy {
   measurement: string; 
   description: string;
   date: string;
+  savedAsNew?: boolean;
 }
 
 export interface Transfer {
@@ -160,6 +163,7 @@ export interface Expense {
   reason?: string; 
   description: string;
   date: string;
+  savedAsNew?: boolean;
 }
 
 export interface Refund {
@@ -171,6 +175,7 @@ export interface Refund {
   amount: number;
   stopDate: string;
   description: string;
+  savedAsNew?: boolean;
 }
 
 export interface Note {
@@ -194,6 +199,7 @@ export interface StoreItem {
   category: 'inventory' | 'transfer'; // inventory = Item List, transfer = To Next Month
   fromMonth?: string;
   toMonth?: string;
+  savedAsNew?: boolean;
 }
 
 export interface StoreOrder {

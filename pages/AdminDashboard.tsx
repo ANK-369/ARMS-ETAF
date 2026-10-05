@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import { 
   ShieldCheck, Plane, Lock, User, Cpu, Globe, Cloud, RefreshCw, CheckCircle, 
@@ -23,9 +24,22 @@ import etafLogo from '../assets/images/etaf_logo.png';
 export const AdminDashboard: React.FC<{ onLogout: () => void }> = ({ onLogout }) => {
   const { language, toggleLanguage, t } = useLanguage();
   const { month, year } = useDate();
+  const location = useLocation();
   
   // Navigation tabs representing high-detail sectors
   const [activeTab, setActiveTab] = useState<'overview' | 'manpower' | 'market' | 'finance' | 'store' | 'security' | 'ai' | 'about'>('overview');
+
+  // Read deep link 'tab' query parameter (e.g. #/admin-dashboard?tab=security)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tabParam = params.get('tab');
+    const validTabs: Array<'overview' | 'manpower' | 'market' | 'finance' | 'store' | 'security' | 'ai' | 'about'> = [
+      'overview', 'manpower', 'market', 'finance', 'store', 'security', 'ai', 'about'
+    ];
+    if (tabParam && validTabs.includes(tabParam as any)) {
+      setActiveTab(tabParam as any);
+    }
+  }, [location.search]);
   
   // Default search and date filters applied to lists
   const [searchTerm, setSearchTerm] = useState<string>('');
@@ -724,7 +738,9 @@ export const AdminDashboard: React.FC<{ onLogout: () => void }> = ({ onLogout })
         manpowerCount: liveDb.manpower.length,
         storeItems: liveDb.storeItems,
         expenses: liveDb.expenses,
+        incomeItems: liveDb.incomeItems,
         subsidies: liveDb.subsidies,
+        transfers: liveDb.transfers,
         refunds: liveDb.refunds,
         rationHistory: liveDb.rationHistory
       }, null, 2);
@@ -757,8 +773,11 @@ export const AdminDashboard: React.FC<{ onLogout: () => void }> = ({ onLogout })
         databaseState: {
           manpower: liveDb.manpower,
           expenses: liveDb.expenses,
+          incomeItems: liveDb.incomeItems,
           storeItems: liveDb.storeItems,
           subsidies: liveDb.subsidies,
+          transfers: liveDb.transfers,
+          refunds: liveDb.refunds,
           rationHistory: liveDb.rationHistory
         },
         systemContext: {

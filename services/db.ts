@@ -272,6 +272,7 @@ export const findPotentialMatch = (collection: keyof AppData, newItem: any) => {
 
   if (collection === 'manpower' || collection === 'refunds') {
       match = list.find(m => {
+        if (m.savedAsNew) return false;
         const isSameName = m.firstName?.toLowerCase()?.trim() === newItem.firstName?.toLowerCase()?.trim() &&
                            m.lastName?.toLowerCase()?.trim() === newItem.lastName?.toLowerCase()?.trim();
         if (!isSameName) return false;
@@ -284,6 +285,7 @@ export const findPotentialMatch = (collection: keyof AppData, newItem: any) => {
       if (match) matchReason = `${match.firstName} ${match.lastName}`;
   } else if (collection === 'incomeItems' || collection === 'storeItems') {
       match = list.find(i => {
+        if (i.savedAsNew) return false;
         const isSameName = i.name?.toLowerCase()?.trim() === newItem.name?.toLowerCase()?.trim();
         if (!isSameName) return false;
         
@@ -297,12 +299,11 @@ export const findPotentialMatch = (collection: keyof AppData, newItem: any) => {
       if (match) matchReason = `${match.name} (${match.date})`;
   } else if (collection === 'expenses') {
       match = list.find(e => {
+         if (e.savedAsNew) return false;
          if (e.category !== newItem.category) return false;
          
-         const eDate = e.date;
-         const newDate = newItem.date;
-         if (!eDate || !newDate) return false;
-         if (eDate.slice(0, 7) !== newDate.slice(0, 7)) return false;
+         const isSameMonth = !e.date || !newItem.date || e.date.slice(0, 7) === newItem.date.slice(0, 7);
+         if (!isSameMonth) return false;
          
          if (e.category === 'Market') return e.itemName?.toLowerCase()?.trim() === newItem.itemName?.toLowerCase()?.trim();
          if (e.category === 'Wage') return e.workerName?.toLowerCase()?.trim() === newItem.workerName?.toLowerCase()?.trim();
@@ -314,12 +315,11 @@ export const findPotentialMatch = (collection: keyof AppData, newItem: any) => {
       }
   } else if (collection === 'subsidies') {
       match = list.find(s => {
+         if (s.savedAsNew) return false;
          if (s.type !== newItem.type) return false;
          
-         const sDate = s.date;
-         const newDate = newItem.date;
-         if (!sDate || !newDate) return false;
-         if (sDate.slice(0, 7) !== newDate.slice(0, 7)) return false;
+         const isSameMonth = !s.date || !newItem.date || s.date.slice(0, 7) === newItem.date.slice(0, 7);
+         if (!isSameMonth) return false;
          
          const key1 = s.itemName || s.source;
          const key2 = newItem.itemName || newItem.source;
@@ -327,6 +327,14 @@ export const findPotentialMatch = (collection: keyof AppData, newItem: any) => {
       });
       if (match) {
           matchReason = match.itemName || match.source;
+      }
+  } else if (collection === 'transfers') {
+      match = list.find(t => {
+         if (t.savedAsNew) return false;
+         return !t.dateTo || !newItem.dateTo || t.dateTo.toLowerCase().trim() === newItem.dateTo.toLowerCase().trim();
+      });
+      if (match) {
+          matchReason = match.description || match.dateTo;
       }
   }
 
@@ -346,8 +354,8 @@ export const smartUpsertItem = (collection: keyof AppData, newItem: any, forceNe
   
   // If Force New, generate ID and push immediately
   if (forceNew) {
-      if (!newItem.id) newItem.id = Math.random().toString(36).substr(2, 9);
       newItem.id = Math.random().toString(36).substr(2, 9); 
+      newItem.savedAsNew = true;
       list.push(newItem);
       // @ts-ignore
       db[collection] = list;
@@ -360,31 +368,37 @@ export const smartUpsertItem = (collection: keyof AppData, newItem: any, forceNe
   // --- 1. IDENTIFY DUPLICATE (Same Logic as Matcher) ---
   if (collection === 'manpower') {
     existingIndex = list.findIndex(m => 
+      !m.savedAsNew &&
       m.firstName?.toLowerCase()?.trim() === newItem.firstName?.toLowerCase()?.trim() &&
       m.lastName?.toLowerCase()?.trim() === newItem.lastName?.toLowerCase()?.trim() &&
       (!m.startDate || !newItem.startDate || m.startDate.slice(0, 7) === newItem.startDate.slice(0, 7))
     );
   } else if (collection === 'refunds') {
     existingIndex = list.findIndex(r => 
+      !r.savedAsNew &&
       r.firstName?.toLowerCase()?.trim() === newItem.firstName?.toLowerCase()?.trim() &&
       r.lastName?.toLowerCase()?.trim() === newItem.lastName?.toLowerCase()?.trim() &&
       (!r.stopDate || !newItem.stopDate || r.stopDate.slice(0, 7) === newItem.stopDate.slice(0, 7))
     );
   } else if (collection === 'incomeItems') {
     existingIndex = list.findIndex(i => 
+      !i.savedAsNew &&
       i.name?.toLowerCase()?.trim() === newItem.name?.toLowerCase()?.trim() &&
-      i.date === newItem.date 
+      (!i.date || !newItem.date || i.date.slice(0, 7) === newItem.date.slice(0, 7))
     );
   } else if (collection === 'storeItems') {
     existingIndex = list.findIndex(i => 
+      !i.savedAsNew &&
       i.name?.toLowerCase()?.trim() === newItem.name?.toLowerCase()?.trim() &&
       i.category === newItem.category &&
       (!i.date || !newItem.date || i.date.slice(0, 7) === newItem.date.slice(0, 7))
     );
   } else if (collection === 'expenses') {
     existingIndex = list.findIndex(e => {
+       if (e.savedAsNew) return false;
        if (e.category !== newItem.category) return false;
-       if (e.date !== newItem.date) return false; 
+       const isSameMonth = !e.date || !newItem.date || e.date.slice(0, 7) === newItem.date.slice(0, 7);
+       if (!isSameMonth) return false;
 
        if (e.category === 'Market') return e.itemName?.toLowerCase()?.trim() === newItem.itemName?.toLowerCase()?.trim();
        if (e.category === 'Wage') return e.workerName?.toLowerCase()?.trim() === newItem.workerName?.toLowerCase()?.trim();
@@ -393,12 +407,19 @@ export const smartUpsertItem = (collection: keyof AppData, newItem: any, forceNe
     });
   } else if (collection === 'subsidies') {
     existingIndex = list.findIndex(s => {
+       if (s.savedAsNew) return false;
        if (s.type !== newItem.type) return false;
-       if (!s.date || !newItem.date || s.date.slice(0, 7) !== newItem.date.slice(0, 7)) return false;
+       const isSameMonth = !s.date || !newItem.date || s.date.slice(0, 7) === newItem.date.slice(0, 7);
+       if (!isSameMonth) return false;
        const key1 = s.itemName || s.source;
        const key2 = newItem.itemName || newItem.source;
        return key1?.toLowerCase()?.trim() === key2?.toLowerCase()?.trim();
     });
+  } else if (collection === 'transfers') {
+    existingIndex = list.findIndex(t =>
+       !t.savedAsNew &&
+       (!t.dateTo || !newItem.dateTo || t.dateTo.toLowerCase().trim() === newItem.dateTo.toLowerCase().trim())
+    );
   }
 
   // --- 2. MERGE OR ADD ---

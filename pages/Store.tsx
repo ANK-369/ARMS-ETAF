@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import { addItem, getDB, updateItem, saveDB, deleteItem, smartUpsertItem, processStoreOrder, processRationDeduction, findPotentialMatch } from '../services/db';
 import { getCurrentEthiopianDate, ETHIOPIAN_MONTHS, ETHIOPIAN_MONTHS_AMHARIC, isActiveDate, formatEthiopianDate, getDaysInEthiopianMonth } from '../services/ethiopianDate';
@@ -108,12 +109,23 @@ const ProgramPaper: React.FC<ProgramPaperProps> = ({ settings, program, isEditin
 }
 
 const Store: React.FC = () => {
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState<'items' | 'order' | 'transfer' | 'program' | 'logistics'>('items');
   const [msg, setMsg] = useState('');
   const [forceUpdate, setForceUpdate] = useState(0);
   const [dbData, setDbData] = useState<AppData>(getDB());
   const { t, language } = useLanguage();
   const { month: selectedMonth, year: selectedYear } = useDate();
+
+  // Read deep link 'tab' query parameter (e.g. #/store?tab=items)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tabParam = params.get('tab');
+    const validTabs: Array<'items' | 'order' | 'transfer' | 'program' | 'logistics'> = ['items', 'order', 'transfer', 'program', 'logistics'];
+    if (tabParam && validTabs.includes(tabParam as any)) {
+      setActiveTab(tabParam as any);
+    }
+  }, [location.search]);
 
   const [dupModal, setDupModal] = useState<{isOpen: boolean, reason: string, item: any}>({ isOpen: false, reason: '', item: null });
 

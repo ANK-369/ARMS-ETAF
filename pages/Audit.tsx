@@ -1,5 +1,6 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { createPortal } from 'react-dom';
 import { getDB } from '../services/db';
 import { AppData, ManpowerType, Command, GitHubConfig, Manpower } from '../types';
@@ -237,7 +238,11 @@ const AutomatedAudit = ({ data }: { data: AppData }) => {
   const marketExpenses = expensesInMonth.filter(e => e.category === 'Market');
   
   const aggregatedMarketExpenses = marketExpenses.reduce((acc: any[], curr) => {
-      const existing = acc.find(item => item.itemName.toLowerCase().trim() === curr.itemName.toLowerCase().trim());
+      if (curr.savedAsNew) {
+          acc.push({ ...curr, amount: Number(curr.amount), tempTotalCost: Number(curr.amount) * Number(curr.singlePrice || 0) });
+          return acc;
+      }
+      const existing = acc.find(item => !item.savedAsNew && item.itemName.toLowerCase().trim() === curr.itemName.toLowerCase().trim());
       const currTotalCost = Number(curr.amount) * Number(curr.singlePrice || 0);
       if (existing) {
           existing.amount = Number(existing.amount) + Number(curr.amount); 
@@ -1965,9 +1970,20 @@ const MarketHistoryAudit = ({ data }: { data: AppData }) => {
 
 // --- MAIN PAGE COMPONENT ---
 const Audit: React.FC = () => {
+  const location = useLocation();
   const [activeTab, setActiveTab] = useState<'automated' | 'manual' | 'marketHistory' | 'calc'>('automated');
   const [data, setData] = useState<AppData | null>(null);
   const { t } = useLanguage();
+
+  // Read deep link 'tab' query parameter (e.g. #/audit?tab=manual)
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tabParam = params.get('tab');
+    const validTabs: Array<'automated' | 'manual' | 'marketHistory' | 'calc'> = ['automated', 'manual', 'marketHistory', 'calc'];
+    if (tabParam && validTabs.includes(tabParam as any)) {
+      setActiveTab(tabParam as any);
+    }
+  }, [location.search]);
 
   useEffect(() => {
     setData(getDB());
