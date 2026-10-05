@@ -1,6 +1,6 @@
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { FoodProgramEntry, LogisticsAnalysis, StoreItem, MealIngredientsMap } from "../types";
-import { getSiteMapPromptText } from "../services/siteMap";
+import { getSiteMapPromptText } from "../services/siteMap.js";
 
 export const getGeminiApiKey = (customApiKey?: string): string => {
   let key = '';
