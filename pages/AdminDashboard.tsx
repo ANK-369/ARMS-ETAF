@@ -13,7 +13,7 @@ import {
   getStoredSecurityQuestion, updateStoredCredentials, updateSecurityQuestion, updateAdminCredentialsDirectly,
   sha256, clearDatabaseDataForFreshStart
 } from '../services/db';
-import { getGitHubConfig, saveGitHubConfig, fetchFromGitHub, pushToGitHub, listUserBackups, getFolderName, autoDetectGitHubPath, listAllRepositoryBackups, RepoFileDetail } from '../services/githubService';
+import { getGitHubConfig, saveGitHubConfig, fetchFromGitHub, pushToGitHub, listUserBackups, getFolderName, getLegacyFolderName, autoDetectGitHubPath, listAllRepositoryBackups, RepoFileDetail } from '../services/githubService';
 import { analyzeData, chatWithAI, stripMarkdown } from '../services/geminiService';
 import { AppData, StoreItem, Manpower, Expense, IncomeItem, Subsidy, Transfer, Refund, RationLog, GitHubConfig } from '../types';
 import { formatEthiopianDate, getCurrentEthiopianDate } from '../services/ethiopianDate';
@@ -147,11 +147,28 @@ export const AdminDashboard: React.FC<{ onLogout: () => void }> = ({ onLogout })
     setBackupScanError('');
     try {
       const folderName = getFolderName(year, month);
-      const { backups, error } = await listUserBackups(folderName);
-      if (error) {
-        setBackupScanError(error);
+      const legacyFolderName = getLegacyFolderName(year, month);
+
+      const [newRes, legacyRes] = await Promise.all([
+        listUserBackups(folderName),
+        legacyFolderName !== folderName ? listUserBackups(legacyFolderName) : Promise.resolve({ backups: [], error: null })
+      ]);
+
+      const combinedBackups = [...(newRes.backups || [])];
+      const seenPaths = new Set(combinedBackups.map(b => b.path));
+      (legacyRes.backups || []).forEach(b => {
+        if (!seenPaths.has(b.path)) {
+          combinedBackups.push(b);
+          seenPaths.add(b.path);
+        }
+      });
+
+      if (newRes.error && (!legacyRes.backups || legacyRes.backups.length === 0)) {
+        setBackupScanError(newRes.error);
+      } else if (!newRes.error && legacyRes.error && combinedBackups.length === 0) {
+        setBackupScanError(legacyRes.error);
       } else {
-        setDetectedBackups(backups);
+        setDetectedBackups(combinedBackups);
       }
     } catch (err: any) {
       setBackupScanError(err.message || String(err));

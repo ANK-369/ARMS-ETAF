@@ -1,7 +1,7 @@
 
 import { AppData, Manpower, IncomeItem, Subsidy, Transfer, Expense, Refund, StoreItem, RationLog } from '../types';
 import { getCurrentEthiopianDate } from './ethiopianDate';
-import { pushToGitHub } from './githubService';
+import { pushToGitHub, getFolderName, isSameMonthFolder } from './githubService';
 
 const DB_KEY = 'arms_database';
 
@@ -135,23 +135,8 @@ export const saveDB = (data: AppData, skipSync: boolean = false) => {
                       const selectedMonth = localStorage.getItem('arms_selected_month');
                       const selectedYear = localStorage.getItem('arms_selected_year');
                       if (selectedMonth && selectedYear) {
-                          const monthMap: Record<string, string> = {
-                              "01": "september", "1": "september",
-                              "02": "october", "2": "october",
-                              "03": "november", "3": "november",
-                              "04": "december", "4": "december",
-                              "05": "january", "5": "january",
-                              "06": "february", "6": "february",
-                              "07": "march", "7": "march",
-                              "08": "april", "8": "april",
-                              "09": "may", "9": "may",
-                              "10": "june", "11": "july", "12": "august", "13": "pagume"
-                          };
-                          const mName = monthMap[selectedMonth] || `month_${selectedMonth}`;
-                          const currentUiFolder = `${mName}${selectedYear}`;
                           const confFolder = conf.path.split('/')[0];
-                          
-                          if (currentUiFolder.toLowerCase() !== confFolder.toLowerCase()) {
+                          if (!isSameMonthFolder(confFolder, selectedYear, selectedMonth)) {
                               matches = false;
                           }
                       }

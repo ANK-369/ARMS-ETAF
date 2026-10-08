@@ -31,9 +31,32 @@ function fromBase64(base64: string) {
 }
 
 /**
- * Maps Ethiopian Month Number to English Month Name for GitHub Folder Naming
+ * Maps Ethiopian Month Number to Ethiopian Month Name (Latin letters, lowercase) for GitHub Folder Naming
  */
 export const getFolderName = (year: string, month: string): string => {
+  const monthMap: Record<string, string> = {
+    "01": "meskerem", "1": "meskerem",
+    "02": "tikimt", "2": "tikimt",
+    "03": "hidar", "3": "hidar",
+    "04": "tahsas", "4": "tahsas",
+    "05": "tir", "5": "tir",
+    "06": "yekatit", "6": "yekatit",
+    "07": "megabit", "7": "megabit",
+    "08": "miazia", "8": "miazia",
+    "09": "genbot", "9": "genbot",
+    "10": "sene",
+    "11": "hamle",
+    "12": "nehasse",
+    "13": "pagume"
+  };
+  const mName = monthMap[month] || `month_${month}`;
+  return `${mName}${year}`;
+};
+
+/**
+ * Maps Ethiopian Month Number to English Month Name (Legacy for backwards compatibility matching)
+ */
+export const getLegacyFolderName = (year: string, month: string): string => {
   const monthMap: Record<string, string> = {
     "01": "september", "1": "september",
     "02": "october", "2": "october",
@@ -51,6 +74,18 @@ export const getFolderName = (year: string, month: string): string => {
   };
   const mName = monthMap[month] || `month_${month}`;
   return `${mName}${year}`;
+};
+
+/**
+ * Returns true if the folder (case-insensitive) equals the new Ethiopian name OR the old English name for that month and year.
+ * For reading/matching old folders only and must never be used to create new paths.
+ */
+export const isSameMonthFolder = (folderName: string, year: string, month: string): boolean => {
+  if (!folderName) return false;
+  const targetNew = getFolderName(year, month).toLowerCase();
+  const targetLegacy = getLegacyFolderName(year, month).toLowerCase();
+  const lowerFolder = folderName.trim().toLowerCase();
+  return lowerFolder === targetNew || lowerFolder === targetLegacy;
 };
 
 const checkIfNewUser = (): boolean => {

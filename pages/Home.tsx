@@ -141,15 +141,25 @@ const Home: React.FC = () => {
   // Helper to parse Month and Year from a file path
   const parseMonthAndYearFromPath = (filePath: string) => {
     const folder = filePath.split('/')[0];
-    const match = folder.match(/^([a-z]+)(\d{4})$/);
+    const match = folder.toLowerCase().match(/^([a-z]+)(\d{4})$/);
     if (match) {
       const monthName = match[1];
       const year = match[2];
       
       const monthMap: Record<string, string> = {
-        "september": "01", "october": "02", "november": "03", "december": "04",
-        "january": "05", "february": "06", "march": "07", "april": "08",
-        "may": "09", "june": "10", "july": "11", "august": "12", "pagume": "13"
+        "september": "01", "meskerem": "01",
+        "october": "02", "tikimt": "02",
+        "november": "03", "hidar": "03",
+        "december": "04", "tahsas": "04",
+        "january": "05", "tir": "05",
+        "february": "06", "yekatit": "06",
+        "march": "07", "megabit": "07",
+        "april": "08", "miazia": "08",
+        "may": "09", "genbot": "09",
+        "june": "10", "sene": "10",
+        "july": "11", "hamle": "11",
+        "august": "12", "nehasse": "12",
+        "pagume": "13"
       };
       
       const month = monthMap[monthName] || "01";
