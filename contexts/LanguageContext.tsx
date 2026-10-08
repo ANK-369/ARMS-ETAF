@@ -157,7 +157,7 @@ export const dictionary: Translations = {
   noTrendData: { en: "No sufficient data to display trends.", am: "በቂ መረጃ የለም።" },
   topExpenses: { en: "Top Expenses", am: "ከፍተኛ ወጪዎች" },
   topIncome: { en: "Top Income Sources", am: "ከፍተኛ ገቢዎች" },
-  topIncomeManpower: { en: "Man Power", am: "የሰው ሐይል" },
+  topIncomeManpower: { en: "Man Power", am: "የሰው ኃይል" },
   expenditureBreakdown: { en: "Expenditure Breakdown", am: "የወጪ ዝርዝር ሁኔታ" },
   incomeBreakdown: { en: "Income Breakdown", am: "የገቢ ዝርዝር ሁኔታ" },
   market: { en: "Market", am: "ገበያ" },
