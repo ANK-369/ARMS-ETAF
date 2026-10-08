@@ -550,7 +550,15 @@ const Home: React.FC = () => {
         displayName: tItem.description || t('transfer'),
         displaySubtext: t('budgetTransfer'),
         date: `${selectedYear}-${selectedMonth}-01`
-    }))
+    })),
+    ...(manpowerMonthlyTotal > 0 ? [{
+        id: 'manpower-total',
+        totalValue: manpowerMonthlyTotal,
+        displayName: t('topIncomeManpower'),
+        amount: monthlyManpower.length,
+        measurement: 'manpower',
+        date: `${selectedYear}-${selectedMonth}-01`
+    }] : [])
   ]
     .filter(item => !isNaN(item.totalValue) && item.totalValue > 0)
     .sort((a, b) => b.totalValue - a.totalValue)
